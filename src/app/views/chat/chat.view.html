@@ -1,6 +1,6 @@
 @if (projectPath(); as activeProjectPath) {
   <section
-    class="mx-auto flex h-[calc(100vh-3rem)] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/50 shadow-2xl shadow-slate-950/60 backdrop-blur-xl"
+    class="mx-auto flex h-[calc(100vh-3rem)] w-full max-w-7xl flex-col overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/50 shadow-2xl shadow-slate-950/60 backdrop-blur-xl"
   >
     <header
       class="flex flex-col gap-4 border-b border-slate-800/80 bg-slate-900/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
@@ -20,36 +20,68 @@
       </div>
     </header>
 
-    <div #transcriptScroll class="flex-1 space-y-4 overflow-y-auto bg-slate-950/40 px-4 py-5 sm:px-6">
-      @for (message of messages(); track message.id) {
-        <div
-          class="flex"
-          [class.justify-end]="message.role === chatRoleUser"
-          [class.justify-start]="message.role !== chatRoleUser"
-        >
+    <div class="grid min-h-0 flex-1 grid-cols-1 gap-0 xl:grid-cols-[1fr_340px]">
+      <div #transcriptScroll class="space-y-4 overflow-y-auto bg-slate-950/40 px-4 py-5 sm:px-6">
+        @for (message of messages(); track message.id) {
           <div
-            class="max-w-[85%] rounded-2xl border px-4 py-3 shadow-lg backdrop-blur sm:max-w-[70%]"
-            [class.border-emerald-300/30]="message.role === chatRoleUser"
-            [class.bg-emerald-400/10]="message.role === chatRoleUser"
-            [class.text-emerald-50]="message.role === chatRoleUser"
-            [class.border-slate-700/80]="message.role === chatRoleAssistant"
-            [class.bg-slate-900/85]="message.role === chatRoleAssistant"
-            [class.text-slate-100]="message.role === chatRoleAssistant"
-            [class.border-amber-400/20]="message.role === chatRoleSystem"
-            [class.bg-amber-500/10]="message.role === chatRoleSystem"
-            [class.text-amber-100]="message.role === chatRoleSystem"
+            class="flex"
+            [class.justify-end]="message.role === chatRoleUser"
+            [class.justify-start]="message.role !== chatRoleUser"
           >
-            <p class="whitespace-pre-wrap text-sm leading-6">{{ message.content }}</p>
-            <p class="mt-2 text-[11px] uppercase tracking-[0.08em] text-slate-400">
-              {{ message.role }} &middot; {{ formatTime(message.createdAt) }}
-            </p>
+            <div
+              class="max-w-[85%] rounded-2xl border px-4 py-3 shadow-lg backdrop-blur sm:max-w-[70%]"
+              [class.border-emerald-300/30]="message.role === chatRoleUser"
+              [class.bg-emerald-400/10]="message.role === chatRoleUser"
+              [class.text-emerald-50]="message.role === chatRoleUser"
+              [class.border-slate-700/80]="message.role === chatRoleAssistant"
+              [class.bg-slate-900/85]="message.role === chatRoleAssistant"
+              [class.text-slate-100]="message.role === chatRoleAssistant"
+              [class.border-amber-400/20]="message.role === chatRoleSystem"
+              [class.bg-amber-500/10]="message.role === chatRoleSystem"
+              [class.text-amber-100]="message.role === chatRoleSystem"
+            >
+              <p class="whitespace-pre-wrap text-sm leading-6">{{ message.content }}</p>
+              <p class="mt-2 text-[11px] uppercase tracking-[0.08em] text-slate-400">
+                {{ message.role }} &middot; {{ formatTime(message.createdAt) }}
+              </p>
+            </div>
           </div>
+        } @empty {
+          <div class="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/60 px-6 py-14 text-center">
+            <p class="text-sm text-slate-300 sm:text-base">Start the conversation by sending a message.</p>
+          </div>
+        }
+      </div>
+
+      <aside class="border-t border-slate-800/80 bg-slate-950/45 xl:border-l xl:border-t-0">
+        <div class="border-b border-slate-800/80 px-4 py-3 sm:px-5">
+          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Run Panel</p>
+          <p class="mt-1 text-sm text-slate-200">Execution status</p>
         </div>
-      } @empty {
-        <div class="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/60 px-6 py-14 text-center">
-          <p class="text-sm text-slate-300 sm:text-base">Start the conversation by sending a message.</p>
+
+        <div class="space-y-2 overflow-y-auto p-3 sm:p-4">
+          @for (step of stepRuns(); track step.id) {
+            <div class="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3">
+              <div class="flex items-center justify-between gap-3">
+                <p class="text-sm font-medium text-slate-100">{{ step.title }}</p>
+                <span
+                  class="inline-flex rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
+                  [class.border-slate-600]="step.status === 'pending'"
+                  [class.text-slate-300]="step.status === 'pending'"
+                  [class.border-sky-300/50]="step.status === 'running'"
+                  [class.text-sky-200]="step.status === 'running'"
+                  [class.border-emerald-300/50]="step.status === 'succeeded'"
+                  [class.text-emerald-200]="step.status === 'succeeded'"
+                  [class.border-red-300/50]="step.status === 'failed'"
+                  [class.text-red-200]="step.status === 'failed'"
+                >
+                  {{ step.status }}
+                </span>
+              </div>
+            </div>
+          }
         </div>
-      }
+      </aside>
     </div>
 
     <footer class="border-t border-slate-800/80 bg-slate-900/70 p-4 sm:p-5">

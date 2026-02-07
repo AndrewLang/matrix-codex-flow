@@ -7,6 +7,7 @@ import {
   ChatStore,
 } from '../../state/chat.store';
 import { ProjectSessionStore } from '../../state/project-session.store';
+import { StepRunStore } from '../../state/step-run.store';
 import { UiButton } from '../../ui/ui.button';
 import { UiPanel } from '../../ui/ui.panel';
 
@@ -21,10 +22,12 @@ export class ChatView {
   private transcriptScroll?: ElementRef<HTMLDivElement>;
 
   protected readonly chatStore = inject(ChatStore);
+  protected readonly stepRunStore = inject(StepRunStore);
   protected readonly sessionStore = inject(ProjectSessionStore);
   private readonly router = inject(Router);
   protected readonly draft = signal<string>('');
   protected readonly messages = this.chatStore.messages;
+  protected readonly stepRuns = this.stepRunStore.steps;
   protected readonly chatRoleUser = CHAT_ROLE_USER;
   protected readonly chatRoleAssistant = CHAT_ROLE_ASSISTANT;
   protected readonly chatRoleSystem = CHAT_ROLE_SYSTEM;
