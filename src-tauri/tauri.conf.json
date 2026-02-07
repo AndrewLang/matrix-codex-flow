@@ -1,20 +1,21 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "matrix-codex-flow",
+  "productName": "matrix-vible-flow",
   "version": "0.1.0",
   "identifier": "com.tauri.dev",
   "build": {
-    "frontendDist": "../dist",
+    "frontendDist": "../dist/matrix-codex-flow/browser",
     "devUrl": "http://localhost:8990",
     "beforeDevCommand": "npm run dev",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "Matrix Codex Workflow",
-        "width": 800,
-        "height": 600,
+        "width": 500,
+        "height": 900,
         "resizable": true,
         "fullscreen": false
       }
