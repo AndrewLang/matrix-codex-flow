@@ -14,6 +14,11 @@ export const routes: Routes = [
             { path: '', redirectTo: 'chat', pathMatch: 'full' },
             { path: 'chat', component: ChatComponent },
             { path: 'context', component: ContextComponent },
+            {
+                path: 'tasks/edit/:taskId',
+                loadComponent: () =>
+                    import('../components/tasks/task.edit.component').then((module) => module.TaskEditComponent)
+            },
             { path: 'tasks', component: TasksComponent },
             { path: 'settings', component: SettingsComponent },
             { path: '**', redirectTo: 'chat' }

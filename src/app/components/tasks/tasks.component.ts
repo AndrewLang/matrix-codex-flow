@@ -1,6 +1,8 @@
-import { Component, computed, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 
 import { Task } from '../../models/task';
+import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 import { TaskListComponent } from './task.list.component';
 
@@ -10,36 +12,6 @@ interface TaskTabItem {
     key: TaskFilterTab;
     label: string;
 }
-
-const INITIAL_TASKS: Task[] = [
-    {
-        id: 'task-1',
-        title: 'Prepare project brief',
-        description: 'Compile a comprehensive project brief outlining objectives, scope, and deliverables.',
-        steps: [],
-        status: 'pending',
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-    },
-    {
-        id: 'task-2',
-        title: 'Build context timeline',
-        description: 'Create a chronological timeline of key events and interactions to provide context for the project.',
-        steps: [],
-        status: 'completed',
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-    },
-    {
-        id: 'task-3',
-        title: 'Validate workflow sync',
-        description: 'Ensure that the workflow synchronization mechanism is functioning correctly across all components.',
-        steps: [],
-        status: 'failed',
-        createdAt: Date.now(),
-        updatedAt: Date.now()
-    }
-];
 
 const TASK_TABS: TaskTabItem[] = [
     { key: 'pending', label: 'Pending' },
@@ -55,9 +27,13 @@ const TASK_TABS: TaskTabItem[] = [
 export class TasksComponent {
     protected readonly tabs = TASK_TABS;
     protected readonly selectedTab = signal<TaskFilterTab>('pending');
-    protected readonly tasks = signal<Task[]>(INITIAL_TASKS);
 
-    protected readonly filteredTasks = computed(() => {
+    private readonly taskService = inject(TaskService);
+    private readonly router = inject(Router);
+
+    protected readonly tasks = this.taskService.tasks;
+
+    protected readonly filteredTasks = computed<Task[]>(() => {
         const selectedTab = this.selectedTab();
 
         if (selectedTab === 'pending') {
@@ -78,56 +54,20 @@ export class TasksComponent {
     }
 
     protected addTask(): void {
-        const nextTaskIndex = this.tasks().length + 1;
-        const currentTimestamp = Date.now();
-
-        const nextTask: Task = {
-            id: `task-${currentTimestamp}`,
-            title: `New Task ${nextTaskIndex}`,
-            description: 'Task description goes here.',
-            steps: [],
-            status: 'pending',
-            createdAt: currentTimestamp,
-            updatedAt: currentTimestamp
-        };
-
-        this.tasks.update((tasks) => [nextTask, ...tasks]);
+        this.taskService.addTask();
         this.selectedTab.set('pending');
     }
 
     protected runTask(taskId: string): void {
-        const currentTimestamp = Date.now();
-
-        this.tasks.update((tasks) =>
-            tasks.map((task) =>
-                task.id === taskId
-                    ? {
-                        ...task,
-                        status: 'in_progress',
-                        updatedAt: currentTimestamp
-                    }
-                    : task
-            )
-        );
+        this.taskService.runTask(taskId);
         this.selectedTab.set('pending');
     }
 
     protected editTask(taskId: string): void {
-        const currentTimestamp = Date.now();
-
-        this.tasks.update((tasks) =>
-            tasks.map((task) =>
-                task.id === taskId
-                    ? {
-                        ...task,
-                        updatedAt: currentTimestamp
-                    }
-                    : task
-            )
-        );
+        void this.router.navigate(['/workspace/tasks/edit', taskId]);
     }
 
     protected deleteTask(taskId: string): void {
-        this.tasks.update((tasks) => tasks.filter((task) => task.id !== taskId));
+        this.taskService.deleteTask(taskId);
     }
 }

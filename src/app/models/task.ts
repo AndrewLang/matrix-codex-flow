@@ -1,4 +1,5 @@
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
+export type TaskStepType = 'normal' | 'post' | 'pre';
 
 export interface Task {
     id: string;
@@ -18,4 +19,5 @@ export interface TaskStep {
     status: TaskStatus;
     createdAt: number;
     updatedAt: number;
+    type: TaskStepType;
 }
