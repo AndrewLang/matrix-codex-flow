@@ -6,6 +6,8 @@ export interface Task {
     title: string;
     description: string;
     steps: TaskStep[];
+    presteps: TaskStep[];
+    poststeps: TaskStep[];
     status: TaskStatus;
     createdAt: number;
     updatedAt: number;

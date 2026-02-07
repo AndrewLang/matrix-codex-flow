@@ -1,12 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 
-import { Task, TaskStep } from '../models/task';
+import { Task, TaskStep, TaskStepType } from '../models/task';
 
 const INITIAL_TASKS: Task[] = [
     {
         id: 'task-1',
         title: 'Prepare project brief',
         description: 'Compile a comprehensive project brief outlining objectives, scope, and deliverables.',
+        presteps: [],
+        poststeps: [],
         steps: [
             {
                 id: 'task-1-step-1',
@@ -35,6 +37,8 @@ const INITIAL_TASKS: Task[] = [
         id: 'task-2',
         title: 'Build context timeline',
         description: 'Create a chronological timeline of key events and interactions to provide context for the project.',
+        presteps: [],
+        poststeps: [],
         steps: [
             {
                 id: 'task-2-step-1',
@@ -54,6 +58,8 @@ const INITIAL_TASKS: Task[] = [
         id: 'task-3',
         title: 'Validate workflow sync',
         description: 'Ensure that the workflow synchronization mechanism is functioning correctly across all components.',
+        presteps: [],
+        poststeps: [],
         steps: [
             {
                 id: 'task-3-step-1',
@@ -86,6 +92,8 @@ export class TaskService {
             title: `New Task ${nextTaskIndex}`,
             description: 'Task description goes here.',
             steps: [],
+            presteps: [],
+            poststeps: [],
             status: 'pending',
             createdAt: currentTimestamp,
             updatedAt: currentTimestamp
@@ -135,8 +143,9 @@ export class TaskService {
         return this.tasksState().find((task) => task.id === taskId);
     }
 
-    addStep(taskId: string): void {
+    addStep(taskId: string, stepType: TaskStepType = 'normal'): string | undefined {
         const currentTimestamp = Date.now();
+        let createdStepId: string | undefined;
 
         this.tasksState.update((tasks) =>
             tasks.map((task) => {
@@ -144,28 +153,50 @@ export class TaskService {
                     return task;
                 }
 
-                const nextStepIndex = task.steps.length + 1;
+                const targetSteps =
+                    stepType === 'pre'
+                        ? task.presteps
+                        : stepType === 'post'
+                            ? task.poststeps
+                            : task.steps;
+                const nextStepIndex = targetSteps.length + 1;
                 const nextStep: TaskStep = {
                     id: `${taskId}-step-${currentTimestamp}`,
-                    title: `Step ${nextStepIndex}`,
+                    title: `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${nextStepIndex}`,
                     content: 'Describe the step details in markdown.',
                     status: 'pending',
-                    type: 'normal',
+                    type: stepType,
                     createdAt: currentTimestamp,
                     updatedAt: currentTimestamp
                 };
+                createdStepId = nextStep.id;
 
                 return {
                     ...task,
-                    steps: [...task.steps, nextStep],
+                    presteps: stepType === 'pre' ? [...task.presteps, nextStep] : task.presteps,
+                    poststeps: stepType === 'post' ? [...task.poststeps, nextStep] : task.poststeps,
+                    steps: stepType === 'normal' ? [...task.steps, nextStep] : task.steps,
                     updatedAt: currentTimestamp
                 };
             })
         );
+
+        return createdStepId;
     }
 
     updateStep(taskId: string, stepId: string, title: string, content: string): void {
         const currentTimestamp = Date.now();
+        const updateStepCollection = (steps: TaskStep[]): TaskStep[] =>
+            steps.map((step) =>
+                step.id === stepId
+                    ? {
+                        ...step,
+                        title,
+                        content,
+                        updatedAt: currentTimestamp
+                    }
+                    : step
+            );
 
         this.tasksState.update((tasks) =>
             tasks.map((task) => {
@@ -175,16 +206,9 @@ export class TaskService {
 
                 return {
                     ...task,
-                    steps: task.steps.map((step) =>
-                        step.id === stepId
-                            ? {
-                                ...step,
-                                title,
-                                content,
-                                updatedAt: currentTimestamp
-                            }
-                            : step
-                    ),
+                    presteps: updateStepCollection(task.presteps),
+                    poststeps: updateStepCollection(task.poststeps),
+                    steps: updateStepCollection(task.steps),
                     updatedAt: currentTimestamp
                 };
             })
@@ -193,6 +217,7 @@ export class TaskService {
 
     deleteStep(taskId: string, stepId: string): void {
         const currentTimestamp = Date.now();
+        const filterStepCollection = (steps: TaskStep[]): TaskStep[] => steps.filter((step) => step.id !== stepId);
 
         this.tasksState.update((tasks) =>
             tasks.map((task) => {
@@ -202,7 +227,9 @@ export class TaskService {
 
                 return {
                     ...task,
-                    steps: task.steps.filter((step) => step.id !== stepId),
+                    presteps: filterStepCollection(task.presteps),
+                    poststeps: filterStepCollection(task.poststeps),
+                    steps: filterStepCollection(task.steps),
                     updatedAt: currentTimestamp
                 };
             })

@@ -1,14 +1,12 @@
-import { DatePipe } from '@angular/common';
-import { Component, computed, ElementRef, inject, OnDestroy, OnInit, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, ElementRef, inject, OnDestroy, Renderer2, signal, ViewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-import { TaskStep } from '../../models/task';
+import { TaskStep, TaskStepType } from '../../models/task';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
-import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
-import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
+import { StepListComponent } from './step.list.component';
 
 interface StepDraft {
     title: string;
@@ -23,9 +21,9 @@ interface TaskDraft {
 @Component({
     selector: 'mtx-task-editor',
     templateUrl: 'task.edit.component.html',
-    imports: [DatePipe, IconComponent, MarkdownEditorComponent, MarkdownRendererComponent]
+    imports: [IconComponent, StepListComponent]
 })
-export class TaskEditComponent implements OnDestroy, OnInit {
+export class TaskEditComponent implements OnDestroy {
     private readonly taskService = inject(TaskService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
@@ -36,12 +34,42 @@ export class TaskEditComponent implements OnDestroy, OnInit {
     );
 
     protected readonly task = computed(() => this.taskService.findTask(this.taskId()));
+    protected readonly preSteps = computed(() => {
+        const selectedTask = this.task();
+
+        if (!selectedTask) {
+            return [];
+        }
+
+        return selectedTask.presteps;
+    });
+
+    protected readonly mainSteps = computed(() => {
+        const selectedTask = this.task();
+
+        if (!selectedTask) {
+            return [];
+        }
+
+        return selectedTask.steps;
+    });
+
+    protected readonly postSteps = computed(() => {
+        const selectedTask = this.task();
+
+        if (!selectedTask) {
+            return [];
+        }
+
+        return selectedTask.poststeps;
+    });
 
     protected readonly collapsedStepIds = signal<Record<string, boolean>>({});
     protected readonly editingStepIds = signal<Record<string, boolean>>({});
     protected readonly stepDrafts = signal<Record<string, StepDraft>>({});
     protected readonly isEditingTaskTitle = signal(false);
     protected readonly isEditingTaskDescription = signal(false);
+    protected readonly isAddStepMenuOpen = signal(false);
     protected readonly taskDraft = signal<TaskDraft>({ title: '', description: '' });
     private readonly renderer = inject(Renderer2);
     private readonly removeDocumentPointerListener: () => void;
@@ -51,6 +79,8 @@ export class TaskEditComponent implements OnDestroy, OnInit {
 
     @ViewChild('taskDescriptionEditor')
     private taskDescriptionEditor?: ElementRef<HTMLElement>;
+    @ViewChild('addStepMenu')
+    private addStepMenu?: ElementRef<HTMLElement>;
 
     constructor() {
         this.removeDocumentPointerListener = this.renderer.listen('document', 'pointerdown', (event: PointerEvent) => {
@@ -73,6 +103,13 @@ export class TaskEditComponent implements OnDestroy, OnInit {
                     this.onTaskDescriptionFocusOut();
                 }
             }
+
+            if (this.isAddStepMenuOpen()) {
+                const addStepMenuElement = this.addStepMenu?.nativeElement;
+                if (addStepMenuElement && !addStepMenuElement.contains(targetNode)) {
+                    this.isAddStepMenuOpen.set(false);
+                }
+            }
         });
     }
 
@@ -80,23 +117,37 @@ export class TaskEditComponent implements OnDestroy, OnInit {
         void this.router.navigate(['/workspace/tasks']);
     }
 
+    protected toggleAddStepMenu(): void {
+        this.isAddStepMenuOpen.update((value) => !value);
+    }
+
+    protected addPreStep(): void {
+        this.addStepByType('pre');
+    }
+
+    protected addPostStep(): void {
+        this.addStepByType('post');
+    }
+
     protected addStep(): void {
+        this.addStepByType('normal');
+    }
+
+    private addStepByType(stepType: TaskStepType): void {
         const taskId = this.taskId();
 
         if (!taskId) {
             return;
         }
 
-        this.taskService.addStep(taskId);
+        const createdStepId = this.taskService.addStep(taskId, stepType);
+        this.isAddStepMenuOpen.set(false);
 
-        const latestTask = this.task();
-        const latestStep = latestTask?.steps[latestTask.steps.length - 1];
-
-        if (!latestStep) {
+        if (!createdStepId) {
             return;
         }
 
-        this.collapsedStepIds.update((state) => ({ ...state, [latestStep.id]: false }));
+        this.collapsedStepIds.update((state) => ({ ...state, [createdStepId]: false }));
     }
 
     protected startEditTaskTitle(): void {
@@ -282,8 +333,5 @@ export class TaskEditComponent implements OnDestroy, OnInit {
 
     ngOnDestroy(): void {
         this.removeDocumentPointerListener();
-    }
-
-    ngOnInit(): void {
     }
 }

@@ -1,5 +1,5 @@
-<div class="flex h-full min-h-0 flex-col gap-4 p-2 text-slate-200">
-    <header class="flex flex-col rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+<div class="flex h-full min-h-0 flex-col gap-4 overflow-visible p-2 text-slate-200">
+    <header class="relative z-30 flex flex-col overflow-visible rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
         <div class="flex items-start gap-2">
             <button type="button"
                 class="rounded-full bg-slate-800 px-2 py-1 mt-1 text-sm text-slate-200 transition hover:bg-slate-700"
@@ -56,103 +56,70 @@
             </div>
             <div>
                 @if (task()) {
-                <div class="flex items-center gap-2">
-                    <button type="button"
-                        class="rounded bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
-                        (click)="addStep()" title="Add step to task">
-                        Add Step
-                    </button>
+                <div #addStepMenu class="relative flex items-center gap-2">
+                    <div class="flex items-center">
+                        <button type="button"
+                            class="rounded-l bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
+                            (click)="addStep()" title="Add step to task">
+                            Add Step
+                        </button>
+                        <button type="button"
+                            class="rounded-r border-l border-slate-700 bg-slate-800 px-2.5 py-1.5 text-slate-200 transition hover:bg-slate-700"
+                            (click)="toggleAddStepMenu()" aria-label="Open add step options">
+                            <mtx-icon
+                                [icon]="isAddStepMenuOpen() ? 'chevron-up text-xs' : 'chevron-down text-xs'"></mtx-icon>
+                        </button>
+                    </div>
+
+                    @if (isAddStepMenuOpen()) {
+                    <div
+                        class="absolute right-0 top-11 z-50 min-w-44 rounded-lg bg-slate-900/95 p-1.5 shadow-[8px_8px_20px_rgba(0,0,0,0.6),-8px_-8px_20px_rgba(255,255,255,0.03)]">
+                        <button type="button"
+                            class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
+                            (click)="addPreStep()">
+                            Add PreStep
+                        </button>
+                        <button type="button"
+                            class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
+                            (click)="addPostStep()">
+                            Add PostStep
+                        </button>
+                    </div>
+                    }
                 </div>
                 }
             </div>
         </div>
     </header>
 
-    <section class="flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 p-3 backdrop-blur-xl">
-        @if (task(); as selectedTask) {
-        <div class="relative pl-6">
-            <div class="absolute bottom-0 left-2 top-0 w-px bg-slate-700/80"></div>
+    <section class="relative z-0 flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 p-3 backdrop-blur-xl">
+        @if (task()) {
+        <div class="flex flex-col gap-3">
+            <mtx-step-list title="Pre Steps" subtitle="Steps will be executed before each main step."
+                titleIcon="arrow-90deg-right" [steps]="preSteps()" [collapsedStepIds]="collapsedStepIds()"
+                [editingStepIds]="editingStepIds()" [stepDrafts]="stepDrafts()"
+                (toggleStepCollapse)="toggleStepCollapse($event)" (startEditStep)="startEditStep($event)"
+                (cancelEditStep)="cancelEditStep($event)"
+                (updateStepDraftTitle)="updateStepDraftTitle($event.stepId, $event.value)"
+                (updateStepDraftContent)="updateStepDraftContent($event.stepId, $event.value)"
+                (saveStep)="saveStep($event)" (deleteStep)="deleteStep($event)"></mtx-step-list>
 
-            <div class="space-y-4">
-                @for (step of selectedTask.steps; track step.id; let stepIndex = $index) {
-                <article class="relative rounded-xl bg-slate-800/50 p-4">
-                    <div
-                        class="absolute -left-[1.75rem] top-4 flex h-6 w-6 items-center justify-center rounded-full bg-sky-500 text-xs font-semibold text-slate-950">
-                        {{ stepIndex + 1 }}
-                    </div>
+            <mtx-step-list title="Main Steps" subtitle="Main steps do your job" [steps]="mainSteps()"
+                [collapsedStepIds]="collapsedStepIds()" [editingStepIds]="editingStepIds()" [stepDrafts]="stepDrafts()"
+                (toggleStepCollapse)="toggleStepCollapse($event)" (startEditStep)="startEditStep($event)"
+                (cancelEditStep)="cancelEditStep($event)"
+                (updateStepDraftTitle)="updateStepDraftTitle($event.stepId, $event.value)"
+                (updateStepDraftContent)="updateStepDraftContent($event.stepId, $event.value)"
+                (saveStep)="saveStep($event)" (deleteStep)="deleteStep($event)"></mtx-step-list>
 
-                    <div class="flex items-start justify-between gap-3">
-                        <button type="button" class="flex min-w-0 flex-1 items-start gap-3 text-left"
-                            (click)="toggleStepCollapse(step.id)">
-                            <div>
-                                <h3 class="text-base font-semibold text-slate-100">{{ step.title }}</h3>
-                            </div>
-                        </button>
-
-                        <div class="flex shrink-0 items-center gap-2">
-                            <time class="text-xs text-slate-500">{{ step.updatedAt | date:'MMM d, y HH:mm' }}</time>
-                            <button type="button" class="rounded-full bg-slate-700 px-2 py-1 text-xs text-slate-200"
-                                [attr.aria-label]="isStepCollapsed(step.id) ? 'Expand step' : 'Collapse step'"
-                                (click)="toggleStepCollapse(step.id)">
-                                <mtx-icon
-                                    [icon]="isStepCollapsed(step.id) ? 'chevron-down text-xs' : 'chevron-up text-xs'"></mtx-icon>
-                            </button>
-                        </div>
-                    </div>
-
-                    @if (!isStepCollapsed(step.id)) {
-                    @if (isStepEditing(step.id)) {
-                    <div class="mt-3 space-y-3">
-                        <input #stepTitleInput
-                            class="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500"
-                            type="text" [value]="getStepDraftTitle(step)" placeholder="Step title"
-                            (input)="updateStepDraftTitle(step.id, stepTitleInput.value)" />
-
-                        <mtx-md-editor [value]="getStepDraftContent(step)"
-                            placeholder="Step content (markdown supported)"
-                            (valueChange)="updateStepDraftContent(step.id, $event)"></mtx-md-editor>
-
-                        <div class="mt-2 flex justify-end gap-2">
-                            <button type="button"
-                                class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
-                                (click)="cancelEditStep(step.id)">
-                                Cancel
-                            </button>
-                            <button type="button"
-                                class="rounded bg-emerald-600 px-3 py-1.5 text-xs text-white transition hover:bg-emerald-500"
-                                (click)="saveStep(step.id)">
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                    } @else {
-                    <div class="mt-3">
-                        <mtx-md-renderer [markdown]="step.content"></mtx-md-renderer>
-                    </div>
-
-                    <div class="mt-3 flex justify-end gap-2">
-                        <button type="button"
-                            class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
-                            (click)="startEditStep(step)">
-                            Edit
-                        </button>
-                        <button type="button"
-                            class="rounded bg-rose-700 px-3 py-1.5 text-xs text-white transition hover:bg-rose-600"
-                            (click)="deleteStep(step.id)">
-                            Delete
-                        </button>
-                    </div>
-                    }
-                    }
-                </article>
-                }
-
-                @if (selectedTask.steps.length === 0) {
-                <p class="rounded bg-slate-800/60 px-3 py-2 text-sm text-slate-400">
-                    No steps yet. Add a step to start defining this task flow.
-                </p>
-                }
-            </div>
+            <mtx-step-list title="Post Steps" subtitle="Steps will be executed after each main step."
+                titleIcon="arrow-return-right" [steps]="postSteps()" [collapsedStepIds]="collapsedStepIds()"
+                [editingStepIds]="editingStepIds()" [stepDrafts]="stepDrafts()"
+                (toggleStepCollapse)="toggleStepCollapse($event)" (startEditStep)="startEditStep($event)"
+                (cancelEditStep)="cancelEditStep($event)"
+                (updateStepDraftTitle)="updateStepDraftTitle($event.stepId, $event.value)"
+                (updateStepDraftContent)="updateStepDraftContent($event.stepId, $event.value)"
+                (saveStep)="saveStep($event)" (deleteStep)="deleteStep($event)"></mtx-step-list>
         </div>
         } @else {
         <p class="rounded bg-slate-800/60 px-3 py-2 text-sm text-slate-400">
