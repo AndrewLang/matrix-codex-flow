@@ -1,197 +1,133 @@
 <section class="mx-auto w-full max-w-7xl">
-  <div class="grid min-h-[calc(100vh-3rem)] grid-cols-1 gap-4 xl:grid-cols-[320px_1fr]">
-    <ui-panel padding="sm" className="bg-slate-950/55">
+  <div class="grid min-h-[calc(100vh-3rem)] grid-cols-1 gap-5 xl:grid-cols-[320px_1fr]">
+    <aside
+      class="rounded-3xl bg-slate-900/55 p-4 shadow-[0_22px_60px_rgba(2,6,23,0.5),inset_1px_1px_0_rgba(255,255,255,0.04)]"
+    >
       <div class="flex items-center justify-between gap-3">
-        <h1 class="text-lg font-semibold tracking-tight text-slate-100 sm:text-xl">Task Chains</h1>
-        <ui-button type="button" variant="primary" size="sm" (click)="createChain()">New Chain</ui-button>
+        <h1 class="text-lg font-semibold tracking-tight text-slate-100 sm:text-xl">Chains</h1>
+        <button
+          type="button"
+          (click)="createChain()"
+          class="rounded-2xl bg-emerald-500 px-3 py-2 text-xs font-semibold uppercase tracking-[0.08em] text-slate-950 shadow-[0_10px_24px_rgba(16,185,129,0.35)] transition hover:bg-emerald-400 sm:text-sm"
+        >
+          New Chain
+        </button>
       </div>
 
-      <div class="mt-4 space-y-2 overflow-y-auto pb-1">
+      <div class="mt-4 space-y-3 overflow-y-auto pb-1">
         @for (chain of chains(); track chain.id) {
           <div
-            class="rounded-xl border p-3 transition"
-            [class.border-emerald-400/50]="selectedChainId() === chain.id"
-            [class.bg-emerald-500/10]="selectedChainId() === chain.id"
-            [class.border-slate-800]="selectedChainId() !== chain.id"
-            [class.bg-slate-900/80]="selectedChainId() !== chain.id"
             (click)="selectChain(chain.id)"
+            class="cursor-pointer rounded-2xl p-3 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)] transition"
+            [class.bg-emerald-500/12]="selectedChainId() === chain.id"
+            [class.bg-slate-950/65]="selectedChainId() !== chain.id"
           >
             <input
               type="text"
               [value]="chain.name"
               (input)="renameChain(chain.id, $event)"
-              class="w-full rounded-lg border border-slate-700 bg-slate-950/90 px-2.5 py-1.5 text-sm font-medium text-slate-100 outline-none focus:border-slate-500"
+              class="w-full rounded-xl bg-slate-950/70 px-3 py-2 text-sm font-medium text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_20px_rgba(2,6,23,0.35)] outline-none focus:bg-slate-950"
             />
-            <div class="mt-2 flex items-center justify-between">
+            <div class="mt-2 flex items-center justify-between gap-2">
               <p class="text-xs text-slate-400">{{ chain.steps.length }} step{{ chain.steps.length === 1 ? '' : 's' }}</p>
-              <ui-button
+              <button
                 type="button"
-                variant="danger"
-                size="sm"
                 (click)="deleteChain(chain.id); $event.stopPropagation()"
+                class="rounded-xl bg-red-500/20 px-2.5 py-1.5 text-xs font-medium text-red-200 shadow-[0_8px_20px_rgba(2,6,23,0.45)] transition hover:bg-red-500/30"
               >
                 Delete
-              </ui-button>
+              </button>
             </div>
           </div>
         } @empty {
-          <div class="rounded-xl border border-dashed border-slate-700 px-4 py-10 text-center">
-            <p class="text-sm text-slate-300">No chains saved yet.</p>
-            <p class="mt-1 text-xs text-slate-500">Create your first chain to begin.</p>
+          <div
+            class="rounded-2xl bg-slate-950/50 px-4 py-10 text-center text-sm text-slate-400 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)]"
+          >
+            Create a chain to start composing your AI pipeline.
           </div>
         }
       </div>
-    </ui-panel>
+    </aside>
 
-    <ui-panel padding="sm" className="bg-slate-950/45 sm:p-6">
+    <main
+      class="rounded-3xl bg-slate-900/45 p-4 shadow-[0_22px_60px_rgba(2,6,23,0.5),inset_1px_1px_0_rgba(255,255,255,0.04)] sm:p-6"
+    >
       @if (selectedChain(); as chain) {
         <div class="space-y-5">
-          <ui-panel padding="sm" className="bg-slate-900/70">
-            <p class="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">Selected Chain</p>
-            <input
-              type="text"
-              [value]="chain.name"
-              (input)="renameSelectedChain($event)"
-              class="mt-2 w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-lg font-semibold tracking-tight text-slate-100 outline-none focus:border-slate-500"
-            />
-          </ui-panel>
-
-          <div class="flex items-center justify-between gap-3">
-            <h2 class="text-base font-semibold text-slate-100 sm:text-lg">Steps</h2>
-            <ui-button type="button" variant="primary" (click)="addStep()">Add Step</ui-button>
-          </div>
+          <header
+            class="flex flex-col gap-4 rounded-3xl bg-slate-950/55 p-4 shadow-[0_16px_38px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)] sm:flex-row sm:items-center sm:justify-between"
+          >
+            <div class="w-full">
+              <p class="text-xs font-medium uppercase tracking-[0.12em] text-slate-400">Task Chain</p>
+              <input
+                type="text"
+                [value]="chain.name"
+                (input)="renameSelectedChain($event)"
+                class="mt-2 w-full rounded-2xl bg-slate-950/70 px-4 py-3 text-lg font-semibold tracking-tight text-slate-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05),0_8px_20px_rgba(2,6,23,0.35)] outline-none focus:bg-slate-950"
+              />
+            </div>
+            <button
+              type="button"
+              (click)="runSelectedChain()"
+              class="rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-slate-950 shadow-[0_12px_28px_rgba(16,185,129,0.35)] transition hover:bg-emerald-400"
+            >
+              Run
+            </button>
+          </header>
 
           <div class="space-y-4">
             @for (step of chain.steps; track step.id; let stepIndex = $index) {
-              <ui-panel padding="sm" className="bg-slate-900/70 sm:p-5">
-                <div class="flex flex-wrap items-center justify-between gap-2">
-                  <p class="text-xs font-semibold uppercase tracking-[0.1em] text-slate-400">
-                    Step {{ stepIndex + 1 }}
-                  </p>
-                  <div class="flex items-center gap-2">
-                    <ui-button
-                      type="button"
-                      size="sm"
-                      (click)="moveStepUp(step.id)"
-                      [disabled]="isFirstStep(stepIndex)"
-                    >
-                      Up
-                    </ui-button>
-                    <ui-button
-                      type="button"
-                      size="sm"
-                      (click)="moveStepDown(step.id)"
-                      [disabled]="isLastStep(stepIndex, chain.steps)"
-                    >
-                      Down
-                    </ui-button>
-                    <ui-button type="button" variant="danger" size="sm" (click)="removeStep(step.id)">
-                      Remove
-                    </ui-button>
-                  </div>
-                </div>
-
-                <div class="mt-4 grid grid-cols-1 gap-4">
-                  <div>
-                    <label class="mb-1 block text-xs font-medium uppercase tracking-[0.08em] text-slate-400">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      [value]="step.title"
-                      (input)="updateStepTitle(step.id, $event)"
-                      placeholder="Step title"
-                      class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500"
-                    />
-                  </div>
-
-                  <div>
-                    <label class="mb-1 block text-xs font-medium uppercase tracking-[0.08em] text-slate-400">
-                      Task
-                    </label>
-                    <textarea
-                      rows="4"
-                      [value]="step.task"
-                      (input)="updateStepTask(step.id, $event)"
-                      placeholder="Describe what this step should do"
-                      class="w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500"
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label class="mb-1 block text-xs font-medium uppercase tracking-[0.08em] text-slate-400">
-                      Requirements
-                    </label>
-                    <textarea
-                      rows="3"
-                      [value]="step.requirements"
-                      (input)="updateStepRequirements(step.id, $event)"
-                      placeholder="Constraints, coding standards, acceptance criteria"
-                      class="w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500"
-                    ></textarea>
-                  </div>
-
-                  <div>
-                    <label class="mb-1 block text-xs font-medium uppercase tracking-[0.08em] text-slate-400">
-                      Gates
-                    </label>
-                    <div class="flex flex-col gap-2 sm:flex-row">
-                      <input
-                        type="text"
-                        [value]="gateDraftValue(step.id)"
-                        (input)="updateStepGateDraft(step.id, $event)"
-                        (keydown)="onStepGateKeydown(step.id, $event)"
-                        placeholder="npm test"
-                        class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500"
-                      />
-                      <ui-button
-                        type="button"
-                        variant="primary"
-                        (click)="addStepGate(step.id)"
-                        [disabled]="!gateDraftValue(step.id).trim()"
-                      >
-                        Add Gate
-                      </ui-button>
-                    </div>
-
-                    <div class="mt-3 space-y-2">
-                      @for (gate of step.gates; track gate) {
-                        <div
-                          class="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-950/70 px-3 py-2"
-                        >
-                          <p class="truncate font-mono text-xs text-slate-200 sm:text-sm">{{ gate }}</p>
-                          <ui-button type="button" variant="danger" size="sm" (click)="removeStepGate(step.id, gate)">
-                            Remove
-                          </ui-button>
-                        </div>
-                      } @empty {
-                        <div class="rounded-lg border border-dashed border-slate-700 px-3 py-5 text-center text-xs text-slate-400">
-                          No gates for this step.
-                        </div>
-                      }
-                    </div>
-                  </div>
-                </div>
-              </ui-panel>
+              <app-task-step-card
+                [step]="step"
+                [stepIndex]="stepIndex"
+                [totalSteps]="chain.steps.length"
+                [gateDraft]="gateDraftValue(step.id)"
+                (moveUp)="moveStepUp(step.id)"
+                (moveDown)="moveStepDown(step.id)"
+                (removeStep)="removeStep(step.id)"
+                (updateTitle)="updateStepTitle(step.id, $event)"
+                (updateTask)="updateStepTask(step.id, $event)"
+                (updateRequirements)="updateStepRequirements(step.id, $event)"
+                (updateGateDraft)="updateStepGateDraft(step.id, $event)"
+                (addGate)="addStepGate(step.id)"
+                (removeGate)="removeStepGate(step.id, $event)"
+              />
             } @empty {
-              <div class="rounded-xl border border-dashed border-slate-700 px-4 py-10 text-center">
-                <p class="text-sm text-slate-300">This chain has no steps.</p>
-                <ui-button type="button" variant="primary" (click)="addStep()" className="mt-4">
-                  Add First Step
-                </ui-button>
+              <div
+                class="rounded-3xl bg-slate-950/50 px-4 py-12 text-center text-sm text-slate-400 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)]"
+              >
+                No steps yet. Add one to start the pipeline.
               </div>
             }
           </div>
+
+          <div class="pt-1">
+            <button
+              type="button"
+              (click)="addStep()"
+              class="w-full rounded-3xl bg-slate-950/70 px-4 py-4 text-sm font-semibold text-slate-100 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)] transition hover:bg-slate-900"
+            >
+              + Add Step
+            </button>
+          </div>
         </div>
       } @else {
-        <div class="flex h-full min-h-80 items-center justify-center rounded-2xl border border-dashed border-slate-700">
-          <div class="text-center">
-            <p class="text-base text-slate-200">No chain selected.</p>
-            <p class="mt-2 text-sm text-slate-400">Create or select a chain from the left panel.</p>
-            <ui-button type="button" variant="primary" (click)="createChain()" className="mt-6">New Chain</ui-button>
+        <div class="flex h-full min-h-80 items-center justify-center">
+          <div
+            class="rounded-3xl bg-slate-950/55 px-8 py-10 text-center shadow-[0_20px_50px_rgba(2,6,23,0.5),inset_1px_1px_0_rgba(255,255,255,0.04)]"
+          >
+            <p class="text-base text-slate-200">No chain selected</p>
+            <p class="mt-2 text-sm text-slate-400">Create a chain in the left sidebar to begin.</p>
+            <button
+              type="button"
+              (click)="createChain()"
+              class="mt-6 rounded-2xl bg-emerald-500 px-5 py-2.5 text-sm font-semibold text-slate-950 shadow-[0_12px_28px_rgba(16,185,129,0.35)] transition hover:bg-emerald-400"
+            >
+              New Chain
+            </button>
           </div>
         </div>
       }
-    </ui-panel>
+    </main>
   </div>
 </section>

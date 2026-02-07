@@ -1,12 +1,11 @@
 import { Component, inject, signal } from '@angular/core';
 import { TaskStep, TaskChainStore } from '../../state/task-chain.store';
-import { UiButton } from '../../ui/ui.button';
-import { UiPanel } from '../../ui/ui.panel';
+import { TaskStepCardComponent } from './task.step.card';
 
 @Component({
   selector: 'app-task-chain-editor-view',
   standalone: true,
-  imports: [UiButton, UiPanel],
+  imports: [TaskStepCardComponent],
   templateUrl: './task-chain-editor.view.html',
 })
 export class TaskChainEditorView {
@@ -55,30 +54,25 @@ export class TaskChainEditorView {
     this.taskChainStore.moveStepInSelectedChain(stepId, 'down');
   }
 
-  protected updateStepTitle(stepId: string, event: Event): void {
-    const input = event.target as HTMLInputElement | null;
+  protected updateStepTitle(stepId: string, value: string): void {
     this.taskChainStore.updateStepInSelectedChain(stepId, {
-      title: input?.value ?? '',
+      title: value,
     });
   }
 
-  protected updateStepTask(stepId: string, event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement | null;
+  protected updateStepTask(stepId: string, value: string): void {
     this.taskChainStore.updateStepInSelectedChain(stepId, {
-      task: textarea?.value ?? '',
+      task: value,
     });
   }
 
-  protected updateStepRequirements(stepId: string, event: Event): void {
-    const textarea = event.target as HTMLTextAreaElement | null;
+  protected updateStepRequirements(stepId: string, value: string): void {
     this.taskChainStore.updateStepInSelectedChain(stepId, {
-      requirements: textarea?.value ?? '',
+      requirements: value,
     });
   }
 
-  protected updateStepGateDraft(stepId: string, event: Event): void {
-    const input = event.target as HTMLInputElement | null;
-    const value = input?.value ?? '';
+  protected updateStepGateDraft(stepId: string, value: string): void {
     this.stepGateDrafts.update((drafts) => ({
       ...drafts,
       [stepId]: value,
@@ -115,6 +109,10 @@ export class TaskChainEditorView {
 
   protected isLastStep(stepIndex: number, steps: TaskStep[]): boolean {
     return stepIndex === steps.length - 1;
+  }
+
+  protected runSelectedChain(): void {
+    this.selectedChain();
   }
 
   private clearStepGateDraft(stepId: string): void {
