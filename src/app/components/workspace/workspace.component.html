@@ -1,11 +1,11 @@
-<div class="min-h-screen">
-    <main class="flex min-h-screen">
-        <mtx-sidebar class="shrink-0" [items]="navItems"></mtx-sidebar>
+<div class="h-screen overflow-hidden">
+    <main class="flex h-full overflow-hidden">
+        <mtx-sidebar class="h-full shrink-0" [items]="navItems"></mtx-sidebar>
 
-        <section class="flex flex-1 flex-col border border-slate-800 bg-slate-900/60">
+        <section class="flex h-full min-h-0 flex-1 flex-col border border-slate-800 bg-slate-900/60">
             <mtx-header></mtx-header>
 
-            <div class="flex-1 p-6">
+            <div id="main" class="h-full min-h-0 flex-1 overflow-y-auto p-3">
                 <router-outlet />
             </div>
         </section>
