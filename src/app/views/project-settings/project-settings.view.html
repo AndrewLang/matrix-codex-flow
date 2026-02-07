@@ -1,4 +1,143 @@
-<section class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-  <h1 class="text-2xl font-semibold text-white">Project Settings</h1>
-  <p class="mt-2 text-sm text-slate-300">ProjectSettingsView placeholder content.</p>
-</section>
+@if (projectPath(); as activeProjectPath) {
+  <section class="mx-auto w-full max-w-5xl space-y-6">
+    <header
+      class="rounded-2xl border border-slate-800/80 bg-slate-900/60 px-6 py-5 shadow-xl shadow-slate-950/40 backdrop-blur"
+    >
+      <h1 class="text-2xl font-semibold tracking-tight text-slate-100 sm:text-3xl">Project Settings</h1>
+      <p class="mt-2 truncate text-sm font-medium text-slate-200" [title]="projectName()">
+        {{ projectName() }}
+      </p>
+      <p class="mt-1 truncate text-xs text-slate-400 sm:text-sm" [title]="activeProjectPath">
+        {{ activeProjectPath }}
+      </p>
+    </header>
+
+    <div
+      class="space-y-6 rounded-2xl border border-slate-800/80 bg-slate-900/60 px-5 py-6 shadow-xl shadow-slate-950/40 backdrop-blur sm:px-6"
+    >
+      <div class="flex items-start justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-100 sm:text-base">
+            Require unit tests for modified backend code
+          </h2>
+          <p class="mt-1 text-xs text-slate-400 sm:text-sm">
+            Blocks progression until backend-related unit tests are included.
+          </p>
+        </div>
+        <label class="relative inline-flex cursor-pointer items-center">
+          <input
+            type="checkbox"
+            class="peer sr-only"
+            [checked]="settings().requireUnitTests"
+            (change)="onRequireUnitTestsChange($event)"
+          />
+          <span
+            class="h-6 w-11 rounded-full bg-slate-700 transition peer-checked:bg-emerald-500"
+          ></span>
+          <span
+            class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5"
+          ></span>
+        </label>
+      </div>
+
+      <div class="flex items-start justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+        <div>
+          <h2 class="text-sm font-semibold text-slate-100 sm:text-base">Run tests before moving to next step</h2>
+          <p class="mt-1 text-xs text-slate-400 sm:text-sm">
+            Requires all configured gate commands to pass before continuing.
+          </p>
+        </div>
+        <label class="relative inline-flex cursor-pointer items-center">
+          <input
+            type="checkbox"
+            class="peer sr-only"
+            [checked]="settings().requireGatesPass"
+            (change)="onRequireGatesPassChange($event)"
+          />
+          <span
+            class="h-6 w-11 rounded-full bg-slate-700 transition peer-checked:bg-emerald-500"
+          ></span>
+          <span
+            class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white transition peer-checked:translate-x-5"
+          ></span>
+        </label>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+        <h2 class="text-sm font-semibold text-slate-100 sm:text-base">
+          Global requirements injected into every prompt
+        </h2>
+        <textarea
+          rows="5"
+          [value]="settings().globalRequirements"
+          (input)="onGlobalRequirementsInput($event)"
+          placeholder="Always provide concise changes, include tests, and preserve coding standards."
+          class="mt-3 w-full resize-y rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500"
+        ></textarea>
+      </div>
+
+      <div class="rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+        <div class="flex items-center justify-between gap-3">
+          <h2 class="text-sm font-semibold text-slate-100 sm:text-base">Gate commands</h2>
+          <button
+            type="button"
+            (click)="resetToDefaults()"
+            class="rounded-lg border border-slate-700 px-3 py-1.5 text-xs font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
+          >
+            Reset defaults
+          </button>
+        </div>
+
+        <div class="mt-3 flex flex-col gap-3 sm:flex-row">
+          <input
+            type="text"
+            [value]="newGateCommand()"
+            (input)="onNewGateCommandInput($event)"
+            (keydown)="onNewGateCommandKeydown($event)"
+            placeholder="cargo test"
+            class="w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500"
+          />
+          <button
+            type="button"
+            (click)="addGateCommand()"
+            [disabled]="!newGateCommand().trim()"
+            class="rounded-lg bg-emerald-500 px-4 py-2 text-sm font-medium text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Add
+          </button>
+        </div>
+
+        <div class="mt-4 space-y-2">
+          @for (command of settings().gateCommands; track command) {
+            <div class="flex items-center justify-between gap-3 rounded-lg border border-slate-800 bg-slate-900/80 px-3 py-2">
+              <p class="truncate font-mono text-xs text-slate-200 sm:text-sm">{{ command }}</p>
+              <button
+                type="button"
+                (click)="removeGateCommand(command)"
+                class="rounded-md border border-red-400/30 px-2 py-1 text-xs font-medium text-red-300 transition hover:border-red-300 hover:text-red-200"
+              >
+                Remove
+              </button>
+            </div>
+          } @empty {
+            <div class="rounded-lg border border-dashed border-slate-700 px-3 py-6 text-center text-sm text-slate-400">
+              No gate commands configured.
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </section>
+} @else {
+  <section class="mx-auto w-full max-w-4xl rounded-2xl border border-slate-800 bg-slate-900/60 p-6 text-center">
+    <h1 class="text-2xl font-semibold text-white sm:text-3xl">Project Settings</h1>
+    <p class="mt-3 text-sm text-slate-300">Open a project first to manage pre-run requirements.</p>
+    <button
+      type="button"
+      (click)="goToLanding()"
+      class="mt-6 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
+    >
+      Go to Landing
+    </button>
+  </section>
+}
