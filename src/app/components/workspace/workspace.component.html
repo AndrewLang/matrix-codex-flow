@@ -2,8 +2,12 @@
     <main class="flex min-h-screen">
         <mtx-sidebar class="shrink-0" [items]="navItems"></mtx-sidebar>
 
-        <section class="flex-1 border border-slate-800 bg-slate-900/60 p-6 ">
-            <router-outlet />
+        <section class="flex flex-1 flex-col border border-slate-800 bg-slate-900/60">
+            <mtx-header></mtx-header>
+
+            <div class="flex-1 p-6">
+                <router-outlet />
+            </div>
         </section>
     </main>
 </div>
