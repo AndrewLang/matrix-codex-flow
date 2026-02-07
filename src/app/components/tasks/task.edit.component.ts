@@ -230,7 +230,7 @@ export class TaskEditComponent implements OnDestroy {
     protected toggleStepCollapse(stepId: string): void {
         this.collapsedStepIds.update((state) => ({
             ...state,
-            [stepId]: !state[stepId]
+            [stepId]: !(state[stepId] ?? true)
         }));
     }
 
