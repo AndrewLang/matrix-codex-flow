@@ -1,0 +1,54 @@
+.mtx-prose {
+    color: rgb(226 232 240);
+    line-height: 1.75rem;
+    font-size: 15px;
+}
+
+.mtx-prose h1,
+.mtx-prose h2,
+.mtx-prose h3 {
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: rgb(241 245 249);
+}
+
+.mtx-prose p {
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.mtx-prose ul {
+    list-style-type: disc;
+    padding-left: 1.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.mtx-prose ol {
+    list-style-type: decimal;
+    padding-left: 1.5rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.mtx-prose pre {
+    background: rgb(15 23 42 / 0.8);
+    padding: 1rem;
+    border-radius: 0.75rem;
+    overflow-x: auto;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+
+.mtx-prose code {
+    background: rgb(30 41 59 / 0.7);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.375rem;
+    font-size: 13px;
+}
+
+.mtx-prose pre code {
+    background: transparent;
+    padding: 0;
+}

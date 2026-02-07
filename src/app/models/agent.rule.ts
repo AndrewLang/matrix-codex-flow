@@ -5,3 +5,8 @@ export interface AgentRule {
     createdAt: number;
     updatedAt: number;
 }
+
+export interface AgentRuleViewModel {
+    name: string;
+    description: string;
+}

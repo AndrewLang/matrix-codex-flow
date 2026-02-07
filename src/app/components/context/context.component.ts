@@ -1,19 +1,38 @@
 import { DatePipe } from '@angular/common';
-import { Component, signal } from '@angular/core';
+import { Component, inject, SecurityContext, signal } from '@angular/core';
+import { DomSanitizer } from '@angular/platform-browser';
+import { marked } from 'marked';
 
-import { AgentRule } from '../../models/agent.rule';
+import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
 import { IconComponent } from "../icon/icon.component";
-
-interface AgentRuleDraft {
-    name: string;
-    description: string;
-}
+import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
+import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
 
 const INITIAL_AGENT_RULES: AgentRule[] = [
     {
         id: 'rule-context',
         name: 'context',
-        description: 'Capture and maintain essential project context for agent execution.',
+        description: `You are working on VibeFlow, a Tauri + Angular + Tailwind desktop app.
+
+Project Rules (must follow):
+- No comments unless required by the framework to function
+- Clean code, no magic strings/numbers (use constants)
+- Full words for naming, no abbreviations
+- Angular: use inject() for DI, Signals first
+- Strict typing, no any
+- Lazy loading: use loadComponent for all new components
+- Use '.' separator for file names (e.g. task.chain.editor.component.ts)
+
+UI goals:
+- Beautiful, modern chat UI similar to Codex / ChatGPT
+- Smooth layout, glassy panels, subtle borders, nice spacing
+- Mobile-friendly and desktop-friendly
+
+Output requirements:
+- Provide complete code changes
+- Keep changes small and incremental
+- Ensure the app builds
+`,
         createdAt: Date.now(),
         updatedAt: Date.now()
     },
@@ -29,7 +48,7 @@ const INITIAL_AGENT_RULES: AgentRule[] = [
 @Component({
     selector: 'mtx-context-manage',
     templateUrl: 'context.component.html',
-    imports: [DatePipe, IconComponent]
+    imports: [DatePipe, IconComponent, MarkdownEditorComponent, MarkdownRendererComponent]
 })
 export class ContextComponent {
     protected readonly agentRules = signal<AgentRule[]>(INITIAL_AGENT_RULES);
@@ -40,7 +59,8 @@ export class ContextComponent {
         }, {})
     );
     protected readonly editingRuleIds = signal<Record<string, boolean>>({});
-    protected readonly editDrafts = signal<Record<string, AgentRuleDraft>>({});
+    protected readonly editDrafts = signal<Record<string, AgentRuleViewModel>>({});
+    private readonly sanitizer = inject(DomSanitizer);
 
     protected addAgentRule(): void {
         const currentTimestamp = Date.now();
@@ -114,6 +134,11 @@ export class ContextComponent {
 
     protected getDraftDescription(rule: AgentRule): string {
         return this.editDrafts()[rule.id]?.description ?? (rule.description ?? '');
+    }
+
+    protected renderMarkdownPreview(content: string): string {
+        const rawHtml = marked.parse(content, { async: false, breaks: true, gfm: true });
+        return this.sanitizer.sanitize(SecurityContext.HTML, rawHtml) ?? '';
     }
 
     protected saveEdit(ruleId: string): void {

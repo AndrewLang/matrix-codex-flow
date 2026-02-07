@@ -27,7 +27,7 @@
                         <button type="button" class="flex min-w-0 flex-1 items-start gap-3 text-left"
                             (click)="toggleRuleCollapse(agentRule.id)">
                             <div>
-                                <h3 class="text-base font-semibold capitalize text-slate-100">{{ agentRule.name }}</h3>
+                                <h3 class="text-lg font-semibold capitalize text-slate-100">{{ agentRule.name }}</h3>
                             </div>
                         </button>
 
@@ -46,30 +46,22 @@
                     @if (!isRuleCollapsed(agentRule.id)) {
                     @if (isRuleEditing(agentRule.id)) {
                     <div class="mt-3 space-y-3">
-                        <input
-                            #nameInput
+                        <input #nameInput
                             class="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500"
-                            type="text"
-                            [value]="getDraftName(agentRule)"
-                            placeholder="Rule title"
+                            type="text" [value]="getDraftName(agentRule)" placeholder="Rule title"
                             (input)="updateDraftName(agentRule.id, nameInput.value)" />
 
-                        <textarea
-                            #descriptionInput
-                            class="min-h-24 w-full resize-y rounded bg-slate-900/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500"
-                            [value]="getDraftDescription(agentRule)"
-                            placeholder="Rule content"
-                            (input)="updateDraftDescription(agentRule.id, descriptionInput.value)"></textarea>
+                        <mtx-md-editor [content]="getDraftDescription(agentRule)"
+                            placeholder="Rule content (markdown supported)"
+                            (contentChange)="updateDraftDescription(agentRule.id, $event)"></mtx-md-editor>
 
                         <div class="flex justify-end gap-2">
-                            <button
-                                type="button"
+                            <button type="button"
                                 class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
                                 (click)="cancelEdit(agentRule.id)">
                                 Cancel
                             </button>
-                            <button
-                                type="button"
+                            <button type="button"
                                 class="rounded bg-emerald-600 px-3 py-1.5 text-xs text-white transition hover:bg-emerald-500"
                                 (click)="saveEdit(agentRule.id)">
                                 Save
@@ -78,12 +70,12 @@
                     </div>
                     } @else {
                     @if (agentRule.description) {
-                    <p class="mt-3 text-sm leading-6 text-slate-300">{{ agentRule.description }}</p>
+                    <mtx-md-renderer [markdown]="agentRule.description">
+                    </mtx-md-renderer>
                     }
 
                     <div class="mt-3 flex justify-end">
-                        <button
-                            type="button"
+                        <button type="button"
                             class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
                             (click)="startEdit(agentRule)">
                             Edit
