@@ -3,6 +3,7 @@ export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
 export interface Task {
     id: string;
     title: string;
+    description: string;
     steps: TaskStep[];
     status: TaskStatus;
     createdAt: number;

@@ -1,0 +1,43 @@
+<div class="flex h-full min-h-0 flex-col gap-4 p-2 text-slate-200">
+    <header class="flex flex-col rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+        <div class="flex items-center justify-between">
+            <div>
+                <h2 class="flex items-center gap-1 text-lg font-semibold text-slate-100">
+                    <mtx-icon icon="list-task"></mtx-icon>
+                    <span>Tasks</span>
+                </h2>
+                <p class="mt-1 text-xs text-slate-400">Track pending, finished, and failed task execution.</p>
+            </div>
+        </div>
+
+        <div class="mt-4 flex items-center justify-between gap-2 border-t border-slate-800/80 pt-3">
+            <div class="flex items-center gap-1">
+                @for (tab of tabs; track tab.key) {
+                <button type="button" class="rounded px-3 py-1.5 text-sm transition"
+                    [class.bg-slate-700]="selectedTab() === tab.key" [class.text-white]="selectedTab() === tab.key"
+                    [class.text-slate-300]="selectedTab() !== tab.key"
+                    [class.hover:bg-slate-800]="selectedTab() !== tab.key" (click)="selectTab(tab.key)">
+                    {{ tab.label }}
+                </button>
+                }
+            </div>
+
+            <div>
+                <button type="button"
+                    class="rounded bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
+                    (click)="addTask()">
+                    Add Task
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <section class="flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 backdrop-blur-xl">
+        <mtx-task-list
+            [tasks]="filteredTasks()"
+            [emptyMessage]="emptyMessage()"
+            (editTask)="editTask($event)"
+            (runTask)="runTask($event)"
+            (deleteTask)="deleteTask($event)"></mtx-task-list>
+    </section>
+</div>
