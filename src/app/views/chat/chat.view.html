@@ -1,110 +1,101 @@
 @if (projectPath(); as activeProjectPath) {
-  <section
-    class="mx-auto flex h-[calc(100vh-3rem)] w-full max-w-7xl flex-col overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/50 shadow-2xl shadow-slate-950/60 backdrop-blur-xl"
-  >
+  <section class="mx-auto flex h-[calc(100vh-3rem)] w-full max-w-6xl flex-col px-1">
     <header
-      class="flex flex-col gap-4 border-b border-slate-800/80 bg-slate-900/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+      class="mb-4 flex items-center justify-between rounded-3xl bg-slate-900/60 px-5 py-4 backdrop-blur shadow-[8px_8px_20px_rgba(0,0,0,0.6),_-8px_-8px_20px_rgba(255,255,255,0.03)] sm:px-6"
     >
       <div class="min-w-0">
         <p class="truncate text-lg font-semibold tracking-tight text-slate-100 sm:text-xl" [title]="projectName()">
           {{ projectName() }}
         </p>
-        <p class="mt-1 truncate text-xs text-slate-400 sm:text-sm" [title]="activeProjectPath">
+        <p class="mt-0.5 truncate text-xs text-slate-400" [title]="activeProjectPath">
           {{ activeProjectPath }}
         </p>
       </div>
 
       <div class="flex items-center gap-2">
-        <ui-button type="button" size="sm" (click)="goToSettings()">Settings</ui-button>
-        <ui-button type="button" size="sm" (click)="goToChains()">Chains</ui-button>
+        <button
+          type="button"
+          (click)="goToSettings()"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/70 text-slate-200 shadow-[8px_8px_20px_rgba(0,0,0,0.45),_-8px_-8px_20px_rgba(255,255,255,0.02)] transition hover:bg-slate-900 hover:text-white"
+          aria-label="Open settings"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current">
+            <path
+              d="M19.14 12.94a7.43 7.43 0 0 0 .05-.94 7.43 7.43 0 0 0-.05-.94l2.03-1.58a.5.5 0 0 0 .12-.64l-1.92-3.32a.5.5 0 0 0-.6-.22l-2.39.96a7.48 7.48 0 0 0-1.63-.94l-.36-2.54a.5.5 0 0 0-.49-.42h-3.84a.5.5 0 0 0-.49.42l-.36 2.54c-.58.23-1.13.54-1.63.94l-2.39-.96a.5.5 0 0 0-.6.22L2.71 8.84a.5.5 0 0 0 .12.64l2.03 1.58a7.43 7.43 0 0 0-.05.94 7.43 7.43 0 0 0 .05.94l-2.03 1.58a.5.5 0 0 0-.12.64l1.92 3.32a.5.5 0 0 0 .6.22l2.39-.96c.5.4 1.05.72 1.63.94l.36 2.54a.5.5 0 0 0 .49.42h3.84a.5.5 0 0 0 .49-.42l.36-2.54c.58-.23 1.13-.54 1.63-.94l2.39.96a.5.5 0 0 0 .6-.22l1.92-3.32a.5.5 0 0 0-.12-.64l-2.03-1.58ZM12 15.5A3.5 3.5 0 1 1 12 8.5a3.5 3.5 0 0 1 0 7Z"
+            />
+          </svg>
+        </button>
+        <button
+          type="button"
+          (click)="goToChains()"
+          class="inline-flex h-9 w-9 items-center justify-center rounded-xl bg-slate-950/70 text-slate-200 shadow-[8px_8px_20px_rgba(0,0,0,0.45),_-8px_-8px_20px_rgba(255,255,255,0.02)] transition hover:bg-slate-900 hover:text-white"
+          aria-label="Open chains"
+        >
+          <svg viewBox="0 0 24 24" class="h-4 w-4 fill-current">
+            <path d="M7 6a3 3 0 1 0 0 6h3a1 1 0 1 0 0-2H7a1 1 0 1 1 0-2h3a1 1 0 1 0 0-2H7Zm7 6a1 1 0 1 0 0 2h3a3 3 0 1 0 0-6h-3a1 1 0 1 0 0 2h3a1 1 0 1 1 0 2h-3Zm-4-1a1 1 0 0 0 1 1h2a1 1 0 1 0 0-2h-2a1 1 0 0 0-1 1Z" />
+          </svg>
+        </button>
       </div>
     </header>
 
-    <div class="grid min-h-0 flex-1 grid-cols-1 gap-0 xl:grid-cols-[1fr_340px]">
-      <div #transcriptScroll class="space-y-4 overflow-y-auto bg-slate-950/40 px-4 py-5 sm:px-6">
+    <div class="relative min-h-0 flex-1 rounded-3xl bg-slate-900/55 backdrop-blur shadow-[8px_8px_20px_rgba(0,0,0,0.6),_-8px_-8px_20px_rgba(255,255,255,0.03)]">
+      <div #transcriptScroll class="h-full space-y-4 overflow-y-auto px-4 py-5 pb-44 sm:px-6">
         @for (message of messages(); track message.id) {
-          <div
-            class="flex"
-            [class.justify-end]="message.role === chatRoleUser"
-            [class.justify-start]="message.role !== chatRoleUser"
-          >
+          <div class="flex" [class.justify-end]="message.role === chatRoleUser" [class.justify-start]="message.role !== chatRoleUser">
             <div
-              class="max-w-[85%] rounded-2xl border px-4 py-3 shadow-lg backdrop-blur sm:max-w-[70%]"
-              [class.border-emerald-300/30]="message.role === chatRoleUser"
-              [class.bg-emerald-400/10]="message.role === chatRoleUser"
-              [class.text-emerald-50]="message.role === chatRoleUser"
-              [class.border-slate-700/80]="message.role === chatRoleAssistant"
-              [class.bg-slate-900/85]="message.role === chatRoleAssistant"
+              class="max-w-[85%] rounded-3xl px-4 py-3 sm:max-w-[65%]"
+              [class.bg-rose-500/15]="message.role === chatRoleUser"
+              [class.text-rose-50]="message.role === chatRoleUser"
+              [class.shadow-[8px_8px_20px_rgba(80,10,20,0.35),_-8px_-8px_20px_rgba(255,255,255,0.02)]]="message.role === chatRoleUser"
+              [class.bg-slate-950/72]="message.role === chatRoleAssistant"
               [class.text-slate-100]="message.role === chatRoleAssistant"
-              [class.border-amber-400/20]="message.role === chatRoleSystem"
-              [class.bg-amber-500/10]="message.role === chatRoleSystem"
+              [class.shadow-[8px_8px_20px_rgba(0,0,0,0.5),_-8px_-8px_20px_rgba(255,255,255,0.02)]]="message.role === chatRoleAssistant"
+              [class.bg-amber-400/15]="message.role === chatRoleSystem"
               [class.text-amber-100]="message.role === chatRoleSystem"
+              [class.shadow-[8px_8px_20px_rgba(60,40,5,0.35),_-8px_-8px_20px_rgba(255,255,255,0.02)]]="message.role === chatRoleSystem"
             >
               <p class="whitespace-pre-wrap text-sm leading-6">{{ message.content }}</p>
               <p class="mt-2 text-[11px] uppercase tracking-[0.08em] text-slate-400">
-                {{ message.role }} &middot; {{ formatTime(message.createdAt) }}
+                {{ formatTime(message.createdAt) }}
               </p>
             </div>
           </div>
         } @empty {
-          <div class="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/60 px-6 py-14 text-center">
-            <p class="text-sm text-slate-300 sm:text-base">Start the conversation by sending a message.</p>
+          <div class="flex h-full min-h-64 items-center justify-center">
+            <p class="text-sm text-slate-400">Start the conversation by sending your first prompt.</p>
           </div>
         }
       </div>
 
-      <aside class="border-t border-slate-800/80 bg-slate-950/45 xl:border-l xl:border-t-0">
-        <div class="border-b border-slate-800/80 px-4 py-3 sm:px-5">
-          <p class="text-xs font-semibold uppercase tracking-[0.12em] text-slate-400">Run Panel</p>
-          <p class="mt-1 text-sm text-slate-200">Execution status</p>
-        </div>
+      <div class="pointer-events-none absolute inset-x-0 bottom-0 h-36 bg-gradient-to-t from-slate-950/75 to-transparent"></div>
 
-        <div class="space-y-2 overflow-y-auto p-3 sm:p-4">
-          @for (step of stepRuns(); track step.id) {
-            <div class="rounded-xl border border-slate-800 bg-slate-900/80 px-3 py-3">
-              <div class="flex items-center justify-between gap-3">
-                <p class="text-sm font-medium text-slate-100">{{ step.title }}</p>
-                <span
-                  class="inline-flex rounded-full border px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em]"
-                  [class.border-slate-600]="step.status === 'pending'"
-                  [class.text-slate-300]="step.status === 'pending'"
-                  [class.border-sky-300/50]="step.status === 'running'"
-                  [class.text-sky-200]="step.status === 'running'"
-                  [class.border-emerald-300/50]="step.status === 'succeeded'"
-                  [class.text-emerald-200]="step.status === 'succeeded'"
-                  [class.border-red-300/50]="step.status === 'failed'"
-                  [class.text-red-200]="step.status === 'failed'"
-                >
-                  {{ step.status }}
-                </span>
-              </div>
-            </div>
-          }
-        </div>
-      </aside>
-    </div>
-
-    <footer class="border-t border-slate-800/80 bg-slate-900/70 p-4 sm:p-5">
-      <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
-        <textarea
-          rows="3"
-          [value]="draft()"
-          (input)="onDraftInput($event)"
-          (keydown)="onDraftKeydown($event)"
-          placeholder="Describe your task..."
-          class="max-h-48 min-h-24 w-full resize-y rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500 sm:text-base"
-        ></textarea>
-        <ui-button
-          type="button"
-          variant="primary"
-          (click)="sendMessage()"
-          [disabled]="!draft().trim()"
-          className="h-11 shrink-0 sm:h-12 sm:px-6"
+      <div class="absolute inset-x-0 bottom-0 px-4 pb-4 sm:px-6 sm:pb-6">
+        <div
+          class="pointer-events-auto flex items-end gap-3 rounded-3xl bg-slate-950/72 p-3 backdrop-blur shadow-[8px_8px_20px_rgba(0,0,0,0.6),_-8px_-8px_20px_rgba(255,255,255,0.03)] shadow-inner"
         >
-          Send
-        </ui-button>
+          <textarea
+            #composerInput
+            rows="1"
+            [value]="draft()"
+            (input)="onDraftInput($event)"
+            (keydown)="onDraftKeydown($event)"
+            placeholder="Write a message..."
+            class="max-h-[220px] min-h-[56px] w-full resize-none rounded-2xl bg-slate-900/70 px-4 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500"
+          ></textarea>
+          <button
+            type="button"
+            (click)="sendMessage()"
+            [disabled]="!draft().trim()"
+            class="mb-1 inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-slate-950 shadow-[0_10px_24px_rgba(16,185,129,0.4)] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-45"
+            aria-label="Send message"
+          >
+            <svg viewBox="0 0 24 24" class="h-5 w-5 fill-current">
+              <path d="M21.5 12.5a.75.75 0 0 0 0-1l-17-10A.75.75 0 0 0 3.38 2.3L6.1 11l-2.72 8.7a.75.75 0 0 0 1.12.82l17-10ZM7.2 12.75h7.8a.75.75 0 0 0 0-1.5H7.2L5.1 4.5l13.62 8L5.1 20.5l2.1-6.75Z" />
+            </svg>
+          </button>
+        </div>
       </div>
-    </footer>
+    </div>
   </section>
 } @else {
   <ui-panel className="mx-auto w-full max-w-5xl sm:p-8">

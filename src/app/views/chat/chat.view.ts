@@ -7,7 +7,6 @@ import {
   ChatStore,
 } from '../../state/chat.store';
 import { ProjectSessionStore } from '../../state/project-session.store';
-import { StepRunStore } from '../../state/step-run.store';
 import { UiButton } from '../../ui/ui.button';
 import { UiPanel } from '../../ui/ui.panel';
 
@@ -20,14 +19,14 @@ import { UiPanel } from '../../ui/ui.panel';
 export class ChatView {
   @ViewChild('transcriptScroll')
   private transcriptScroll?: ElementRef<HTMLDivElement>;
+  @ViewChild('composerInput')
+  private composerInput?: ElementRef<HTMLTextAreaElement>;
 
   protected readonly chatStore = inject(ChatStore);
-  protected readonly stepRunStore = inject(StepRunStore);
   protected readonly sessionStore = inject(ProjectSessionStore);
   private readonly router = inject(Router);
   protected readonly draft = signal<string>('');
   protected readonly messages = this.chatStore.messages;
-  protected readonly stepRuns = this.stepRunStore.steps;
   protected readonly chatRoleUser = CHAT_ROLE_USER;
   protected readonly chatRoleAssistant = CHAT_ROLE_ASSISTANT;
   protected readonly chatRoleSystem = CHAT_ROLE_SYSTEM;
@@ -52,7 +51,9 @@ export class ChatView {
 
   protected onDraftInput(event: Event): void {
     const textarea = event.target as HTMLTextAreaElement | null;
-    this.draft.set(textarea?.value ?? '');
+    const value = textarea?.value ?? '';
+    this.draft.set(value);
+    this.resizeComposer(textarea);
   }
 
   protected onDraftKeydown(event: KeyboardEvent): void {
@@ -69,6 +70,7 @@ export class ChatView {
     }
     this.chatStore.sendUserMessage(text);
     this.draft.set('');
+    this.resetComposerHeight();
   }
 
   protected async goToSettings(): Promise<void> {
@@ -93,5 +95,22 @@ export class ChatView {
       return;
     }
     container.scrollTop = container.scrollHeight;
+  }
+
+  private resizeComposer(textarea: HTMLTextAreaElement | null): void {
+    if (!textarea) {
+      return;
+    }
+    textarea.style.height = '0px';
+    const nextHeight = Math.min(textarea.scrollHeight, 220);
+    textarea.style.height = `${nextHeight}px`;
+  }
+
+  private resetComposerHeight(): void {
+    const textarea = this.composerInput?.nativeElement;
+    if (!textarea) {
+      return;
+    }
+    textarea.style.height = '56px';
   }
 }
