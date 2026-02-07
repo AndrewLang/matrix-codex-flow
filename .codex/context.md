@@ -9,6 +9,7 @@ Project Rules (must follow):
 - Strict typing, no any
 - Lazy loading: use loadComponent for all new components
 - Use '.' separator for file names (e.g. task.chain.editor.component.ts)
+- Do not use nested template in Angular component, use separate html template is preferred.
 
 UI goals:
 - Beautiful, modern chat UI similar to Codex / ChatGPT

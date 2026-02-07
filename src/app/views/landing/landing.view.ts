@@ -1,13 +1,28 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { ProjectSessionStore } from '../../state/project-session.store';
 
 @Component({
   selector: 'app-landing-view',
   standalone: true,
-  template: `
-    <section class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-      <h1 class="text-2xl font-semibold text-white">Landing</h1>
-      <p class="mt-2 text-sm text-slate-300">LandingView placeholder content.</p>
-    </section>
-  `,
+  templateUrl: './landing.view.html',
 })
-export class LandingView {}
+export class LandingView {
+  private readonly router = inject(Router);
+  private readonly sessionStore = inject(ProjectSessionStore);
+  protected readonly projectPath = signal<string>('');
+
+  protected onProjectPathInput(event: Event): void {
+    const input = event.target as HTMLInputElement | null;
+    this.projectPath.set(input?.value ?? '');
+  }
+
+  protected async openProject(): Promise<void> {
+    const normalizedPath = this.projectPath().trim();
+    if (!normalizedPath) {
+      return;
+    }
+    this.sessionStore.openProject(normalizedPath);
+    await this.router.navigate(['/chat']);
+  }
+}

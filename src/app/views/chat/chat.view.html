@@ -1,0 +1,28 @@
+<section class="mx-auto w-full max-w-5xl rounded-2xl border border-slate-800 bg-slate-900/50 p-6 sm:p-8">
+  <h1 class="text-2xl font-semibold text-white sm:text-3xl">Chat</h1>
+
+  @if (sessionStore.activeProjectPath(); as activeProjectPath) {
+    <div class="mt-4 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
+      <p class="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">Active Project</p>
+      <p class="mt-1 truncate text-sm text-slate-100 sm:text-base" [title]="activeProjectPath">
+        {{ activeProjectPath }}
+      </p>
+    </div>
+
+    <div class="mt-6 rounded-lg border border-dashed border-slate-700 px-4 py-12 text-center text-slate-400">
+      Chat workspace placeholder
+    </div>
+  } @else {
+    <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 px-6 py-12 text-center">
+      <p class="text-base text-slate-200">No active project selected.</p>
+      <p class="mt-2 text-sm text-slate-400">Go back to Landing and open a project to continue.</p>
+      <button
+        type="button"
+        (click)="goToLanding()"
+        class="mt-6 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
+      >
+        Go to Landing
+      </button>
+    </div>
+  }
+</section>

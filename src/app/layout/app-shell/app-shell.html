@@ -1,0 +1,45 @@
+<div class="flex min-h-screen bg-slate-950 text-slate-100">
+  <aside
+    class="flex shrink-0 flex-col border-r border-slate-800 bg-slate-900/70 p-3 transition-all duration-200"
+    [class.w-64]="!isSidebarCollapsed()"
+    [class.w-20]="isSidebarCollapsed()"
+  >
+    <div class="mb-6 flex items-center justify-between">
+      <span
+        class="text-xs font-semibold uppercase tracking-[0.14em] text-slate-400"
+        [class.hidden]="isSidebarCollapsed()"
+      >
+        CodexFlow
+      </span>
+      <button
+        type="button"
+        class="rounded-lg border border-slate-700 px-2 py-1 text-xs font-medium text-slate-300 transition hover:border-slate-500 hover:text-white"
+        (click)="toggleSidebar()"
+      >
+        {{ isSidebarCollapsed() ? '>' : '<' }}
+      </button>
+    </div>
+
+    <nav class="flex flex-1 flex-col gap-2">
+      @for (item of navItems; track item.path) {
+        <a
+          [routerLink]="item.path"
+          routerLinkActive="bg-slate-700 text-white"
+          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+          class="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+          [class.text-center]="isSidebarCollapsed()"
+        >
+          @if (isSidebarCollapsed()) {
+            <span>{{ item.label.charAt(0) }}</span>
+          } @else {
+            <span>{{ item.label }}</span>
+          }
+        </a>
+      }
+    </nav>
+  </aside>
+
+  <main class="min-w-0 flex-1 p-6">
+    <router-outlet />
+  </main>
+</div>

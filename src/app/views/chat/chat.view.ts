@@ -1,13 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { ProjectSessionStore } from '../../state/project-session.store';
 
 @Component({
   selector: 'app-chat-view',
   standalone: true,
-  template: `
-    <section class="rounded-2xl border border-slate-800 bg-slate-900/50 p-6">
-      <h1 class="text-2xl font-semibold text-white">Chat</h1>
-      <p class="mt-2 text-sm text-slate-300">ChatView placeholder content.</p>
-    </section>
-  `,
+  templateUrl: './chat.view.html',
 })
-export class ChatView {}
+export class ChatView {
+  protected readonly sessionStore = inject(ProjectSessionStore);
+  private readonly router = inject(Router);
+
+  protected async goToLanding(): Promise<void> {
+    await this.router.navigate(['/']);
+  }
+}
