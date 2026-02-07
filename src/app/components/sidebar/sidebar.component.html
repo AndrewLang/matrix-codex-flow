@@ -3,7 +3,7 @@
 
     <div class="flex w-full flex-col">
         <button type="button"
-            class="mx-3 mt-2 flex h-12 items-center px-1 text-left text-sm font-medium text-slate-100 transition hover:border-slate-500"
+            class="mx-3 mt-2 rounded-lg flex h-12 items-center px-1 text-left text-sm font-medium text-slate-100 transition hover:shadow-2xl hover:border-slate-500"
             (click)="toggleCollapse()">
             <img src="images/VibeFlow@0.25x.png" alt="Logo" class="h-8 w-8 object-contain">
             @if (!isCollapsed()) {
@@ -18,7 +18,7 @@
                 @for (item of items; track item.label) {
                 <li>
                     @if (isLeaf(item)) {
-                    <a class="group flex h-12 items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
+                    <a class="group flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
                         [routerLink]="item.route ?? '/'" routerLinkActive="text-white" title="{{item.label}}"
                         [routerLinkActiveOptions]="{ exact: true }">
 
@@ -29,7 +29,7 @@
                         }
                     </a>
                     } @else {
-                    <div class="flex h-12 items-center px-3 space-x-2 text-slate-500">
+                    <div class="flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-500">
                         <mtx-icon [icon]="item.icon"></mtx-icon>
 
                         @if (!isCollapsed()) {
@@ -45,7 +45,7 @@
         <div class="mt-4 border-t border-slate-800/80"></div>
 
         <div class="p-2">
-            <a class="flex h-12 items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
+            <a class="flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
                 routerLink="/">
                 <mtx-icon [icon]="'gear text-2xl'"></mtx-icon>
                 @if (!isCollapsed()) {

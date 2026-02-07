@@ -12,9 +12,10 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 export class WorkspaceComponent implements OnInit {
 
     protected readonly navItems: NavItem[] = [
-        { label: 'Chat', icon: 'chat text-2xl', route: '/' },
-        { label: 'Context', icon: 'bookshelf text-2xl', route: '/context' },
-        { label: 'Tasks', icon: 'list-task text-2xl', route: '/tasks' },
+        { label: 'Home', icon: 'house text-2xl', route: '/' },
+        { label: 'Chat', icon: 'chat text-2xl', route: '/workspace' },
+        { label: 'Context', icon: 'briefcase text-2xl', route: '/workspace/context' },
+        { label: 'Tasks', icon: 'list-task text-2xl', route: '/workspace/tasks' },
     ];
     constructor() { }
 
