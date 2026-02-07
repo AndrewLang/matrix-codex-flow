@@ -1,18 +1,93 @@
-<section class="mx-auto w-full max-w-5xl rounded-2xl border border-slate-800 bg-slate-900/50 p-6 sm:p-8">
-  <h1 class="text-2xl font-semibold text-white sm:text-3xl">Chat</h1>
+@if (projectPath(); as activeProjectPath) {
+  <section
+    class="mx-auto flex h-[calc(100vh-3rem)] w-full max-w-6xl flex-col overflow-hidden rounded-3xl border border-slate-800/80 bg-slate-900/50 shadow-2xl shadow-slate-950/60 backdrop-blur-xl"
+  >
+    <header
+      class="flex flex-col gap-4 border-b border-slate-800/80 bg-slate-900/70 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-6"
+    >
+      <div class="min-w-0">
+        <p class="truncate text-lg font-semibold tracking-tight text-slate-100 sm:text-xl" [title]="projectName()">
+          {{ projectName() }}
+        </p>
+        <p class="mt-1 truncate text-xs text-slate-400 sm:text-sm" [title]="activeProjectPath">
+          {{ activeProjectPath }}
+        </p>
+      </div>
 
-  @if (sessionStore.activeProjectPath(); as activeProjectPath) {
-    <div class="mt-4 rounded-lg border border-slate-800 bg-slate-950/70 px-4 py-3">
-      <p class="text-xs font-medium uppercase tracking-[0.1em] text-slate-400">Active Project</p>
-      <p class="mt-1 truncate text-sm text-slate-100 sm:text-base" [title]="activeProjectPath">
-        {{ activeProjectPath }}
-      </p>
+      <div class="flex items-center gap-2">
+        <button
+          type="button"
+          (click)="goToSettings()"
+          class="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white sm:text-sm"
+        >
+          Settings
+        </button>
+        <button
+          type="button"
+          (click)="goToChains()"
+          class="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white sm:text-sm"
+        >
+          Chains
+        </button>
+      </div>
+    </header>
+
+    <div #transcriptScroll class="flex-1 space-y-4 overflow-y-auto bg-slate-950/40 px-4 py-5 sm:px-6">
+      @for (message of messages(); track message.id) {
+        <div
+          class="flex"
+          [class.justify-end]="message.role === chatRoleUser"
+          [class.justify-start]="message.role !== chatRoleUser"
+        >
+          <div
+            class="max-w-[85%] rounded-2xl border px-4 py-3 shadow-lg backdrop-blur sm:max-w-[70%]"
+            [class.border-emerald-300/30]="message.role === chatRoleUser"
+            [class.bg-emerald-400/10]="message.role === chatRoleUser"
+            [class.text-emerald-50]="message.role === chatRoleUser"
+            [class.border-slate-700/80]="message.role === chatRoleAssistant"
+            [class.bg-slate-900/85]="message.role === chatRoleAssistant"
+            [class.text-slate-100]="message.role === chatRoleAssistant"
+            [class.border-amber-400/20]="message.role === chatRoleSystem"
+            [class.bg-amber-500/10]="message.role === chatRoleSystem"
+            [class.text-amber-100]="message.role === chatRoleSystem"
+          >
+            <p class="whitespace-pre-wrap text-sm leading-6">{{ message.content }}</p>
+            <p class="mt-2 text-[11px] uppercase tracking-[0.08em] text-slate-400">
+              {{ message.role }} · {{ formatTime(message.createdAt) }}
+            </p>
+          </div>
+        </div>
+      } @empty {
+        <div class="rounded-2xl border border-dashed border-slate-700/70 bg-slate-900/60 px-6 py-14 text-center">
+          <p class="text-sm text-slate-300 sm:text-base">Start the conversation by sending a message.</p>
+        </div>
+      }
     </div>
 
-    <div class="mt-6 rounded-lg border border-dashed border-slate-700 px-4 py-12 text-center text-slate-400">
-      Chat workspace placeholder
-    </div>
-  } @else {
+    <footer class="border-t border-slate-800/80 bg-slate-900/70 p-4 sm:p-5">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+        <textarea
+          rows="3"
+          [value]="draft()"
+          (input)="onDraftInput($event)"
+          (keydown)="onDraftKeydown($event)"
+          placeholder="Describe your task..."
+          class="max-h-48 min-h-24 w-full resize-y rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500 sm:text-base"
+        ></textarea>
+        <button
+          type="button"
+          (click)="sendMessage()"
+          [disabled]="!draft().trim()"
+          class="h-11 shrink-0 rounded-xl bg-emerald-500 px-5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:px-6"
+        >
+          Send
+        </button>
+      </div>
+    </footer>
+  </section>
+} @else {
+  <section class="mx-auto w-full max-w-5xl rounded-2xl border border-slate-800 bg-slate-900/50 p-6 sm:p-8">
+    <h1 class="text-2xl font-semibold text-white sm:text-3xl">Chat</h1>
     <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 px-6 py-12 text-center">
       <p class="text-base text-slate-200">No active project selected.</p>
       <p class="mt-2 text-sm text-slate-400">Go back to Landing and open a project to continue.</p>
@@ -24,5 +99,5 @@
         Go to Landing
       </button>
     </div>
-  }
-</section>
+  </section>
+}
