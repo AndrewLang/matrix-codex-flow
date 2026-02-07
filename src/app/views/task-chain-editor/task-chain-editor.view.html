@@ -53,7 +53,7 @@
       class="rounded-3xl bg-slate-900/45 p-4 shadow-[0_22px_60px_rgba(2,6,23,0.5),inset_1px_1px_0_rgba(255,255,255,0.04)] sm:p-6"
     >
       @if (selectedChain(); as chain) {
-        <div class="space-y-5">
+        <div class="space-y-6">
           <header
             class="flex flex-col gap-4 rounded-3xl bg-slate-950/55 p-4 shadow-[0_16px_38px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)] sm:flex-row sm:items-center sm:justify-between"
           >
@@ -75,7 +75,9 @@
             </button>
           </header>
 
-          <div class="space-y-4">
+          <div class="relative space-y-5 pb-2">
+            <div class="pointer-events-none absolute bottom-0 left-6 top-0 w-px bg-slate-400/25 sm:left-8"></div>
+
             @for (step of chain.steps; track step.id; let stepIndex = $index) {
               <app-task-step-card
                 [step]="step"
@@ -88,27 +90,36 @@
                 (updateTitle)="updateStepTitle(step.id, $event)"
                 (updateTask)="updateStepTask(step.id, $event)"
                 (updateRequirements)="updateStepRequirements(step.id, $event)"
+                (updateEnabled)="updateStepEnabled(step.id, $event)"
                 (updateGateDraft)="updateStepGateDraft(step.id, $event)"
                 (addGate)="addStepGate(step.id)"
                 (removeGate)="removeStepGate(step.id, $event)"
               />
             } @empty {
-              <div
-                class="rounded-3xl bg-slate-950/50 px-4 py-12 text-center text-sm text-slate-400 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)]"
-              >
-                No steps yet. Add one to start the pipeline.
+              <div class="relative pl-20 sm:pl-24">
+                <div class="absolute left-2 top-1 h-10 w-10 rounded-2xl bg-slate-700/80 sm:left-4 sm:h-12 sm:w-12"></div>
+                <div
+                  class="rounded-3xl bg-slate-950/50 px-4 py-12 text-center text-sm text-slate-400 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)]"
+                >
+                  No steps yet. Add one to start the pipeline.
+                </div>
               </div>
             }
-          </div>
 
-          <div class="pt-1">
-            <button
-              type="button"
-              (click)="addStep()"
-              class="w-full rounded-3xl bg-slate-950/70 px-4 py-4 text-sm font-semibold text-slate-100 shadow-[0_14px_30px_rgba(2,6,23,0.45),inset_1px_1px_0_rgba(255,255,255,0.04)] transition hover:bg-slate-900"
-            >
-              + Add Step
-            </button>
+            <div class="relative pl-20 sm:pl-24">
+              <div
+                class="absolute left-2 top-2 inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-400/85 text-emerald-950 shadow-[0_0_24px_rgba(16,185,129,0.5)] sm:left-4 sm:h-12 sm:w-12"
+              >
+                +
+              </div>
+              <button
+                type="button"
+                (click)="addStep()"
+                class="w-full rounded-3xl bg-slate-950/70 px-4 py-5 text-sm font-semibold text-slate-100 shadow-[0_20px_44px_rgba(2,6,23,0.5),inset_1px_1px_0_rgba(255,255,255,0.04)] transition hover:bg-slate-900"
+              >
+                + Add Step
+              </button>
+            </div>
           </div>
         </div>
       } @else {

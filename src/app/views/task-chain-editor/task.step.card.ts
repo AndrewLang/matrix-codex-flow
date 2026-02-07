@@ -18,6 +18,7 @@ export class TaskStepCardComponent {
   readonly updateTitle = output<string>();
   readonly updateTask = output<string>();
   readonly updateRequirements = output<string>();
+  readonly updateEnabled = output<boolean>();
   readonly updateGateDraft = output<string>();
   readonly addGate = output<void>();
   readonly removeGate = output<string>();
@@ -47,5 +48,24 @@ export class TaskStepCardComponent {
       event.preventDefault();
       this.addGate.emit();
     }
+  }
+
+  protected onEnabledChange(event: Event): void {
+    const inputElement = event.target as HTMLInputElement | null;
+    this.updateEnabled.emit(inputElement?.checked ?? true);
+  }
+
+  protected badgeToneClasses(): string {
+    const tone = this.stepIndex() % 4;
+    if (tone === 0) {
+      return 'bg-emerald-400/85 text-emerald-950 shadow-[0_0_24px_rgba(16,185,129,0.5)]';
+    }
+    if (tone === 1) {
+      return 'bg-sky-400/85 text-sky-950 shadow-[0_0_24px_rgba(56,189,248,0.5)]';
+    }
+    if (tone === 2) {
+      return 'bg-amber-300/90 text-amber-950 shadow-[0_0_24px_rgba(251,191,36,0.45)]';
+    }
+    return 'bg-fuchsia-300/90 text-fuchsia-950 shadow-[0_0_24px_rgba(232,121,249,0.45)]';
   }
 }

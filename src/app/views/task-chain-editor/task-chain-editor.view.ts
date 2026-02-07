@@ -1,5 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
-import { TaskStep, TaskChainStore } from '../../state/task-chain.store';
+import { TaskChainStore } from '../../state/task-chain.store';
 import { TaskStepCardComponent } from './task.step.card';
 
 @Component({
@@ -88,27 +88,16 @@ export class TaskChainEditorView {
     }));
   }
 
-  protected onStepGateKeydown(stepId: string, event: KeyboardEvent): void {
-    if (event.key === 'Enter') {
-      event.preventDefault();
-      this.addStepGate(stepId);
-    }
-  }
-
   protected removeStepGate(stepId: string, gate: string): void {
     this.taskChainStore.removeGateFromStepInSelectedChain(stepId, gate);
   }
 
+  protected updateStepEnabled(stepId: string, enabled: boolean): void {
+    this.taskChainStore.updateStepInSelectedChain(stepId, { enabled });
+  }
+
   protected gateDraftValue(stepId: string): string {
     return this.stepGateDrafts()[stepId] ?? '';
-  }
-
-  protected isFirstStep(stepIndex: number): boolean {
-    return stepIndex === 0;
-  }
-
-  protected isLastStep(stepIndex: number, steps: TaskStep[]): boolean {
-    return stepIndex === steps.length - 1;
   }
 
   protected runSelectedChain(): void {

@@ -6,6 +6,7 @@ export type TaskStep = {
   task: string;
   requirements: string;
   gates: string[];
+  enabled: boolean;
 };
 
 export type TaskChain = {
@@ -131,7 +132,7 @@ export class TaskChainStore {
 
   updateStepInSelectedChain(
     stepId: string,
-    partial: Partial<Pick<TaskStep, 'title' | 'task' | 'requirements' | 'gates'>>
+    partial: Partial<Pick<TaskStep, 'title' | 'task' | 'requirements' | 'gates' | 'enabled'>>
   ): void {
     const selectedId = this.selectedChainId();
     if (!selectedId) {
@@ -219,6 +220,7 @@ export class TaskChainStore {
       task: '',
       requirements: '',
       gates: [],
+      enabled: true,
     };
   }
 
@@ -315,12 +317,14 @@ export class TaskChainStore {
       return null;
     }
     const gates = raw.gates.filter((gate): gate is string => typeof gate === 'string');
+    const enabled = typeof raw.enabled === 'boolean' ? raw.enabled : true;
     return {
       id: raw.id,
       title: raw.title,
       task: raw.task,
       requirements: raw.requirements,
       gates,
+      enabled,
     };
   }
 
