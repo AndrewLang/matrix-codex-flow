@@ -22,7 +22,8 @@
     @if (!isPreviewMode()) {
     <textarea #contentInput
         class="min-h-28 w-full resize-y rounded bg-slate-950/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500"
-        [value]="contentState()" [placeholder]="placeholder()" (input)="updateContent(contentInput.value)"></textarea>
+        [value]="contentState()" [placeholder]="placeholder()" (input)="updateContent(contentInput.value)" rows="12">
+    </textarea>
     } @else {
     <div class="min-h-28 rounded bg-slate-950/70 px-3 py-2 text-sm leading-6 text-slate-200"
         [innerHTML]="previewHtml()"></div>

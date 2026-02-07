@@ -1,64 +1,79 @@
-import { Component, computed, effect, inject, input, output, SecurityContext, signal } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { marked } from 'marked';
+import { AfterViewInit, Component, ElementRef, input, OnDestroy, output, ViewChild } from '@angular/core';
+import { defaultKeymap } from '@codemirror/commands';
+import { markdown } from '@codemirror/lang-markdown';
+import { EditorState } from '@codemirror/state';
+import { oneDark } from '@codemirror/theme-one-dark';
+import { EditorView, keymap } from '@codemirror/view';
 
-import { MarkdownTool } from '../../models/markdown.tool';
-import { IconComponent } from '../icon/icon.component';
-
-const MARKDOWN_TOOLS: MarkdownTool[] = [
-    { icon: 'type-bold', label: 'Bold', snippet: '**bold text**' },
-    { icon: 'type-italic', label: 'Italic', snippet: '*italic text*' },
-    { icon: 'code-square', label: 'Code', snippet: '`inline code`' },
-    { icon: 'list-ul', label: 'List', snippet: '- list item' },
-    { icon: 'link-45deg', label: 'Link', snippet: '[title](https://example.com)' }
-];
-
-const EMPTY_CONTENT = '';
-const LINE_BREAK = '\n';
 
 @Component({
     selector: 'mtx-md-editor',
-    templateUrl: 'md.editor.component.html',
-    imports: [IconComponent]
+    template: `
+    <div #editor class="bg-transparent"></div>
+  `
 })
-export class MarkdownEditorComponent {
-    readonly content = input<string>(EMPTY_CONTENT);
+export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
+    readonly value = input<string>('');
     readonly placeholder = input<string>('Write markdown content');
-    readonly contentChange = output<string>();
-    readonly showToolbar = input<boolean>(false);
+    readonly valueChange = output<string>();
 
-    protected readonly markdownTools = MARKDOWN_TOOLS;
-    protected readonly isPreviewMode = signal(false);
-    protected readonly contentState = signal(EMPTY_CONTENT);
-    protected readonly previewHtml = computed(() => this.renderMarkdown(this.contentState()));
+    @ViewChild('editor', { static: true })
+    private readonly editorRef!: ElementRef<HTMLDivElement>;
 
-    private readonly sanitizer = inject(DomSanitizer);
+    private editorView: EditorView | null = null;
 
-    constructor() {
-        effect(() => {
-            this.contentState.set(this.content());
+    ngAfterViewInit(): void {
+        this.editorView = new EditorView({
+            parent: this.editorRef.nativeElement,
+            state: EditorState.create({
+                doc: this.value(),
+                extensions: [
+                    markdown(),
+                    oneDark,
+                    keymap.of(defaultKeymap),
+                    EditorView.lineWrapping,
+                    EditorView.updateListener.of((update) => {
+                        if (update.docChanged) {
+                            const text = update.state.doc.toString();
+                            this.valueChange.emit(text);
+                        }
+                    }),
+                    EditorState.readOnly.of(false),
+                    EditorView.theme({
+                        '&': {
+                            fontSize: '14px',
+                        },
+                        '.cm-editor': {
+                            backgroundColor: '#0f172a',
+                        },
+                        '.cm-scroller': {
+                            backgroundColor: '#0f172a',
+                            borderRadius: '0.25rem',
+                            overflow: 'hidden',
+                        },
+
+                        '.cm-content': {
+                            fontFamily: 'ui-monospace, SFMono-Regular, monospace',
+                            minHeight: '112px',
+                            padding: '12px',
+                            backgroundColor: 'transparent',
+                        },
+
+                        '.cm-gutters': {
+                            border: 'none',
+                            backgroundColor: 'transparent',
+                        },
+
+                        '.cm-placeholder': {
+                            color: '#64748b',
+                        },
+                    })
+                ]
+            })
         });
     }
 
-    protected togglePreviewMode(): void {
-        this.isPreviewMode.update((value) => !value);
-    }
-
-    protected updateContent(nextContent: string): void {
-        this.contentState.set(nextContent);
-        this.contentChange.emit(nextContent);
-    }
-
-    protected insertSnippet(snippet: string): void {
-        const currentContent = this.contentState();
-        const hasContent = currentContent.length > 0;
-        const needsNewLine = hasContent && !currentContent.endsWith(LINE_BREAK);
-        const nextContent = `${currentContent}${needsNewLine ? LINE_BREAK : EMPTY_CONTENT}${snippet}`;
-        this.updateContent(nextContent);
-    }
-
-    private renderMarkdown(content: string): string {
-        const rawHtml = marked.parse(content, { async: false, breaks: true, gfm: true });
-        return this.sanitizer.sanitize(SecurityContext.HTML, rawHtml) ?? EMPTY_CONTENT;
+    ngOnDestroy(): void {
+        this.editorView?.destroy();
     }
 }
