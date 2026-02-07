@@ -1,13 +1,11 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
     selector: 'mtx-home',
+    imports: [RouterLink],
     templateUrl: 'home.component.html'
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent {
     protected readonly title = signal('Agent Workflow');
-
-    constructor() { }
-
-    ngOnInit() { }
 }
