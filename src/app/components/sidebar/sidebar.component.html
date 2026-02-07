@@ -1,13 +1,14 @@
 <aside class="flex h-full border border-slate-800 bg-slate-950/95 text-slate-300 transition-all duration-300"
-    [class.w-16]="isCollapsed()" [class.w-72]="!isCollapsed()">
+    [class.w-16]="isCollapsed()" [class.w-48]="!isCollapsed()">
 
     <div class="flex w-full flex-col">
         <button type="button"
-            class="mx-3 mt-2 rounded-lg flex h-12 items-center px-1 text-left text-sm font-medium text-slate-100 transition hover:shadow-2xl hover:border-slate-500"
+            class="mx-3 mt-2 rounded-lg flex h-12 items-center px-1 text-left font-medium text-slate-100 transition hover:shadow-2xl hover:border-slate-500"
             (click)="toggleCollapse()">
             <img src="images/VibeFlow@0.25x.png" alt="Logo" class="h-8 w-8 object-contain">
+
             @if (!isCollapsed()) {
-            <span class="font-medium">VibeFlow</span>
+            <span class="font-medium ml-2">VibeFlow</span>
             }
         </button>
 
@@ -19,8 +20,8 @@
                 <li>
                     @if (isLeaf(item)) {
                     <a class="group flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
-                        [routerLink]="item.route ?? '/'" routerLinkActive="text-white" title="{{item.label}}"
-                        [routerLinkActiveOptions]="{ exact: true }">
+                        [routerLink]="item.route ?? '/'" routerLinkActive="text-white bg-slate-900/80"
+                        title="{{item.label}}" [routerLinkActiveOptions]="{ exact: true }">
 
                         <mtx-icon [icon]="item.icon"></mtx-icon>
 
@@ -47,7 +48,7 @@
         <div class="p-2">
             <a class="flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
                 routerLink="/">
-                <mtx-icon [icon]="'gear text-2xl'"></mtx-icon>
+                <mtx-icon [icon]="'gear text-xl'"></mtx-icon>
                 @if (!isCollapsed()) {
                 <span class="text-sm font-medium">Settings</span>
                 }

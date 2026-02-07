@@ -172,4 +172,26 @@ export class ContextComponent {
 
         this.editingRuleIds.update((state) => ({ ...state, [ruleId]: false }));
     }
+
+    protected deleteRule(ruleId: string): void {
+        this.agentRules.update((rules) => rules.filter((rule) => rule.id !== ruleId));
+
+        this.collapsedRuleIds.update((state) => {
+            const nextState = { ...state };
+            delete nextState[ruleId];
+            return nextState;
+        });
+
+        this.editingRuleIds.update((state) => {
+            const nextState = { ...state };
+            delete nextState[ruleId];
+            return nextState;
+        });
+
+        this.editDrafts.update((state) => {
+            const nextState = { ...state };
+            delete nextState[ruleId];
+            return nextState;
+        });
+    }
 }
