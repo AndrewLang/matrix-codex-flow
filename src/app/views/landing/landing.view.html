@@ -6,6 +6,7 @@
   <p class="mt-3 text-sm text-slate-400">Saved task chains: {{ taskChainStore.chains().length }}</p>
 
   <div class="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center">
+    <ui-button type="button" (click)="pickFolder()">Pick Folder</ui-button>
     <input
       type="text"
       [value]="projectPath()"

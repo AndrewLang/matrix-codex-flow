@@ -1,5 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
+import { FolderPickerService } from '../../services/folder-picker.service';
 import { ProjectSessionStore } from '../../state/project-session.store';
 import { TaskChainStore } from '../../state/task-chain.store';
 import { UiButton } from '../../ui/ui.button';
@@ -13,6 +14,7 @@ import { UiPanel } from '../../ui/ui.panel';
 })
 export class LandingView {
   private readonly router = inject(Router);
+  private readonly folderPickerService = inject(FolderPickerService);
   protected readonly sessionStore = inject(ProjectSessionStore);
   protected readonly taskChainStore = inject(TaskChainStore);
   protected readonly projectPath = signal<string>('');
@@ -40,5 +42,13 @@ export class LandingView {
       return;
     }
     await this.router.navigate(['/settings']);
+  }
+
+  protected async pickFolder(): Promise<void> {
+    const path = await this.folderPickerService.pickFolder();
+    if (!path) {
+      return;
+    }
+    this.projectPath.set(path);
   }
 }
