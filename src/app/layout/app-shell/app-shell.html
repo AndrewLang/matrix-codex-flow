@@ -18,19 +18,50 @@
 
     <nav class="flex flex-1 flex-col gap-2">
       @for (item of navItems; track item.path) {
-        <a
-          [routerLink]="item.path"
-          routerLinkActive="bg-slate-700 text-white"
-          [routerLinkActiveOptions]="{ exact: item.path === '/' }"
-          class="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
-          [class.text-center]="isSidebarCollapsed()"
-        >
-          @if (isSidebarCollapsed()) {
-            <span>{{ item.label.charAt(0) }}</span>
-          } @else {
-            <span>{{ item.label }}</span>
-          }
-        </a>
+        @if (item.path !== '/settings') {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="bg-slate-700 text-white"
+            [routerLinkActiveOptions]="{ exact: item.path === '/' }"
+            class="group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            [class.text-center]="isSidebarCollapsed()"
+            [class.justify-center]="isSidebarCollapsed()"
+          >
+            <i [class]="'bi ' + item.icon + ' text-xl'"></i>
+            <span [class.hidden]="isSidebarCollapsed()">{{ item.label }}</span>
+            @if (isSidebarCollapsed()) {
+              <span
+                class="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-950 px-2 py-1 text-xs text-slate-100 opacity-0 shadow-lg transition group-hover:opacity-100"
+              >
+                {{ item.label }}
+              </span>
+            }
+          </a>
+        }
+      }
+    </nav>
+
+    <nav class="mt-2 border-t border-slate-800 pt-2">
+      @for (item of navItems; track item.path) {
+        @if (item.path === '/settings') {
+          <a
+            [routerLink]="item.path"
+            routerLinkActive="bg-slate-700 text-white"
+            class="group relative flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-slate-800 hover:text-white"
+            [class.text-center]="isSidebarCollapsed()"
+            [class.justify-center]="isSidebarCollapsed()"
+          >
+            <i [class]="'bi ' + item.icon + ' text-xl'"></i>
+            <span [class.hidden]="isSidebarCollapsed()">{{ item.label }}</span>
+            @if (isSidebarCollapsed()) {
+              <span
+                class="pointer-events-none absolute left-full top-1/2 ml-2 -translate-y-1/2 whitespace-nowrap rounded-md bg-slate-950 px-2 py-1 text-xs text-slate-100 opacity-0 shadow-lg transition group-hover:opacity-100"
+              >
+                {{ item.label }}
+              </span>
+            }
+          </a>
+        }
       }
     </nav>
   </aside>
