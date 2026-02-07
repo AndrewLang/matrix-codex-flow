@@ -5,10 +5,13 @@ import {
   ProjectSettingsStore,
 } from '../../state/project-settings.store';
 import { ProjectSessionStore } from '../../state/project-session.store';
+import { UiButton } from '../../ui/ui.button';
+import { UiPanel } from '../../ui/ui.panel';
 
 @Component({
   selector: 'app-project-settings-view',
   standalone: true,
+  imports: [UiButton, UiPanel],
   templateUrl: './project-settings.view.html',
 })
 export class ProjectSettingsView {

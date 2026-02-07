@@ -1,9 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { TaskStep, TaskChainStore } from '../../state/task-chain.store';
+import { UiButton } from '../../ui/ui.button';
+import { UiPanel } from '../../ui/ui.panel';
 
 @Component({
   selector: 'app-task-chain-editor-view',
   standalone: true,
+  imports: [UiButton, UiPanel],
   templateUrl: './task-chain-editor.view.html',
 })
 export class TaskChainEditorView {

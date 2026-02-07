@@ -4,14 +4,16 @@ import {
   CHAT_ROLE_ASSISTANT,
   CHAT_ROLE_SYSTEM,
   CHAT_ROLE_USER,
-  ChatMessage,
   ChatStore,
 } from '../../state/chat.store';
 import { ProjectSessionStore } from '../../state/project-session.store';
+import { UiButton } from '../../ui/ui.button';
+import { UiPanel } from '../../ui/ui.panel';
 
 @Component({
   selector: 'app-chat-view',
   standalone: true,
+  imports: [UiButton, UiPanel],
   templateUrl: './chat.view.html',
 })
 export class ChatView {

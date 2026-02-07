@@ -15,20 +15,8 @@
       </div>
 
       <div class="flex items-center gap-2">
-        <button
-          type="button"
-          (click)="goToSettings()"
-          class="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white sm:text-sm"
-        >
-          Settings
-        </button>
-        <button
-          type="button"
-          (click)="goToChains()"
-          class="rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 text-xs font-medium uppercase tracking-[0.08em] text-slate-200 transition hover:border-slate-500 hover:bg-slate-800 hover:text-white sm:text-sm"
-        >
-          Chains
-        </button>
+        <ui-button type="button" size="sm" (click)="goToSettings()">Settings</ui-button>
+        <ui-button type="button" size="sm" (click)="goToChains()">Chains</ui-button>
       </div>
     </header>
 
@@ -53,7 +41,7 @@
           >
             <p class="whitespace-pre-wrap text-sm leading-6">{{ message.content }}</p>
             <p class="mt-2 text-[11px] uppercase tracking-[0.08em] text-slate-400">
-              {{ message.role }} · {{ formatTime(message.createdAt) }}
+              {{ message.role }} &middot; {{ formatTime(message.createdAt) }}
             </p>
           </div>
         </div>
@@ -74,30 +62,27 @@
           placeholder="Describe your task..."
           class="max-h-48 min-h-24 w-full resize-y rounded-xl border border-slate-700 bg-slate-950/80 px-4 py-3 text-sm leading-6 text-slate-100 outline-none placeholder:text-slate-500 focus:border-slate-500 sm:text-base"
         ></textarea>
-        <button
+        <ui-button
           type="button"
+          variant="primary"
           (click)="sendMessage()"
           [disabled]="!draft().trim()"
-          class="h-11 shrink-0 rounded-xl bg-emerald-500 px-5 text-sm font-semibold text-slate-950 transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-50 sm:h-12 sm:px-6"
+          className="h-11 shrink-0 sm:h-12 sm:px-6"
         >
           Send
-        </button>
+        </ui-button>
       </div>
     </footer>
   </section>
 } @else {
-  <section class="mx-auto w-full max-w-5xl rounded-2xl border border-slate-800 bg-slate-900/50 p-6 sm:p-8">
+  <ui-panel className="mx-auto w-full max-w-5xl sm:p-8">
     <h1 class="text-2xl font-semibold text-white sm:text-3xl">Chat</h1>
-    <div class="mt-6 rounded-xl border border-slate-800 bg-slate-950/70 px-6 py-12 text-center">
+    <ui-panel className="mt-6 bg-slate-950/70 px-6 py-12 text-center">
       <p class="text-base text-slate-200">No active project selected.</p>
       <p class="mt-2 text-sm text-slate-400">Go back to Landing and open a project to continue.</p>
-      <button
-        type="button"
-        (click)="goToLanding()"
-        class="mt-6 rounded-lg bg-slate-100 px-4 py-2 text-sm font-medium text-slate-900 transition hover:bg-white"
-      >
+      <ui-button type="button" variant="primary" (click)="goToLanding()" className="mt-6">
         Go to Landing
-      </button>
-    </div>
-  </section>
+      </ui-button>
+    </ui-panel>
+  </ui-panel>
 }

@@ -1,5 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { UiButton } from '../../ui/ui.button';
 
 type NavItem = {
   readonly label: string;
@@ -9,7 +10,7 @@ type NavItem = {
 @Component({
   selector: 'app-shell',
   standalone: true,
-  imports: [RouterLink, RouterLinkActive, RouterOutlet],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, UiButton],
   templateUrl: './app-shell.html',
 })
 export class AppShell {

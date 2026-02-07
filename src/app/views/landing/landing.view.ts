@@ -2,10 +2,13 @@ import { Component, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { ProjectSessionStore } from '../../state/project-session.store';
 import { TaskChainStore } from '../../state/task-chain.store';
+import { UiButton } from '../../ui/ui.button';
+import { UiPanel } from '../../ui/ui.panel';
 
 @Component({
   selector: 'app-landing-view',
   standalone: true,
+  imports: [UiButton, UiPanel],
   templateUrl: './landing.view.html',
 })
 export class LandingView {
