@@ -114,6 +114,51 @@ export class TaskViewComponent {
         return 'border-sky-500/30 bg-sky-950/20';
     }
 
+    protected isAttachedStep(item: TaskTimelineItem): boolean {
+        return item.kind === 'pre' || item.kind === 'post';
+    }
+
+    protected timelineCardClass(item: TaskTimelineItem, itemIndex: number): string {
+        if (item.kind === 'pre') {
+            const isFirstPre = this.isFirstPreStep(item, itemIndex);
+
+            let classes = 'relative ml-6 rounded-none border border-b-0 p-4';
+            if (isFirstPre) {
+                classes += ' rounded-t-lg';
+            }
+
+            return classes;
+        }
+
+        if (item.kind === 'post') {
+            const isFirstPost = this.isFirstPostStep(item, itemIndex);
+            const isLastPost = this.isLastPostStep(item, itemIndex);
+
+            let classes = 'relative ml-6 rounded-none border p-4';
+            if (isFirstPost) {
+                classes += ' border-t-0';
+            }
+            if (isLastPost) {
+                classes += ' rounded-b-lg';
+            }
+
+            return classes;
+        }
+
+        const hasPreSteps = this.hasPreStepsForMain(item, itemIndex);
+        const hasPostSteps = this.hasPostStepsForMain(item, itemIndex);
+
+        let classes = 'relative rounded-xl border p-4';
+        if (hasPreSteps) {
+            classes += ' rounded-tr-none';
+        }
+        if (hasPostSteps) {
+            classes += ' rounded-br-none';
+        }
+
+        return classes;
+    }
+
     protected isTimelineItemCollapsed(item: TaskTimelineItem): boolean {
         const collapsed = this.collapsedTimelineItemIds()[item.id];
         if (collapsed !== undefined) {
@@ -136,5 +181,62 @@ export class TaskViewComponent {
         }
 
         return current.kind === 'post' && next.kind === 'pre' && current.mainStepIndex !== next.mainStepIndex;
+    }
+
+    private isFirstPostStep(item: TaskTimelineItem, itemIndex: number): boolean {
+        if (item.kind !== 'post') {
+            return false;
+        }
+
+        const previous = this.timeline()[itemIndex - 1];
+        return (
+            !previous ||
+            previous.kind !== 'post' ||
+            previous.mainStepIndex !== item.mainStepIndex
+        );
+    }
+
+    private isFirstPreStep(item: TaskTimelineItem, itemIndex: number): boolean {
+        if (item.kind !== 'pre') {
+            return false;
+        }
+
+        const previous = this.timeline()[itemIndex - 1];
+        return (
+            !previous ||
+            previous.kind !== 'pre' ||
+            previous.mainStepIndex !== item.mainStepIndex
+        );
+    }
+
+    private isLastPostStep(item: TaskTimelineItem, itemIndex: number): boolean {
+        if (item.kind !== 'post') {
+            return false;
+        }
+
+        const next = this.timeline()[itemIndex + 1];
+        return (
+            !next ||
+            next.kind !== 'post' ||
+            next.mainStepIndex !== item.mainStepIndex
+        );
+    }
+
+    private hasPreStepsForMain(item: TaskTimelineItem, itemIndex: number): boolean {
+        if (item.kind !== 'main') {
+            return false;
+        }
+
+        const previous = this.timeline()[itemIndex - 1];
+        return !!previous && previous.kind === 'pre' && previous.mainStepIndex === item.mainStepIndex;
+    }
+
+    private hasPostStepsForMain(item: TaskTimelineItem, itemIndex: number): boolean {
+        if (item.kind !== 'main') {
+            return false;
+        }
+
+        const next = this.timeline()[itemIndex + 1];
+        return !!next && next.kind === 'post' && next.mainStepIndex === item.mainStepIndex;
     }
 }
