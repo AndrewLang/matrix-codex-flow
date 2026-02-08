@@ -78,6 +78,9 @@ export class ContextComponent {
         this.collapsedRuleIds.update((state) => ({ ...state, [nextAgentRule.id]: true }));
     }
 
+    downloadAgentRules(): void {
+    }
+
     protected toggleRuleCollapse(ruleId: string): void {
         this.collapsedRuleIds.update((state) => ({
             ...state,

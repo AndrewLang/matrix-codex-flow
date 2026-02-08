@@ -3,20 +3,10 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-import { TaskStep, TaskStepType } from '../../models/task';
+import { StepViewModel, TaskStep, TaskStepType, TaskViewModel } from '../../models/task';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 import { StepListComponent } from './step.list.component';
-
-interface StepDraft {
-    title: string;
-    content: string;
-}
-
-interface TaskDraft {
-    title: string;
-    description: string;
-}
 
 @Component({
     selector: 'mtx-task-editor',
@@ -66,11 +56,11 @@ export class TaskEditComponent implements OnDestroy {
 
     protected readonly collapsedStepIds = signal<Record<string, boolean>>({});
     protected readonly editingStepIds = signal<Record<string, boolean>>({});
-    protected readonly stepDrafts = signal<Record<string, StepDraft>>({});
+    protected readonly stepDrafts = signal<Record<string, StepViewModel>>({});
     protected readonly isEditingTaskTitle = signal(false);
     protected readonly isEditingTaskDescription = signal(false);
     protected readonly isAddStepMenuOpen = signal(false);
-    protected readonly taskDraft = signal<TaskDraft>({ title: '', description: '' });
+    protected readonly taskDraft = signal<TaskViewModel>({ title: '', description: '' });
     private readonly renderer = inject(Renderer2);
     private readonly removeDocumentPointerListener: () => void;
 

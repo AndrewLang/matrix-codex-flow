@@ -1,15 +1,10 @@
 import { DatePipe } from '@angular/common';
 import { Component, input, output, signal } from '@angular/core';
 
-import { TaskStep } from '../../models/task';
+import { StepViewModel, TaskStep } from '../../models/task';
 import { IconComponent } from '../icon/icon.component';
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
-
-interface StepDraft {
-    title: string;
-    content: string;
-}
 
 @Component({
     selector: 'mtx-step-list',
@@ -20,7 +15,7 @@ export class StepListComponent {
     readonly steps = input<TaskStep[]>([]);
     readonly collapsedStepIds = input<Record<string, boolean>>({});
     readonly editingStepIds = input<Record<string, boolean>>({});
-    readonly stepDrafts = input<Record<string, StepDraft>>({});
+    readonly stepDrafts = input<Record<string, StepViewModel>>({});
     readonly title = input<string>('Steps');
     readonly subtitle = input<string>('');
     readonly titleIcon = input<string>('arrow-right');

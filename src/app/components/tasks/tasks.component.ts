@@ -1,17 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { Task } from '../../models/task';
+import { Task, TaskFilterTab, TaskTabItem } from '../../models/task';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 import { TaskListComponent } from './task.list.component';
-
-type TaskFilterTab = 'pending' | 'finished' | 'failed';
-
-interface TaskTabItem {
-    key: TaskFilterTab;
-    label: string;
-}
 
 const TASK_TABS: TaskTabItem[] = [
     { key: 'pending', label: 'Pending' },

@@ -1,17 +1,27 @@
 <div class="flex h-full min-h-0 flex-col gap-4 text-slate-200 p-2">
-    <header class="flex items-center justify-between rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
-        <div>
+    <header class="flex flex-col rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+        <div class="w-full">
             <h2 class="text-lg font-semibold text-slate-100">Project Context</h2>
             <p class="mt-1 text-xs text-slate-400">
                 Manage contextual rules that guide agent decisions through the workflow timeline.
             </p>
         </div>
 
-        <button type="button"
-            class="rounded-full bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition  border-amber-600 hover:bg-slate-700 shadow-2xl shadow-amber-600/50"
-            (click)="addAgentRule()" title="Add rule for agent">
-            <mtx-icon icon="node-plus text-lg"></mtx-icon>
-        </button>
+        <div class="flex items-center justify-between gap-2 border-t border-slate-800/80 pt-3 mt-3">
+            <div></div>
+            <div class="flex gap-1">
+                <button type="button"
+                    class="rounded bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition  border-amber-600 hover:bg-slate-700 "
+                    (click)="addAgentRule()" title="Add rule for agent">
+                    <mtx-icon icon="plus"></mtx-icon> Add Rule
+                </button>
+                <button type="button"
+                    class="rounded bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition  border-amber-600 hover:bg-slate-700"
+                    (click)="downloadAgentRules()" title="Download agent rules">
+                    <mtx-icon icon="box-arrow-down"></mtx-icon> Download
+                </button>
+            </div>
+        </div>
     </header>
 
     <section class="flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 p-3 backdrop-blur-xl">

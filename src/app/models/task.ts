@@ -1,5 +1,6 @@
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
 export type TaskStepType = 'normal' | 'post' | 'pre';
+export type TaskFilterTab = 'pending' | 'finished' | 'failed';
 
 export interface Task {
     id: string;
@@ -22,4 +23,19 @@ export interface TaskStep {
     createdAt: number;
     updatedAt: number;
     type: TaskStepType;
+}
+
+export interface StepViewModel {
+    title: string;
+    content: string;
+}
+
+export interface TaskViewModel {
+    title: string;
+    description: string;
+}
+
+export interface TaskTabItem {
+    key: TaskFilterTab;
+    label: string;
 }
