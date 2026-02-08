@@ -80,10 +80,38 @@ impl AppService {
         };
 
         let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
-        let _ = window.set_position(Position::Physical(PhysicalPosition::new(
-            main_window.x,
-            main_window.y,
-        )));
+
+        let saved_location_is_visible = match window.available_monitors() {
+            Ok(monitors) => monitors
+                .iter()
+                .any(|monitor| Self::is_point_inside_monitor(main_window.x, main_window.y, *monitor.position(), *monitor.size())),
+            Err(error) => {
+                log::error!("failed reading available monitors: {}", error);
+                true
+            }
+        };
+
+        let (x, y) = if saved_location_is_visible {
+            (main_window.x, main_window.y)
+        } else {
+            match window.primary_monitor() {
+                Ok(Some(monitor)) => Self::clamp_position_to_primary_monitor(
+                    monitor.position().x,
+                    monitor.position().y,
+                    width,
+                    height,
+                    *monitor.position(),
+                    *monitor.size(),
+                ),
+                Ok(None) => (main_window.x, main_window.y),
+                Err(error) => {
+                    log::error!("failed reading primary monitor: {}", error);
+                    (main_window.x, main_window.y)
+                }
+            }
+        };
+
+        let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
 
         if main_window.maximized {
             let _ = window.maximize();
@@ -190,6 +218,50 @@ impl AppService {
                 value_type: SettingValueType::Boolean,
             },
         ]
+    }
+
+    fn clamp_position_to_primary_monitor(
+        saved_x: i32,
+        saved_y: i32,
+        width: u32,
+        height: u32,
+        monitor_position: PhysicalPosition<i32>,
+        monitor_size: PhysicalSize<u32>,
+    ) -> (i32, i32) {
+        let min_x = monitor_position.x as i64;
+        let min_y = monitor_position.y as i64;
+
+        let mut max_x = min_x + monitor_size.width as i64 - width as i64;
+        let mut max_y = min_y + monitor_size.height as i64 - height as i64;
+
+        if max_x < min_x {
+            max_x = min_x;
+        }
+        if max_y < min_y {
+            max_y = min_y;
+        }
+
+        let clamped_x = (saved_x as i64).clamp(min_x, max_x) as i32;
+        let clamped_y = (saved_y as i64).clamp(min_y, max_y) as i32;
+
+        (clamped_x, clamped_y)
+    }
+
+    fn is_point_inside_monitor(
+        x: i32,
+        y: i32,
+        monitor_position: PhysicalPosition<i32>,
+        monitor_size: PhysicalSize<u32>,
+    ) -> bool {
+        let min_x = monitor_position.x as i64;
+        let min_y = monitor_position.y as i64;
+        let max_x = min_x + monitor_size.width as i64;
+        let max_y = min_y + monitor_size.height as i64;
+
+        let point_x = x as i64;
+        let point_y = y as i64;
+
+        point_x >= min_x && point_x < max_x && point_y >= min_y && point_y < max_y
     }
 
     fn resolve_app_data_dir<R: Runtime>(app_handle: &AppHandle<R>) -> PathBuf {
