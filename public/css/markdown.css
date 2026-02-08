@@ -52,3 +52,8 @@
     background: transparent;
     padding: 0;
 }
+
+
+.mtx-prose hr{
+    color:#1f2937;
+}

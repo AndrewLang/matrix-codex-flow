@@ -2,10 +2,12 @@ import { effect, inject, Injectable, signal } from '@angular/core';
 
 import { Task, TaskStep, TaskStepType } from '../models/task';
 import { ProjectService } from './project.service';
+import { SettingService } from './setting.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
     private readonly projectService = inject(ProjectService);
+    private readonly settingService = inject(SettingService);
     private readonly tasksState = signal<Task[]>([]);
 
     readonly tasks = this.tasksState.asReadonly();
@@ -99,10 +101,11 @@ export class TaskService {
                             ? task.poststeps
                             : task.steps;
                 const nextStepIndex = targetSteps.length + 1;
+                const defaultStepContent = this.settingService.promptTemplate();
                 const nextStep: TaskStep = {
                     id: `${taskId}-step-${currentTimestamp}`,
                     title: `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${nextStepIndex}`,
-                    content: '',
+                    content: defaultStepContent,
                     status: 'pending',
                     type: stepType,
                     createdAt: currentTimestamp,
