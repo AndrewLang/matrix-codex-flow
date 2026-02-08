@@ -60,3 +60,17 @@ pub fn delete_project(
         .delete_project(&project_id)
         .map_err(|error| format!("failed to delete project: {error}"))
 }
+
+#[tauri::command]
+pub fn load_or_create_project_by_path(
+    project_path: String,
+    data_service: State<'_, Mutex<DataService>>,
+) -> Result<Project, String> {
+    let service = data_service
+        .lock()
+        .map_err(|error| format!("failed to lock data service: {error}"))?;
+
+    service
+        .load_or_create_project_by_path(&project_path)
+        .map_err(|error| format!("failed to load or create project: {error}"))
+}

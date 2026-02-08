@@ -11,6 +11,7 @@ export class ProjectService {
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
+    currentProject = signal<Project | null>(null);
 
     constructor() {
         void this.loadRecentProjects();
@@ -25,7 +26,7 @@ export class ProjectService {
             });
 
             if (selected && typeof selected === 'string') {
-                this.setProjectPath(selected);
+                await this.loadOrCreateProjectByPath(selected);
                 return selected;
             }
 
@@ -40,6 +41,26 @@ export class ProjectService {
         this.projectPath.set(path);
         localStorage.setItem(ProjectService.PROJECT_PATH_KEY, path);
         this.addRecentProjectPath(path);
+    }
+
+    async loadOrCreateProjectByPath(projectPath: string): Promise<Project | null> {
+        try {
+            const project = await invoke<Project>('load_or_create_project_by_path', { projectPath });
+            this.currentProject.set(project);
+            this.setProjectPath(project.path);
+            this.recentProjects.update((projects) => {
+                const deduplicatedProjects = projects.filter((existingProject) => existingProject.id !== project.id);
+                return [project, ...deduplicatedProjects].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
+            });
+            this.recentProjectPaths.set(this.recentProjects().map((projectItem) => projectItem.path));
+            localStorage.setItem(
+                ProjectService.RECENT_PROJECT_PATHS_KEY,
+                JSON.stringify(this.recentProjectPaths())
+            );
+            return project;
+        } catch {
+            return null;
+        }
     }
 
     async loadRecentProjects(count: number = ProjectService.MAX_RECENT_PROJECT_PATHS): Promise<Project[]> {
@@ -60,6 +81,7 @@ export class ProjectService {
     async loadProject(projectId: string): Promise<Project | null> {
         try {
             const project = await invoke<Project | null>('load_project', { projectId });
+            this.currentProject.set(project);
             return project;
         } catch {
             return null;

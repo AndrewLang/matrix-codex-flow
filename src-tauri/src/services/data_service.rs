@@ -1,4 +1,5 @@
 use std::path::PathBuf;
+use std::time::{SystemTime, UNIX_EPOCH};
 
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
@@ -62,6 +63,43 @@ impl DataService {
     pub fn load_project(&self, project_id: &str) -> Result<Option<Project>, rusqlite::Error> {
         let connection = self.open_connection()?;
         self.load_project_with_connection(&connection, project_id)
+    }
+
+    pub fn load_project_by_path(&self, project_path: &str) -> Result<Option<Project>, rusqlite::Error> {
+        let connection = self.open_connection()?;
+        let project_id: Option<String> = connection
+            .query_row(
+                "SELECT id FROM projects WHERE path = ?1 ORDER BY updated_at DESC LIMIT 1",
+                params![project_path],
+                |row| row.get(0),
+            )
+            .optional()?;
+
+        let Some(project_id) = project_id else {
+            return Ok(None);
+        };
+
+        self.load_project_with_connection(&connection, &project_id)
+    }
+
+    pub fn load_or_create_project_by_path(&self, project_path: &str) -> Result<Project, rusqlite::Error> {
+        if let Some(existing_project) = self.load_project_by_path(project_path)? {
+            return Ok(existing_project);
+        }
+
+        let now = Self::current_timestamp_millis();
+        let project = Project {
+            id: format!("project-{now}"),
+            name: Self::project_name_from_path(project_path),
+            path: project_path.to_string(),
+            rules: Vec::new(),
+            tasks: Vec::new(),
+            created_at: now,
+            updated_at: now,
+        };
+
+        self.upsert_project(&project)?;
+        Ok(project)
     }
 
     pub fn upsert_project(&self, project: &Project) -> Result<(), rusqlite::Error> {
@@ -157,6 +195,7 @@ impl DataService {
             CREATE INDEX IF NOT EXISTS idx_agent_rules_project_id ON agent_rules(project_id);
             CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
             CREATE INDEX IF NOT EXISTS idx_task_steps_task_id ON task_steps(task_id);
+            CREATE INDEX IF NOT EXISTS idx_projects_path ON projects(path);
             ",
         )?;
         Ok(())
@@ -439,6 +478,25 @@ impl DataService {
             "pre" => TaskStepType::Pre,
             "post" => TaskStepType::Post,
             _ => TaskStepType::Normal,
+        }
+    }
+
+    fn current_timestamp_millis() -> i64 {
+        match SystemTime::now().duration_since(UNIX_EPOCH) {
+            Ok(duration) => duration.as_millis() as i64,
+            Err(_) => 0,
+        }
+    }
+
+    fn project_name_from_path(path: &str) -> String {
+        let normalized_path = path.replace('\\', "/");
+        let segments = normalized_path.split('/').filter(|segment| !segment.is_empty());
+        let last_segment = segments.last().unwrap_or(path);
+
+        if last_segment.is_empty() {
+            "Project".to_string()
+        } else {
+            last_segment.to_string()
         }
     }
 }

@@ -26,7 +26,12 @@ export class HomeComponent {
     }
 
     async openRecentProject(path: string): Promise<void> {
-        this.projectService.setProjectPath(path);
+        const project = await this.projectService.loadOrCreateProjectByPath(path);
+
+        if (!project) {
+            return;
+        }
+
         await this.router.navigate(['/workspace']);
     }
 
