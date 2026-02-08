@@ -129,4 +129,12 @@ export class TaskViewComponent {
             [item.id]: !this.isTimelineItemCollapsed(item),
         }));
     }
+
+    protected shouldShowCycleSeparator(current: TaskTimelineItem, next?: TaskTimelineItem): boolean {
+        if (!next) {
+            return false;
+        }
+
+        return current.kind === 'post' && next.kind === 'pre' && current.mainStepIndex !== next.mainStepIndex;
+    }
 }
