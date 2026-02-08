@@ -1,4 +1,4 @@
-import { computed, Injectable, inject } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import OpenAI from 'openai';
 import { SettingService } from './setting.service';
@@ -42,7 +42,7 @@ export class OpenaiService {
 
     private getClient(apiKey: string): OpenAI {
         if (!this.client || this.clientApiKey !== apiKey) {
-            this.client = new OpenAI({ apiKey });
+            this.client = new OpenAI({ apiKey, dangerouslyAllowBrowser: true });
             this.clientApiKey = apiKey;
         }
 

@@ -5,11 +5,23 @@
             <article class="flex" [ngClass]="bubbleLayout(message)">
                 <div class="flex flex-col gap-1.5" [ngClass]="bubbleAlign(message)">
                     <div class="rounded-xl py-2 px-3 text-[15px] leading-7" [ngClass]="bubbleColor(message)">
+                        @if (isUserMessage(message)) {
                         {{ message.content }}
+                        } @else {
+                        <mtx-md-renderer [markdown]="message.content"></mtx-md-renderer>
+                        }
                     </div>
-                    <time class="px-2 text-[11px] text-slate-500/90">
-                        {{ message.createdAt | formatTimestamp }}
-                    </time>
+                    <div class="flex items-center gap-1 px-2">
+                        <time class="text-[11px] text-slate-500/90">
+                            {{ message.createdAt | formatTimestamp }}
+                        </time>
+                        <button type="button"
+                            class="grid h-6 w-6 place-items-center rounded text-slate-500 transition hover:bg-slate-700/60 hover:text-slate-300"
+                            [attr.aria-label]="'Copy message'" (click)="copyMessage(message)">
+                            <mtx-icon
+                                [icon]="copiedMessageId() === message.id ? 'check text-xs' : 'copy text-xs'"></mtx-icon>
+                        </button>
+                    </div>
                 </div>
             </article>
             }

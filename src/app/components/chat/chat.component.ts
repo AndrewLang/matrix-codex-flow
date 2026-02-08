@@ -4,6 +4,7 @@ import { ChatMessage } from '../../models/chat.message';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
 import { ChatService } from '../../services/chat.service';
 import { IconComponent } from "../icon/icon.component";
+import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
 
 const MAX_COMPOSER_HEIGHT_PIXELS = 220;
 const MIN_COMPOSER_HEIGHT_PIXELS = 56;
@@ -11,12 +12,13 @@ const MIN_COMPOSER_HEIGHT_PIXELS = 56;
 @Component({
     selector: 'mtx-chat',
     templateUrl: 'chat.component.html',
-    imports: [CommonModule, FormatTimestampPipe, IconComponent]
+    imports: [CommonModule, FormatTimestampPipe, IconComponent, MarkdownRendererComponent]
 })
 export class ChatComponent implements OnInit {
     readonly minComposerHeightPixels = MIN_COMPOSER_HEIGHT_PIXELS;
     readonly maxComposerHeightPixels = MAX_COMPOSER_HEIGHT_PIXELS;
     readonly composerText = signal('');
+    readonly copiedMessageId = signal<string | null>(null);
     readonly messages;
 
     private readonly chatService = inject(ChatService);
@@ -75,6 +77,25 @@ export class ChatComponent implements OnInit {
 
         this.composerText.set('');
         this.resetComposerHeight();
+    }
+
+    async copyMessage(message: ChatMessage): Promise<void> {
+        const content = message.content.trim();
+        if (!content) {
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(content);
+            this.copiedMessageId.set(message.id);
+            setTimeout(() => {
+                if (this.copiedMessageId() === message.id) {
+                    this.copiedMessageId.set(null);
+                }
+            }, 1500);
+        } catch {
+            return;
+        }
     }
 
     openFolder(): void {
