@@ -1,22 +1,96 @@
 <div class="flex items-center justify-between gap-3 rounded-xl border border-slate-800/80 bg-slate-900/60 px-3 py-2 text-slate-200">
     <div class="flex min-w-0 items-center justify-start">
         @if (resolvedLeftCommand(); as command) {
-        <div class="inline-flex items-center gap-2 rounded bg-slate-800/80 px-2.5 py-1.5 text-sm">
-            @if (command.icon) {
-            <mtx-icon [icon]="command.icon"></mtx-icon>
+        <div class="relative inline-flex items-center" [attr.data-command-menu]="command.id">
+            @if (hasSubCommands(command)) {
+            <button type="button"
+                class="inline-flex items-center gap-2 rounded-l bg-slate-800 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
+                (click)="onSelectCommand(command)">
+                @if (command.icon) {
+                <mtx-icon [icon]="command.icon"></mtx-icon>
+                }
+                <span class="truncate">{{ command.title }}</span>
+            </button>
+            <button type="button"
+                class="rounded-r border-l border-slate-700 bg-slate-800 px-2 py-1.5 text-slate-200 transition hover:bg-slate-700"
+                [attr.aria-label]="'Open ' + command.title + ' sub commands'"
+                (click)="toggleSubCommandMenu(command.id)">
+                <mtx-icon [icon]="isSubCommandMenuOpen(command.id) ? 'chevron-up text-xs' : 'chevron-down text-xs'"></mtx-icon>
+            </button>
+
+            @if (isSubCommandMenuOpen(command.id)) {
+            <div
+                class="absolute left-0 top-10 z-50 min-w-44 rounded-lg bg-slate-900/95 p-1.5 shadow-[8px_8px_20px_rgba(0,0,0,0.6),-8px_-8px_20px_rgba(255,255,255,0.03)]">
+                @for (subCommand of command.subCommands ?? []; track subCommand.id) {
+                <button type="button"
+                    class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
+                    (click)="onSelectCommand(subCommand)">
+                    @if (subCommand.icon) {
+                    <mtx-icon [icon]="subCommand.icon"></mtx-icon>
+                    }
+                    <span>{{ subCommand.title }}</span>
+                </button>
+                }
+            </div>
             }
-            <span class="truncate">{{ command.title }}</span>
+            } @else {
+            <button type="button"
+                class="inline-flex items-center gap-2 rounded bg-slate-800/80 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
+                (click)="onSelectCommand(command)">
+                @if (command.icon) {
+                <mtx-icon [icon]="command.icon"></mtx-icon>
+                }
+                <span class="truncate">{{ command.title }}</span>
+            </button>
+            }
         </div>
         }
     </div>
 
     <div class="flex items-center justify-end gap-2">
         @for (command of resolvedRightCommands(); track command.id) {
-        <div class="inline-flex items-center gap-2 rounded bg-slate-800/80 px-2.5 py-1.5 text-sm">
-            @if (command.icon) {
-            <mtx-icon [icon]="command.icon"></mtx-icon>
+        <div class="relative inline-flex items-center" [attr.data-command-menu]="command.id">
+            @if (hasSubCommands(command)) {
+            <button type="button"
+                class="inline-flex items-center gap-2 rounded-l bg-slate-800 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
+                (click)="onSelectCommand(command)">
+                @if (command.icon) {
+                <mtx-icon [icon]="command.icon"></mtx-icon>
+                }
+                <span>{{ command.title }}</span>
+            </button>
+            <button type="button"
+                class="rounded-r border-l border-slate-700 bg-slate-800 px-2 py-1.5 text-slate-200 transition hover:bg-slate-700"
+                [attr.aria-label]="'Open ' + command.title + ' sub commands'"
+                (click)="toggleSubCommandMenu(command.id)">
+                <mtx-icon [icon]="isSubCommandMenuOpen(command.id) ? 'chevron-up text-xs' : 'chevron-down text-xs'"></mtx-icon>
+            </button>
+
+            @if (isSubCommandMenuOpen(command.id)) {
+            <div
+                class="absolute right-0 top-10 z-50 min-w-44 rounded-lg bg-slate-900/95 p-1.5 shadow-[8px_8px_20px_rgba(0,0,0,0.6),-8px_-8px_20px_rgba(255,255,255,0.03)]">
+                @for (subCommand of command.subCommands ?? []; track subCommand.id) {
+                <button type="button"
+                    class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
+                    (click)="onSelectCommand(subCommand)">
+                    @if (subCommand.icon) {
+                    <mtx-icon [icon]="subCommand.icon"></mtx-icon>
+                    }
+                    <span>{{ subCommand.title }}</span>
+                </button>
+                }
+            </div>
             }
-            <span>{{ command.title }}</span>
+            } @else {
+            <button type="button"
+                class="inline-flex items-center gap-2 rounded bg-slate-800/80 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
+                (click)="onSelectCommand(command)">
+                @if (command.icon) {
+                <mtx-icon [icon]="command.icon"></mtx-icon>
+                }
+                <span>{{ command.title }}</span>
+            </button>
+            }
         </div>
         }
     </div>

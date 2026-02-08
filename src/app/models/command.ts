@@ -3,4 +3,5 @@ export interface CommandDescriptor {
     title: string;
     description?: string;
     icon?: string;
+    subCommands?: CommandDescriptor[];
 }

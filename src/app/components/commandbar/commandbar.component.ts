@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, computed, input } from '@angular/core';
+import { Component, computed, HostListener, input, output, signal } from '@angular/core';
 import { CommandDescriptor } from '../../models/command';
 import { IconComponent } from '../icon/icon.component';
 
@@ -11,10 +11,11 @@ import { IconComponent } from '../icon/icon.component';
 export class CommandBarComponent {
     leftCommand = input<CommandDescriptor | null>(null);
     commands = input<CommandDescriptor[]>([]);
+    readonly commandSelected = output<CommandDescriptor>();
 
-    // Backward compatibility for previous API names.
     leftCommands = input<CommandDescriptor[]>([]);
     rightCommands = input<CommandDescriptor[]>([]);
+    protected readonly openSubCommandMenuId = signal<string | null>(null);
 
     protected readonly resolvedLeftCommand = computed(() => {
         const direct = this.leftCommand();
@@ -34,4 +35,40 @@ export class CommandBarComponent {
 
         return this.rightCommands();
     });
+
+    protected hasSubCommands(command: CommandDescriptor): boolean {
+        return (command.subCommands?.length ?? 0) > 0;
+    }
+
+    protected isSubCommandMenuOpen(commandId: string): boolean {
+        return this.openSubCommandMenuId() === commandId;
+    }
+
+    protected toggleSubCommandMenu(commandId: string): void {
+        this.openSubCommandMenuId.update((openId) => (openId === commandId ? null : commandId));
+    }
+
+    protected onSelectCommand(command: CommandDescriptor): void {
+        this.commandSelected.emit(command);
+        this.openSubCommandMenuId.set(null);
+    }
+
+    @HostListener('document:pointerdown', ['$event'])
+    protected handleDocumentPointerDown(event: PointerEvent): void {
+        const openId = this.openSubCommandMenuId();
+        if (!openId) {
+            return;
+        }
+
+        const target = event.target as HTMLElement | null;
+        if (!target) {
+            this.openSubCommandMenuId.set(null);
+            return;
+        }
+
+        const menuHost = target.closest(`[data-command-menu="${openId}"]`);
+        if (!menuHost) {
+            this.openSubCommandMenuId.set(null);
+        }
+    }
 }
