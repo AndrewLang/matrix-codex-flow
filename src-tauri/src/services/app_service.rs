@@ -13,6 +13,8 @@ use crate::models::setting::{SettingModel, SettingValue, SettingValueType};
 const APP_FOLDER_NAME: &str = "vibeflow";
 const APP_CONFIG_FILE_NAME: &str = "app.config.json";
 const SETTINGS_FILE_NAME: &str = "settings.json";
+const DEFAULT_WINDOW_WIDTH: u32 = 800;
+const DEFAULT_WINDOW_HEIGHT: u32 = 1200;
 
 pub struct AppService {
     app_data_dir: PathBuf,
@@ -71,7 +73,13 @@ impl AppService {
             return;
         };
 
-        let _ = window.set_size(Size::Physical(PhysicalSize::new(main_window.width, main_window.height)));
+        let (width, height) = if main_window.width < DEFAULT_WINDOW_WIDTH || main_window.height < DEFAULT_WINDOW_HEIGHT {
+            (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
+        } else {
+            (main_window.width, main_window.height)
+        };
+
+        let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
         let _ = window.set_position(Position::Physical(PhysicalPosition::new(
             main_window.x,
             main_window.y,
