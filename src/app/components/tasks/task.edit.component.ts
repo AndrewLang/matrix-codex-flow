@@ -123,6 +123,24 @@ export class TaskEditComponent implements OnDestroy {
         this.addStepByType('normal');
     }
 
+    protected saveTaskEditor(): void {
+        if (this.isEditingTaskTitle()) {
+            this.saveTaskTitle();
+        }
+
+        if (this.isEditingTaskDescription()) {
+            this.saveTaskDescription();
+        }
+
+        const editingStepIds = Object.entries(this.editingStepIds())
+            .filter(([, isEditing]) => isEditing)
+            .map(([stepId]) => stepId);
+
+        for (const stepId of editingStepIds) {
+            this.saveStep(stepId);
+        }
+    }
+
     private addStepByType(stepType: TaskStepType): void {
         const taskId = this.taskId();
 

@@ -3,13 +3,13 @@ import { Component, input, output, signal } from '@angular/core';
 
 import { StepViewModel, TaskStep } from '../../models/task';
 import { IconComponent } from '../icon/icon.component';
-import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
+import { StepEditorComponent } from './step.edit.component';
 
 @Component({
     selector: 'mtx-step-list',
     templateUrl: 'step.list.component.html',
-    imports: [DatePipe, IconComponent, MarkdownEditorComponent, MarkdownRendererComponent]
+    imports: [DatePipe, IconComponent, MarkdownRendererComponent, StepEditorComponent]
 })
 export class StepListComponent {
     readonly steps = input<TaskStep[]>([]);

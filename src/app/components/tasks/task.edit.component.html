@@ -57,6 +57,7 @@
             <div>
                 @if (task()) {
                 <div #addStepMenu class="relative flex items-center gap-2">
+
                     <div class="flex items-center">
                         <button type="button"
                             class="rounded-l bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
@@ -70,6 +71,12 @@
                                 [icon]="isAddStepMenuOpen() ? 'chevron-up text-xs' : 'chevron-down text-xs'"></mtx-icon>
                         </button>
                     </div>
+
+                    <button type="button"
+                        class="rounded bg-emerald-600 px-3 py-2 text-sm font-medium text-white transition hover:bg-emerald-500"
+                        (click)="saveTaskEditor()" title="Save task">
+                        Save
+                    </button>
 
                     @if (isAddStepMenuOpen()) {
                     <div
@@ -92,7 +99,7 @@
         </div>
     </header>
 
-    <section class="relative z-0 flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 p-3 backdrop-blur-xl">
+    <section class="relative z-0 flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 backdrop-blur-xl">
         @if (task()) {
         <div class="flex flex-col gap-3">
             <mtx-step-list title="Pre Steps" subtitle="Steps will be executed before each main step."
