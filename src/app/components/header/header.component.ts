@@ -1,7 +1,9 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { StatusMessage } from '../../models/status.message';
+import { ContextService } from '../../services/context.service';
 import { ProjectService } from '../../services/project.service';
+import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({
@@ -11,6 +13,8 @@ import { IconComponent } from '../icon/icon.component';
 })
 export class HeaderComponent implements OnInit {
     projectService = inject(ProjectService);
+    contextService = inject(ContextService);
+    taskService = inject(TaskService);
     currentProjectPath = computed(() => this.projectService.projectPath());
     message = signal<StatusMessage | null>(null);
 
@@ -28,8 +32,18 @@ export class HeaderComponent implements OnInit {
             console.warn('No project to save');
             return;
         }
+
+        const projectToSave = {
+            ...project,
+            rules: this.contextService.agentRules().map((rule) => ({ ...rule })),
+            tasks: this.taskService.tasks().map((task) => ({ ...task })),
+            updatedAt: Date.now()
+        };
+
+        this.projectService.currentProject.set(projectToSave);
+
         try {
-            await this.projectService.saveProject(project);
+            await this.projectService.saveProject(projectToSave);
             this.setMessage({ content: 'Project saved', type: 'success', timestamp: new Date() });
         } catch {
             this.setMessage({ content: 'Failed to save project', type: 'error', timestamp: new Date() });

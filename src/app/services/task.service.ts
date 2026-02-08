@@ -1,4 +1,4 @@
-import { effect, Injectable, inject, signal } from '@angular/core';
+import { effect, inject, Injectable, signal } from '@angular/core';
 
 import { Task, TaskStep, TaskStepType } from '../models/task';
 import { ProjectService } from './project.service';
@@ -102,7 +102,7 @@ export class TaskService {
                 const nextStep: TaskStep = {
                     id: `${taskId}-step-${currentTimestamp}`,
                     title: `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${nextStepIndex}`,
-                    content: 'Describe the step details in markdown.',
+                    content: '',
                     status: 'pending',
                     type: stepType,
                     createdAt: currentTimestamp,
