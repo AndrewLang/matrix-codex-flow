@@ -1,6 +1,8 @@
 use env_logger::Env;
-use std::sync::Once;
-use tauri::{Builder, Error, Wry};
+use std::sync::{Mutex, Once};
+use tauri::{Builder, Error, Manager, WindowEvent, Wry};
+
+use crate::services::app_service::AppService;
 
 pub struct App;
 
@@ -19,7 +21,32 @@ impl App {
     fn build(&self) -> Builder<Wry> {
         Builder::default()
             .plugin(tauri_plugin_dialog::init())
+            .on_window_event(|window, event| {
+                if window.label() != "main" {
+                    return;
+                }
+
+                match event {
+                    WindowEvent::Moved(_) | WindowEvent::Resized(_) | WindowEvent::CloseRequested { .. } => {
+                        let state = window.app_handle().state::<Mutex<AppService>>();
+                        let lock_result = state.lock();
+                        if let Ok(mut app_service) = lock_result {
+                            app_service.capture_main_window_state(window);
+                        }
+                    }
+                    _ => {}
+                }
+            })
             .setup(|app| {
+                let app_service = AppService::load(app.handle());
+                log::info!("app data directory: {}", app_service.app_data_dir().display());
+
+                if let Some(main_window) = app.get_webview_window("main") {
+                    app_service.restore_main_window(&main_window);
+                    let _ = main_window.show();
+                }
+
+                app.manage(Mutex::new(app_service));
                 log::info!("backend logging initialized");
                 log::info!("app name: {}", app.package_info().name);
 

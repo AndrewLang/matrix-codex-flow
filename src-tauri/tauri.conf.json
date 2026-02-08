@@ -16,6 +16,7 @@
         "title": "Matrix Codex Workflow",
         "width": 500,
         "height": 900,
+        "visible": false,
         "resizable": true,
         "fullscreen": false
       }
