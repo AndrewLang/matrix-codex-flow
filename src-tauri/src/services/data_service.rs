@@ -37,6 +37,28 @@ impl DataService {
         Ok(projects)
     }
 
+    pub fn get_recent_projects(&self, count: usize) -> Result<Vec<Project>, rusqlite::Error> {
+        if count == 0 {
+            return Ok(Vec::new());
+        }
+
+        let connection = self.open_connection()?;
+        let mut statement =
+            connection.prepare("SELECT id FROM projects ORDER BY updated_at DESC LIMIT ?1")?;
+        let project_ids = statement
+            .query_map(params![count as i64], |row| row.get::<usize, String>(0))?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut projects = Vec::with_capacity(project_ids.len());
+        for project_id in project_ids {
+            if let Some(project) = self.load_project_with_connection(&connection, &project_id)? {
+                projects.push(project);
+            }
+        }
+
+        Ok(projects)
+    }
+
     pub fn load_project(&self, project_id: &str) -> Result<Option<Project>, rusqlite::Error> {
         let connection = self.open_connection()?;
         self.load_project_with_connection(&connection, project_id)
