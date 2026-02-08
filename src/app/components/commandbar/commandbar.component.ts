@@ -17,14 +17,18 @@ export class CommandBarComponent {
     rightCommands = input<CommandDescriptor[]>([]);
     protected readonly openSubCommandMenuId = signal<string | null>(null);
 
-    protected readonly resolvedLeftCommand = computed(() => {
-        const direct = this.leftCommand();
-        if (direct) {
-            return direct;
+    protected readonly resolvedLeftCommands = computed(() => {
+        const directList = this.leftCommands();
+        if (directList.length > 0) {
+            return directList;
         }
 
-        const legacy = this.leftCommands();
-        return legacy.length > 0 ? legacy[0] : null;
+        const direct = this.leftCommand();
+        if (direct) {
+            return [direct];
+        }
+
+        return [];
     });
 
     protected readonly resolvedRightCommands = computed(() => {

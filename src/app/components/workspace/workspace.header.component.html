@@ -1,0 +1,26 @@
+<header class="relative z-30 flex flex-col overflow-visible rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+    @if (customHeaderContent) {
+    <ng-content select="[headerContent]"></ng-content>
+    } @else {
+    <div class="flex items-center justify-between">
+        <div>
+            <h2 class="flex items-center gap-1 text-lg font-semibold text-slate-100">
+                @if (icon()) {
+                <mtx-icon [icon]="icon()"></mtx-icon>
+                }
+                <span>{{ title() }}</span>
+            </h2>
+            @if (description()) {
+            <p class="mt-1 text-xs text-slate-400">{{ description() }}</p>
+            }
+        </div>
+    </div>
+    }
+
+    @if (leftCommand() || leftCommands().length > 0 || commands().length > 0) {
+    <div class="mt-4 border-t border-slate-800/80 pt-3">
+        <mtx-commandbar [leftCommand]="leftCommand()" [leftCommands]="leftCommands()" [commands]="commands()"
+            (commandSelected)="onCommandSelected($event)"></mtx-commandbar>
+    </div>
+    }
+</header>
