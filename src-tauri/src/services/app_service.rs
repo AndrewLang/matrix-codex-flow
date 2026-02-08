@@ -209,6 +209,12 @@ impl AppService {
                 value_type: SettingValueType::String,
             },
             SettingModel {
+                id: "setting-agent-model".to_string(),
+                key: "agent.model".to_string(),
+                value: SettingValue::String("gpt-5-codex".to_string()),
+                value_type: SettingValueType::String,
+            },
+            SettingModel {
                 id: "setting-prompt-template".to_string(),
                 key: "prompt.template".to_string(),
                 value: SettingValue::String(

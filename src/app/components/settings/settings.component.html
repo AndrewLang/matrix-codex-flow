@@ -44,6 +44,11 @@
                 class="mt-2 w-full rounded-xl bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 shadow-inner shadow-slate-950/50"
                 [value]="codexApiKey()" (input)="setCodexApiKey(codexApiKeyInput.value)"
                 placeholder="Enter Codex API key" />
+
+            <label class="mt-4 block text-sm text-slate-300" for="agent-model">Model</label>
+            <input #agentModelInput id="agent-model" type="text" autocomplete="off"
+                class="mt-2 w-full rounded-xl bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 shadow-inner shadow-slate-950/50"
+                [value]="agentModel()" (input)="setAgentModel(agentModelInput.value)" placeholder="gpt-5-codex" />
             <p class="mt-2 text-xs text-slate-500">Stored in app settings and used for Codex agent requests.</p>
             }
         </article>

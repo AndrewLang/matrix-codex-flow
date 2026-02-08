@@ -13,12 +13,14 @@ export class SettingsComponent {
 
     protected readonly agentProvider = signal(this.settingService.agentProvider());
     protected readonly codexApiKey = signal(this.settingService.codexApiKey());
+    protected readonly agentModel = signal(this.settingService.agentModel());
     protected readonly promptTemplate = signal(this.settingService.promptTemplate());
     protected readonly generateVibeflowFolder = signal(this.settingService.generateVibeflowFolder());
     protected readonly hasUnsavedChanges = computed(() => {
         return (
             this.agentProvider() !== this.settingService.agentProvider() ||
             this.codexApiKey() !== this.settingService.codexApiKey() ||
+            this.agentModel() !== this.settingService.agentModel() ||
             this.promptTemplate() !== this.settingService.promptTemplate() ||
             this.generateVibeflowFolder() !== this.settingService.generateVibeflowFolder()
         );
@@ -32,6 +34,10 @@ export class SettingsComponent {
         this.codexApiKey.set(value);
     }
 
+    protected setAgentModel(value: string): void {
+        this.agentModel.set(value);
+    }
+
     protected setPromptTemplate(value: string): void {
         this.promptTemplate.set(value);
     }
@@ -43,6 +49,7 @@ export class SettingsComponent {
     protected saveSettings(): void {
         this.settingService.updateSettingValue('agent.provider', this.agentProvider());
         this.settingService.updateSettingValue('agent.codex.apiKey', this.codexApiKey().trim());
+        this.settingService.updateSettingValue('agent.model', this.agentModel().trim());
         this.settingService.updateSettingValue('prompt.template', this.promptTemplate().trim());
         this.settingService.updateSettingValue('project.generateVibeflowFolder', this.generateVibeflowFolder());
     }
@@ -51,6 +58,7 @@ export class SettingsComponent {
         this.settingService.resetSettings();
         this.agentProvider.set(this.settingService.agentProvider());
         this.codexApiKey.set(this.settingService.codexApiKey());
+        this.agentModel.set(this.settingService.agentModel());
         this.promptTemplate.set(this.settingService.promptTemplate());
         this.generateVibeflowFolder.set(this.settingService.generateVibeflowFolder());
     }
