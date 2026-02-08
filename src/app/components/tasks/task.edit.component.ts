@@ -3,16 +3,18 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
+import { CommandDescriptor } from '../../models/command';
 import { StepViewModel, TaskStep, TaskStepType } from '../../models/task';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 import { InputEditableComponent } from '../input-editable/input.editable.component';
+import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 import { StepListComponent } from './step.list.component';
 
 @Component({
     selector: 'mtx-task-editor',
     templateUrl: 'task.edit.component.html',
-    imports: [IconComponent, StepListComponent, InputEditableComponent]
+    imports: [IconComponent, StepListComponent, InputEditableComponent, WorkspaceHeaderComponent]
 })
 export class TaskEditComponent implements OnDestroy {
     private readonly taskService = inject(TaskService);
@@ -53,6 +55,24 @@ export class TaskEditComponent implements OnDestroy {
         }
 
         return selectedTask.poststeps;
+    });
+
+    protected readonly headerCommands = computed<CommandDescriptor[]>(() => {
+        if (!this.task()) {
+            return [];
+        }
+
+        return [
+            {
+                id: 'add-step',
+                title: 'Add Step',
+                icon: 'plus-lg',
+                subCommands: [
+                    { id: 'add-pre-step', title: 'Add PreStep' },
+                    { id: 'add-post-step', title: 'Add PostStep' },
+                ],
+            }
+        ];
     });
 
     protected readonly collapsedStepIds = signal<Record<string, boolean>>({});
@@ -100,6 +120,22 @@ export class TaskEditComponent implements OnDestroy {
 
     protected addStep(): void {
         this.addStepByType('normal');
+    }
+
+    protected onHeaderCommand(command: CommandDescriptor): void {
+        if (command.id === 'add-step') {
+            this.addStep();
+            return;
+        }
+
+        if (command.id === 'add-pre-step') {
+            this.addPreStep();
+            return;
+        }
+
+        if (command.id === 'add-post-step') {
+            this.addPostStep();
+        }
     }
 
     protected saveTaskEditor(): void {

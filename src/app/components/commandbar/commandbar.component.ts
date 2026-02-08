@@ -9,36 +9,25 @@ import { IconComponent } from '../icon/icon.component';
     imports: [CommonModule, IconComponent]
 })
 export class CommandBarComponent {
-    leftCommand = input<CommandDescriptor | null>(null);
-    commands = input<CommandDescriptor[]>([]);
     readonly commandSelected = output<CommandDescriptor>();
 
+    leftLabel = input<string>('');
     leftCommands = input<CommandDescriptor[]>([]);
     rightCommands = input<CommandDescriptor[]>([]);
+
     protected readonly openSubCommandMenuId = signal<string | null>(null);
 
     protected readonly resolvedLeftCommands = computed(() => {
-        const directList = this.leftCommands();
-        if (directList.length > 0) {
-            return directList;
-        }
-
-        const direct = this.leftCommand();
-        if (direct) {
-            return [direct];
-        }
-
-        return [];
+        return this.leftCommands() || [];
     });
 
     protected readonly resolvedRightCommands = computed(() => {
-        const direct = this.commands();
-        if (direct.length > 0) {
-            return direct;
-        }
-
-        return this.rightCommands();
+        return this.rightCommands() || [];
     });
+
+    protected hasLeftCommands(): boolean {
+        return this.resolvedLeftCommands().length > 0;
+    }
 
     protected hasSubCommands(command: CommandDescriptor): boolean {
         return (command.subCommands?.length ?? 0) > 0;
