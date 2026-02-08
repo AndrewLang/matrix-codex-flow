@@ -99,7 +99,7 @@ export class TaskViewComponent {
             return 'arrow-return-right text-xs text-emerald-300';
         }
 
-        return 'arrow-right-circle text-xs text-sky-300';
+        return 'arrow-right text-sm text-sky-300';
     }
 
     protected timelineColor(item: TaskTimelineItem): string {
