@@ -13,4 +13,8 @@ export class HeaderComponent implements OnInit {
     constructor() { }
 
     ngOnInit() { }
+
+    openFolder(): void {
+        void this.projectService.revealProjectInFolder();
+    }
 }

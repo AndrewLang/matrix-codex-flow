@@ -19,12 +19,12 @@ export class ChatComponent implements OnInit {
     readonly composerText = signal('');
     readonly messages;
 
-    private readonly chatStore = inject(ChatService);
+    private readonly chatService = inject(ChatService);
     private readonly transcriptContainer = viewChild<ElementRef<HTMLDivElement>>('transcriptContainer');
     private readonly composerTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('composerTextarea');
 
     constructor() {
-        this.messages = this.chatStore.messages;
+        this.messages = this.chatService.messages;
 
         effect(() => {
             this.messages().length;
@@ -67,7 +67,7 @@ export class ChatComponent implements OnInit {
 
     sendMessage(): void {
         const messageContent = this.composerText();
-        this.chatStore.sendMessage(messageContent);
+        this.chatService.sendMessage(messageContent);
 
         if (!messageContent.trim()) {
             return;
@@ -75,6 +75,9 @@ export class ChatComponent implements OnInit {
 
         this.composerText.set('');
         this.resetComposerHeight();
+    }
+
+    openFolder(): void {
     }
 
     private scrollTranscriptToBottom(): void {

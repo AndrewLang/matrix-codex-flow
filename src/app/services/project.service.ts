@@ -103,6 +103,17 @@ export class ProjectService {
         );
     }
 
+    async revealProjectInFolder(): Promise<void> {
+        let projectPath = this.projectPath();
+        if(projectPath) {
+            await this.openFolder(projectPath)  ;
+        }
+    }
+
+    async openFolder(path: string): Promise<void> {
+        await invoke('open_folder', { path });
+    }
+
     private addRecentProjectPath(path: string): void {
         const normalizedPath = path.trim();
 

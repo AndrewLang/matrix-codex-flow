@@ -29,7 +29,8 @@ impl App {
                 crate::commands::project_commands::delete_project,
                 crate::commands::project_commands::load_or_create_project_by_path,
                 crate::commands::settings_commands::load_settings,
-                crate::commands::settings_commands::save_settings
+                crate::commands::settings_commands::save_settings,
+                crate::commands::system_commands::open_folder
             ])
             .on_window_event(|window, event| {
                 if window.label() != "main" {

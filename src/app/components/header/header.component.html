@@ -3,7 +3,7 @@
         <h1 class="text-lg font-semibold text-slate-100">VibeFlow </h1>
         <p class="text-xs text-slate-400">
             <span class="font-bold mr-1">Working on:</span>
-            <a href="#">{{currentProjectPath()}}</a>
+            <a class="cursor-pointer hover:underline" (click)="openFolder()">{{currentProjectPath()}}</a>
         </p>
     </div>
     <div>
