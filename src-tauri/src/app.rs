@@ -3,6 +3,7 @@ use std::sync::{Mutex, Once};
 use tauri::{Builder, Error, Manager, WindowEvent, Wry};
 
 use crate::services::app_service::AppService;
+use crate::services::command_service::CommandService;
 use crate::services::data_service::DataService;
 
 pub struct App;
@@ -23,6 +24,7 @@ impl App {
         Builder::default()
             .plugin(tauri_plugin_dialog::init())
             .invoke_handler(tauri::generate_handler![
+                crate::commands::command_commands::run_command,
                 crate::commands::project_commands::load_recent_projects,
                 crate::commands::project_commands::load_project,
                 crate::commands::project_commands::save_project,
@@ -63,6 +65,7 @@ impl App {
 
                 app.manage(Mutex::new(app_service));
                 app.manage(Mutex::new(data_service));
+                app.manage(CommandService::new());
                 log::info!("backend logging initialized");
                 log::info!("app name: {}", app.package_info().name);
 

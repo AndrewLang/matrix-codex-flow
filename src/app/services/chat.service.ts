@@ -1,6 +1,8 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { ChatMessage, ChatRole } from '../models/chat.message';
+import { CommandService } from './command.service';
 import { OpenaiService } from './openai.service';
+import { ProjectService } from './project.service';
 
 
 const USER_ROLE: ChatRole = 'user';
@@ -14,23 +16,43 @@ const IDENTIFIER_END_INDEX = 10;
 })
 export class ChatService {
     private readonly openaiService = inject(OpenaiService);
+    private readonly commandService = inject(CommandService);
+    private readonly projectService = inject(ProjectService);
+
     private readonly chatMessagesState = signal<ChatMessage[]>([]);
 
     readonly messages = this.chatMessagesState.asReadonly();
 
     sendMessage(text: string): void {
-        const trimmedText = text.trim();
+        const prompt = text.trim();
 
-        if (!trimmedText) {
+        if (!prompt) {
             return;
         }
 
-        const userMessage = this.createMessage(USER_ROLE, trimmedText);
+        this.sendToCloud(prompt);
+        // this.sendToLocalAgent(prompt);
+    }
+
+    private sendToLocalAgent(prompt: string): void {
+        let projectPath = this.projectService.currentProject()?.path;
+        let result = this.commandService.runCommand(
+            'codex',
+            ['edit', '--mode', 'suggest', '--model', 'gpt-5-codex'],
+            prompt,
+            projectPath
+        );
+
+        console.log('Command result:', result);
+    }
+
+    private sendToCloud(prompt: string) {
+        const userMessage = this.createMessage(USER_ROLE, prompt);
         const agentMessage = this.createMessage(AGENT_ROLE, '');
         this.chatMessagesState.update((messages) => [...messages, userMessage]);
         this.chatMessagesState.update((messages) => [...messages, agentMessage]);
 
-        void this.openaiService.runStreaming(trimmedText, (chunk) => {
+        this.openaiService.runStreaming(prompt, (chunk) => {
             this.appendToMessage(agentMessage.id, chunk);
         }).catch((error) => {
             const errorMessage = error instanceof Error ? error.message : 'Failed to get response from agent.';
