@@ -8,45 +8,21 @@
             </button>
 
             <div class="space-y-2 w-full">
-                @if (isEditingTaskTitle()) {
-                <div #taskTitleEditor class="flex items-center gap-2">
-                    <input #taskTitleInput
-                        class="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 border-amber-600 border"
-                        type="text" [value]="taskDraft().title" placeholder="Task title"
-                        (input)="updateTaskDraftTitle(taskTitleInput.value)" (blur)="onTaskTitleFocusOut()" />
+                <mtx-input-editable [value]="task()?.title ?? 'Task Not Found'" placeholder="Task title"
+                    textClass="text-lg font-semibold text-slate-100"
+                    editorClass="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 border border-amber-600"
+                    editIconButtonClass="rounded px-2 py-1 text-sky-300 transition hover:bg-slate-700"
+                    (submitValue)="submitTaskTitle($event)">
+                </mtx-input-editable>
 
+                <div class="mt-1 mb-2">
+                    <mtx-input-editable [value]="task()?.description ?? ''" [multiline]="true"
+                        placeholder="Task description" textClass="text-xs text-slate-400"
+                        editorClass="min-h-20 w-full resize-y rounded bg-slate-900/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500 border border-amber-600"
+                        editIconButtonClass="rounded-full px-2 py-1 text-sky-300 transition hover:bg-slate-700"
+                        (submitValue)="submitTaskDescription($event)">
+                    </mtx-input-editable>
                 </div>
-                } @else {
-                <div class="flex items-center gap-2">
-                    <h2 class="text-lg font-semibold text-slate-100">
-                        {{ task()?.title ?? 'Task Not Found' }}
-                    </h2>
-                    <button type="button" class="rounded px-2 py-1 text-sky-300 transition hover:bg-slate-700"
-                        aria-label="Edit task title" (click)="startEditTaskTitle()" title="Edit task title">
-                        <mtx-icon icon="pencil text-xs"></mtx-icon>
-                    </button>
-                </div>
-                }
-
-                @if (isEditingTaskDescription()) {
-                <div #taskDescriptionEditor class="flex items-start gap-2 mb-2">
-                    <textarea #taskDescriptionInput
-                        class="min-h-20 w-full resize-y rounded bg-slate-900/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500 border-amber-600 border"
-                        [value]="taskDraft().description" placeholder="Task description"
-                        (input)="updateTaskDraftDescription(taskDescriptionInput.value)"
-                        (blur)="onTaskDescriptionFocusOut()"></textarea>
-
-                </div>
-                } @else {
-                <div class="mt-1 flex items-center gap-2 mb-2">
-                    <p class="text-xs text-slate-400">{{ task()?.description }}</p>
-                    <button type="button" class="rounded-full px-2 py-1 text-sky-300 transition hover:bg-slate-700"
-                        aria-label="Edit task description" (click)="startEditTaskDescription()"
-                        title="Edit task description">
-                        <mtx-icon icon="pencil text-xs"></mtx-icon>
-                    </button>
-                </div>
-                }
             </div>
         </div>
 

@@ -3,15 +3,16 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
-import { StepViewModel, TaskStep, TaskStepType, TaskViewModel } from '../../models/task';
+import { StepViewModel, TaskStep, TaskStepType } from '../../models/task';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
+import { InputEditableComponent } from '../input-editable/input.editable.component';
 import { StepListComponent } from './step.list.component';
 
 @Component({
     selector: 'mtx-task-editor',
     templateUrl: 'task.edit.component.html',
-    imports: [IconComponent, StepListComponent]
+    imports: [IconComponent, StepListComponent, InputEditableComponent]
 })
 export class TaskEditComponent implements OnDestroy {
     private readonly taskService = inject(TaskService);
@@ -57,18 +58,10 @@ export class TaskEditComponent implements OnDestroy {
     protected readonly collapsedStepIds = signal<Record<string, boolean>>({});
     protected readonly editingStepIds = signal<Record<string, boolean>>({});
     protected readonly stepDrafts = signal<Record<string, StepViewModel>>({});
-    protected readonly isEditingTaskTitle = signal(false);
-    protected readonly isEditingTaskDescription = signal(false);
     protected readonly isAddStepMenuOpen = signal(false);
-    protected readonly taskDraft = signal<TaskViewModel>({ title: '', description: '' });
     private readonly renderer = inject(Renderer2);
     private readonly removeDocumentPointerListener: () => void;
 
-    @ViewChild('taskTitleEditor')
-    private taskTitleEditor?: ElementRef<HTMLElement>;
-
-    @ViewChild('taskDescriptionEditor')
-    private taskDescriptionEditor?: ElementRef<HTMLElement>;
     @ViewChild('addStepMenu')
     private addStepMenu?: ElementRef<HTMLElement>;
 
@@ -78,20 +71,6 @@ export class TaskEditComponent implements OnDestroy {
 
             if (!targetNode) {
                 return;
-            }
-
-            if (this.isEditingTaskTitle()) {
-                const titleEditorElement = this.taskTitleEditor?.nativeElement;
-                if (titleEditorElement && !titleEditorElement.contains(targetNode)) {
-                    this.onTaskTitleFocusOut();
-                }
-            }
-
-            if (this.isEditingTaskDescription()) {
-                const descriptionEditorElement = this.taskDescriptionEditor?.nativeElement;
-                if (descriptionEditorElement && !descriptionEditorElement.contains(targetNode)) {
-                    this.onTaskDescriptionFocusOut();
-                }
             }
 
             if (this.isAddStepMenuOpen()) {
@@ -124,14 +103,6 @@ export class TaskEditComponent implements OnDestroy {
     }
 
     protected saveTaskEditor(): void {
-        if (this.isEditingTaskTitle()) {
-            this.saveTaskTitle();
-        }
-
-        if (this.isEditingTaskDescription()) {
-            this.saveTaskDescription();
-        }
-
         const editingStepIds = Object.entries(this.editingStepIds())
             .filter(([, isEditing]) => isEditing)
             .map(([stepId]) => stepId);
@@ -158,52 +129,9 @@ export class TaskEditComponent implements OnDestroy {
         this.collapsedStepIds.update((state) => ({ ...state, [createdStepId]: false }));
     }
 
-    protected startEditTaskTitle(): void {
-        const currentTask = this.task();
-
-        if (!currentTask) {
-            return;
-        }
-
-        this.taskDraft.set({
-            title: currentTask.title,
-            description: currentTask.description
-        });
-        this.isEditingTaskTitle.set(true);
-    }
-
-    protected startEditTaskDescription(): void {
-        const currentTask = this.task();
-
-        if (!currentTask) {
-            return;
-        }
-
-        this.taskDraft.set({
-            title: currentTask.title,
-            description: currentTask.description
-        });
-        this.isEditingTaskDescription.set(true);
-    }
-
-    protected updateTaskDraftTitle(value: string): void {
-        this.taskDraft.update((draft) => ({
-            ...draft,
-            title: value
-        }));
-    }
-
-    protected updateTaskDraftDescription(value: string): void {
-        this.taskDraft.update((draft) => ({
-            ...draft,
-            description: value
-        }));
-    }
-
-    protected saveTaskTitle(): void {
+    protected submitTaskTitle(value: string): void {
         const taskId = this.taskId();
-        const draft = this.taskDraft();
-        const trimmedTitle = draft.title.trim();
+        const trimmedTitle = value.trim();
         const currentTask = this.task();
 
         if (!taskId || !trimmedTitle || !currentTask) {
@@ -211,28 +139,17 @@ export class TaskEditComponent implements OnDestroy {
         }
 
         this.taskService.updateTask(taskId, trimmedTitle, currentTask.description);
-        this.isEditingTaskTitle.set(false);
     }
 
-    protected saveTaskDescription(): void {
+    protected submitTaskDescription(value: string): void {
         const taskId = this.taskId();
-        const draft = this.taskDraft();
         const currentTask = this.task();
 
         if (!taskId || !currentTask) {
             return;
         }
 
-        this.taskService.updateTask(taskId, currentTask.title, draft.description.trim());
-        this.isEditingTaskDescription.set(false);
-    }
-
-    protected onTaskTitleFocusOut(): void {
-        this.saveTaskTitle();
-    }
-
-    protected onTaskDescriptionFocusOut(): void {
-        this.saveTaskDescription();
+        this.taskService.updateTask(taskId, currentTask.title, value.trim());
     }
 
     protected toggleStepCollapse(stepId: string): void {

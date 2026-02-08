@@ -1,0 +1,16 @@
+@if (isEditing()) {
+@if (multiline()) {
+<textarea #textareaRef [ngClass]="editorClass()" [value]="draft()" [placeholder]="placeholder()"
+    (input)="onDraftInput(textareaRef.value)" (blur)="onEditorBlur()"></textarea>
+} @else {
+<input #textInputRef type="text" [ngClass]="editorClass()" [value]="draft()" [placeholder]="placeholder()"
+    (input)="onDraftInput(textInputRef.value)" (keydown)="onInputKeydown($event)" (blur)="onEditorBlur()" />
+}
+} @else {
+<div class="inline-flex max-w-full items-center gap-2">
+    <div class="min-w-0" [ngClass]="textClass()">{{ value() }}</div>
+    <button type="button" class="self-center" [ngClass]="editIconButtonClass()" aria-label="Edit" (click)="startEdit()">
+        <mtx-icon [icon]="icon()"></mtx-icon>
+    </button>
+</div>
+}
