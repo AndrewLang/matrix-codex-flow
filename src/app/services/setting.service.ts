@@ -1,4 +1,5 @@
 import { Injectable, computed, signal } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 
 import { SettingModel } from '../models/setting.model';
 
@@ -43,7 +44,11 @@ export class SettingService {
     readonly promptTemplate = computed(() => this.getStringSetting(PROMPT_TEMPLATE_SETTING_KEY, DEFAULT_PROMPT_TEMPLATE));
     readonly generateVibeflowFolder = computed(() => this.getBooleanSetting(GENERATE_FOLDER_SETTING_KEY, true));
 
-    updateSettingValue(key: string, value: string | boolean): void {
+    constructor() {
+        void this.loadFromBackend();
+    }
+
+    updateSettingValue(key: string, value: string | boolean | number): void {
         this.settingsState.update((settings) =>
             settings.map((setting) =>
                 setting.key === key
@@ -54,12 +59,12 @@ export class SettingService {
                     : setting
             )
         );
-        this.persistSettings();
+        void this.persistSettings();
     }
 
     resetSettings(): void {
         this.settingsState.set(DEFAULT_SETTINGS.map((setting) => ({ ...setting })));
-        this.persistSettings();
+        void this.persistSettings();
     }
 
     private getStringSetting(key: string, fallbackValue: string): string {
@@ -106,6 +111,10 @@ export class SettingService {
                     return { ...defaultSetting, value: matchingSetting.value };
                 }
 
+                if (defaultSetting.valueType === 'number' && typeof matchingSetting.value === 'number') {
+                    return { ...defaultSetting, value: matchingSetting.value };
+                }
+
                 return { ...defaultSetting };
             });
         } catch {
@@ -113,8 +122,25 @@ export class SettingService {
         }
     }
 
-    private persistSettings(): void {
+    private async loadFromBackend(): Promise<void> {
+        try {
+            const backendSettings = await invoke<SettingModel[]>('load_settings');
+            const mergedSettings = this.mergeWithDefaults(backendSettings);
+            this.settingsState.set(mergedSettings);
+            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(mergedSettings));
+        } catch {
+            localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(this.settingsState()));
+        }
+    }
+
+    private async persistSettings(): Promise<void> {
         localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(this.settingsState()));
+
+        try {
+            await invoke('save_settings', { settings: this.settingsState() });
+        } catch {
+            return;
+        }
     }
 
     private isSettingModel(value: unknown): value is SettingModel {
@@ -123,9 +149,10 @@ export class SettingService {
         }
 
         const candidate = value as Partial<SettingModel>;
-        const hasValidValueType = candidate.valueType === 'string' || candidate.valueType === 'boolean';
+        const hasValidValueType =
+            candidate.valueType === 'string' || candidate.valueType === 'boolean' || candidate.valueType === 'number';
         const hasValidValue =
-            typeof candidate.value === 'string' || typeof candidate.value === 'boolean';
+            typeof candidate.value === 'string' || typeof candidate.value === 'boolean' || typeof candidate.value === 'number';
 
         return (
             typeof candidate.id === 'string' &&
@@ -133,5 +160,33 @@ export class SettingService {
             hasValidValueType &&
             hasValidValue
         );
+    }
+
+    private mergeWithDefaults(settings: SettingModel[]): SettingModel[] {
+        if (settings.length === 0) {
+            return DEFAULT_SETTINGS.map((setting) => ({ ...setting }));
+        }
+
+        return DEFAULT_SETTINGS.map((defaultSetting) => {
+            const matchingSetting = settings.find((setting) => setting.key === defaultSetting.key);
+
+            if (!matchingSetting) {
+                return { ...defaultSetting };
+            }
+
+            if (defaultSetting.valueType === 'string' && typeof matchingSetting.value === 'string') {
+                return { ...defaultSetting, value: matchingSetting.value };
+            }
+
+            if (defaultSetting.valueType === 'boolean' && typeof matchingSetting.value === 'boolean') {
+                return { ...defaultSetting, value: matchingSetting.value };
+            }
+
+            if (defaultSetting.valueType === 'number' && typeof matchingSetting.value === 'number') {
+                return { ...defaultSetting, value: matchingSetting.value };
+            }
+
+            return { ...defaultSetting };
+        });
     }
 }

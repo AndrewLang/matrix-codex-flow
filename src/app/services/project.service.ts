@@ -1,11 +1,7 @@
 import { Injectable, signal } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-
-const MOCK_RECENT_PROJECT_PATHS: string[] = [
-    'D:\\Code\\Github\\matrix-codex-flow',
-    'D:\\Code\\Github\\vibeflow-desktop',
-    'D:\\Work\\clients\\acme-agent-suite'
-];
+import { Project } from '../models/project';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
@@ -14,8 +10,11 @@ export class ProjectService {
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
+    recentProjects = signal<Project[]>([]);
 
-    constructor() { }
+    constructor() {
+        void this.loadRecentProjects();
+    }
 
     async chooseFolder(): Promise<string> {
         try {
@@ -43,6 +42,45 @@ export class ProjectService {
         this.addRecentProjectPath(path);
     }
 
+    async loadRecentProjects(count: number = ProjectService.MAX_RECENT_PROJECT_PATHS): Promise<Project[]> {
+        try {
+            const projects = await invoke<Project[]>('load_recent_projects', { count });
+            this.recentProjects.set(projects);
+            this.recentProjectPaths.set(projects.map((project) => project.path));
+            localStorage.setItem(
+                ProjectService.RECENT_PROJECT_PATHS_KEY,
+                JSON.stringify(this.recentProjectPaths())
+            );
+            return projects;
+        } catch {
+            return [];
+        }
+    }
+
+    async loadProject(projectId: string): Promise<Project | null> {
+        try {
+            const project = await invoke<Project | null>('load_project', { projectId });
+            return project;
+        } catch {
+            return null;
+        }
+    }
+
+    async saveProject(project: Project): Promise<void> {
+        await invoke('save_project', { project });
+    }
+
+    async deleteProject(projectId: string): Promise<void> {
+        await invoke('delete_project', { projectId });
+        const nextProjects = this.recentProjects().filter((project) => project.id !== projectId);
+        this.recentProjects.set(nextProjects);
+        this.recentProjectPaths.set(nextProjects.map((project) => project.path));
+        localStorage.setItem(
+            ProjectService.RECENT_PROJECT_PATHS_KEY,
+            JSON.stringify(this.recentProjectPaths())
+        );
+    }
+
     private addRecentProjectPath(path: string): void {
         const normalizedPath = path.trim();
 
@@ -62,20 +100,20 @@ export class ProjectService {
         const serializedPaths = localStorage.getItem(ProjectService.RECENT_PROJECT_PATHS_KEY);
 
         if (!serializedPaths) {
-            return MOCK_RECENT_PROJECT_PATHS;
+            return [];
         }
 
         try {
             const parsedValue: unknown = JSON.parse(serializedPaths);
 
             if (!Array.isArray(parsedValue)) {
-                return MOCK_RECENT_PROJECT_PATHS;
+                return [];
             }
 
             const parsedPaths = parsedValue.filter((value): value is string => typeof value === 'string');
-            return parsedPaths.length > 0 ? parsedPaths : MOCK_RECENT_PROJECT_PATHS;
+            return parsedPaths;
         } catch {
-            return MOCK_RECENT_PROJECT_PATHS;
+            return [];
         }
     }
 }

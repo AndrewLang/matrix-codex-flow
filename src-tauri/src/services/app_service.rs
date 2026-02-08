@@ -57,6 +57,15 @@ impl AppService {
         &self.app_data_dir
     }
 
+    pub fn get_settings(&self) -> Vec<SettingModel> {
+        self.settings.clone()
+    }
+
+    pub fn set_settings(&mut self, settings: Vec<SettingModel>) -> Result<(), std::io::Error> {
+        self.settings = settings;
+        self.save_settings()
+    }
+
     pub fn restore_main_window<R: Runtime>(&self, window: &WebviewWindow<R>) {
         let Some(main_window) = &self.app_config.main_window else {
             return;
