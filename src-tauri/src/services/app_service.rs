@@ -74,6 +74,19 @@ impl AppService {
     }
 
     pub fn capture_main_window_state<R: Runtime>(&mut self, window: &Window<R>) {
+        let maximized = window.is_maximized().unwrap_or(false);
+
+        if maximized {
+            if let Some(main_window) = &mut self.app_config.main_window {
+                main_window.maximized = true;
+            }
+
+            if let Err(error) = self.save_app_config() {
+                log::error!("failed saving app config: {}", error);
+            }
+            return;
+        }
+
         let position = match window.outer_position() {
             Ok(value) => value,
             Err(error) => {
@@ -82,7 +95,7 @@ impl AppService {
             }
         };
 
-        let size = match window.outer_size() {
+        let size = match window.inner_size() {
             Ok(value) => value,
             Err(error) => {
                 log::error!("failed reading window size: {}", error);
@@ -90,14 +103,12 @@ impl AppService {
             }
         };
 
-        let maximized = window.is_maximized().unwrap_or(false);
-
         self.app_config.main_window = Some(MainWindowConfig {
             x: position.x,
             y: position.y,
             width: size.width,
             height: size.height,
-            maximized,
+            maximized: false,
         });
 
         if let Err(error) = self.save_app_config() {
