@@ -203,6 +203,12 @@ impl AppService {
                 value_type: SettingValueType::String,
             },
             SettingModel {
+                id: "setting-agent-codex-api-key".to_string(),
+                key: "agent.codex.apiKey".to_string(),
+                value: SettingValue::String(String::new()),
+                value_type: SettingValueType::String,
+            },
+            SettingModel {
                 id: "setting-prompt-template".to_string(),
                 key: "prompt.template".to_string(),
                 value: SettingValue::String(

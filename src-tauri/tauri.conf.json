@@ -1,6 +1,6 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "matrix-vible-flow",
+  "productName": "Matrix VibleFlow",
   "version": "0.1.0",
   "identifier": "com.tauri.dev",
   "build": {
@@ -13,9 +13,9 @@
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Matrix Codex Workflow",
-        "width": 500,
-        "height": 900,
+        "title": "Matrix VibleFlow",
+        "width": 600,
+        "height": 1000,
         "visible": false,
         "resizable": true,
         "fullscreen": false

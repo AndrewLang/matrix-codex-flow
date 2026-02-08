@@ -5,9 +5,11 @@ import { SettingModel } from '../models/setting.model';
 
 const SETTINGS_STORAGE_KEY = 'vibeflowSettings';
 const AGENT_SETTING_KEY = 'agent.provider';
+const CODEX_API_KEY_SETTING_KEY = 'agent.codex.apiKey';
 const PROMPT_TEMPLATE_SETTING_KEY = 'prompt.template';
 const GENERATE_FOLDER_SETTING_KEY = 'project.generateVibeflowFolder';
 const AGENT_SETTING_ID = 'setting-agent-provider';
+const CODEX_API_KEY_SETTING_ID = 'setting-agent-codex-api-key';
 const PROMPT_TEMPLATE_SETTING_ID = 'setting-prompt-template';
 const GENERATE_FOLDER_SETTING_ID = 'setting-generate-folder';
 const CODEX_AGENT_VALUE = 'codex';
@@ -19,6 +21,12 @@ const DEFAULT_SETTINGS: SettingModel[] = [
         id: AGENT_SETTING_ID,
         key: AGENT_SETTING_KEY,
         value: CODEX_AGENT_VALUE,
+        valueType: 'string'
+    },
+    {
+        id: CODEX_API_KEY_SETTING_ID,
+        key: CODEX_API_KEY_SETTING_KEY,
+        value: '',
         valueType: 'string'
     },
     {
@@ -41,6 +49,7 @@ export class SettingService {
 
     readonly settings = this.settingsState.asReadonly();
     readonly agentProvider = computed(() => this.getStringSetting(AGENT_SETTING_KEY, CODEX_AGENT_VALUE));
+    readonly codexApiKey = computed(() => this.getStringSetting(CODEX_API_KEY_SETTING_KEY, ''));
     readonly promptTemplate = computed(() => this.getStringSetting(PROMPT_TEMPLATE_SETTING_KEY, DEFAULT_PROMPT_TEMPLATE));
     readonly generateVibeflowFolder = computed(() => this.getBooleanSetting(GENERATE_FOLDER_SETTING_KEY, true));
 

@@ -34,9 +34,18 @@
                     <option value="codex">Codex</option>
                 </select>
                 <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
-                    ▼
+                    &#9662;
                 </span>
             </div>
+
+            @if (agentProvider() === 'codex') {
+            <label class="mt-4 block text-sm text-slate-300" for="codex-api-key">Codex API Key</label>
+            <input #codexApiKeyInput id="codex-api-key" type="password" autocomplete="off"
+                class="mt-2 w-full rounded-xl bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 shadow-inner shadow-slate-950/50"
+                [value]="codexApiKey()" (input)="setCodexApiKey(codexApiKeyInput.value)"
+                placeholder="Enter Codex API key" />
+            <p class="mt-2 text-xs text-slate-500">Stored in app settings and used for Codex agent requests.</p>
+            }
         </article>
 
         <article class="rounded-2xl bg-slate-900/60 p-5 backdrop-blur ">

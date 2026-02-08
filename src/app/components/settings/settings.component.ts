@@ -12,11 +12,13 @@ export class SettingsComponent {
     private readonly settingService = inject(SettingService);
 
     protected readonly agentProvider = signal(this.settingService.agentProvider());
+    protected readonly codexApiKey = signal(this.settingService.codexApiKey());
     protected readonly promptTemplate = signal(this.settingService.promptTemplate());
     protected readonly generateVibeflowFolder = signal(this.settingService.generateVibeflowFolder());
     protected readonly hasUnsavedChanges = computed(() => {
         return (
             this.agentProvider() !== this.settingService.agentProvider() ||
+            this.codexApiKey() !== this.settingService.codexApiKey() ||
             this.promptTemplate() !== this.settingService.promptTemplate() ||
             this.generateVibeflowFolder() !== this.settingService.generateVibeflowFolder()
         );
@@ -24,6 +26,10 @@ export class SettingsComponent {
 
     protected setAgentProvider(value: string): void {
         this.agentProvider.set(value);
+    }
+
+    protected setCodexApiKey(value: string): void {
+        this.codexApiKey.set(value);
     }
 
     protected setPromptTemplate(value: string): void {
@@ -36,6 +42,7 @@ export class SettingsComponent {
 
     protected saveSettings(): void {
         this.settingService.updateSettingValue('agent.provider', this.agentProvider());
+        this.settingService.updateSettingValue('agent.codex.apiKey', this.codexApiKey().trim());
         this.settingService.updateSettingValue('prompt.template', this.promptTemplate().trim());
         this.settingService.updateSettingValue('project.generateVibeflowFolder', this.generateVibeflowFolder());
     }
@@ -43,6 +50,7 @@ export class SettingsComponent {
     protected resetToDefault(): void {
         this.settingService.resetSettings();
         this.agentProvider.set(this.settingService.agentProvider());
+        this.codexApiKey.set(this.settingService.codexApiKey());
         this.promptTemplate.set(this.settingService.promptTemplate());
         this.generateVibeflowFolder.set(this.settingService.generateVibeflowFolder());
     }
