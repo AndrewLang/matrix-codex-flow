@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, signal } from '@angular/core';
+import { Component, input, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { NavItem } from '../../models/nav.model';
 import { IconComponent } from '../icon/icon.component';
@@ -10,8 +10,10 @@ import { IconComponent } from '../icon/icon.component';
     imports: [RouterLink, RouterLinkActive, IconComponent, CommonModule],
 })
 export class SidebarComponent {
-    @Input({ required: true })
-    items: NavItem[] = [];
+
+    items = input<NavItem[]>();
+    settingRoute = input<string>('/workspace/settings');
+
 
     protected readonly isCollapsed = signal(true);
 

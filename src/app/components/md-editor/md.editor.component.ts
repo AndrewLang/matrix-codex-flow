@@ -15,6 +15,7 @@ import { EditorView, keymap } from '@codemirror/view';
 export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     readonly value = input<string>('');
     readonly placeholder = input<string>('Write markdown content');
+    readonly background = input<string>('#0f172a');
     readonly valueChange = output<string>();
 
     @ViewChild('editor', { static: true })
@@ -44,10 +45,10 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                             fontSize: '14px',
                         },
                         '.cm-editor': {
-                            backgroundColor: '#0f172a',
+                            backgroundColor: this.background(),
                         },
                         '.cm-scroller': {
-                            backgroundColor: '#0f172a',
+                            backgroundColor: this.background(),
                             borderRadius: '0.25rem',
                             overflow: 'hidden',
                         },

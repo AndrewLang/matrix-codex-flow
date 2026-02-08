@@ -16,7 +16,7 @@
 
         <nav class="flex-1 px-2">
             <ul class="space-y-2">
-                @for (item of items; track item.label) {
+                @for (item of items(); track item.label) {
                 <li>
                     @if (isLeaf(item)) {
                     <a class="group flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
@@ -47,7 +47,7 @@
 
         <div class="p-2">
             <a class="flex h-12 rounded-lg items-center px-3 space-x-2 text-slate-300 transition hover:bg-slate-800/80 hover:text-white"
-                routerLink="/">
+                [routerLink]="settingRoute()" routerLinkActive="text-white bg-slate-900/80" title="Settings">
                 <mtx-icon [icon]="'gear text-xl'"></mtx-icon>
                 @if (!isCollapsed()) {
                 <span class="text-sm font-medium">Settings</span>

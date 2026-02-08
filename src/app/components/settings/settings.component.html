@@ -1,0 +1,71 @@
+<section class="flex h-full min-h-0 flex-col gap-4 overflow-y-auto p-3 text-slate-200">
+    <header class="flex flex-col rounded-2xl bg-slate-900/60 p-5 backdrop-blur ">
+        <div>
+            <h1 class="text-xl font-semibold text-slate-100">Settings</h1>
+            <p class="mt-2 text-xs text-slate-400">Configure agent behavior, prompt template, and project generation
+                flags.
+            </p>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 border-t border-slate-800/80 pt-3 mt-3">
+            <button type="button"
+                class="rounded bg-slate-800 px-4 py-2 text-sm font-medium text-slate-200 transition hover:bg-slate-700"
+                (click)="resetToDefault()">
+                Reset
+            </button>
+            <button type="button"
+                class="rounded bg-emerald-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-emerald-500 disabled:cursor-not-allowed disabled:opacity-60"
+                [disabled]="!hasUnsavedChanges()" (click)="saveSettings()">
+                Save Settings
+            </button>
+        </div>
+    </header>
+
+    <div class="grid gap-4">
+        <article class="rounded-2xl bg-slate-900/60 p-5 backdrop-blur ">
+            <h2 class="text-base font-semibold text-slate-100">Agent Setting</h2>
+            <p class="mt-1 text-sm text-slate-400">Choose the agent provider used by the VibeFlow.</p>
+
+            <label class="mt-4 block text-sm text-slate-300" for="agent-provider">Provider</label>
+            <div class="relative mt-2">
+                <select #agentProviderInput id="agent-provider"
+                    class="w-full appearance-none rounded-xl bg-slate-800/80 px-3 py-2 pr-12 text-sm text-slate-100 outline-none ring-0 shadow-inner shadow-slate-950/50"
+                    [value]="agentProvider()" (change)="setAgentProvider(agentProviderInput.value)">
+                    <option value="codex">Codex</option>
+                </select>
+                <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+                    ▼
+                </span>
+            </div>
+        </article>
+
+        <article class="rounded-2xl bg-slate-900/60 p-5 backdrop-blur ">
+            <h2 class="text-base font-semibold text-slate-100">Prompt Template</h2>
+            <p class="mt-1 text-sm text-slate-400">Define the base instruction template injected into agent prompts.</p>
+
+            <div class="mt-4 rounded-2xl bg-slate-800/50">
+                <mtx-md-editor [value]="promptTemplate()" placeholder="Enter prompt template" background="#020617"
+                    (valueChange)="setPromptTemplate($event)"></mtx-md-editor>
+            </div>
+        </article>
+
+        <article class="rounded-2xl bg-slate-900/60 p-5 backdrop-blur ">
+            <h2 class="text-base font-semibold text-slate-100">Project Context</h2>
+            <p class="mt-1 text-sm text-slate-400">Control whether VibeFlow generates a local <code>./vibeflow</code>
+                folder in the project directory.</p>
+
+            <label class="mt-4 flex items-center justify-between gap-3 rounded-xl bg-slate-800/60 px-3 py-2">
+                <span class="text-sm text-slate-200">Generate <code>./vibeflow</code> folder</span>
+                <button type="button" role="switch" [attr.aria-checked]="generateVibeflowFolder()"
+                    class="relative h-7 w-12 rounded-full transition-colors duration-200"
+                    [class.bg-emerald-500]="generateVibeflowFolder()" [class.bg-slate-600]="!generateVibeflowFolder()"
+                    (click)="setGenerateVibeflowFolder(!generateVibeflowFolder())">
+                    <span
+                        class="absolute left-1 top-1 h-5 w-5 rounded-full bg-white shadow transition-transform duration-200"
+                        [class.translate-x-5]="generateVibeflowFolder()"
+                        [class.translate-x-0]="!generateVibeflowFolder()"></span>
+                </button>
+            </label>
+        </article>
+    </div>
+</section>
