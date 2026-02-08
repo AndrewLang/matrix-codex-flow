@@ -1,42 +1,35 @@
-import { Component, computed, inject, input, OnInit, SecurityContext } from '@angular/core';
+import { Component, computed, inject, input, SecurityContext } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import hljs from 'highlight.js';
 import { marked, Renderer } from 'marked';
-
-const EMPTY_MARKDOWN = '';
-
-const renderer = new Renderer();
-
-renderer.code = ({ text, lang }) => {
-    const valid = lang && hljs.getLanguage(lang);
-    const highlighted = valid
-        ? hljs.highlight(text, { language: lang }).value
-        : hljs.highlightAuto(text).value;
-
-    return `<pre><code class="hljs ${lang ?? ''}">${highlighted}</code></pre>`;
-};
-
-marked.setOptions({
-    gfm: true,
-    breaks: true,
-    renderer,
-});
 
 @Component({
     selector: 'mtx-md-renderer',
     templateUrl: 'md.renderer.component.html'
 })
-export class MarkdownRendererComponent implements OnInit {
-    readonly markdown = input<string>(EMPTY_MARKDOWN);
+export class MarkdownRendererComponent {
+    readonly markdown = input<string>('');
 
     private readonly sanitizer = inject(DomSanitizer);
+    private readonly renderer = new Renderer();
 
-    ngOnInit(): void {
+    constructor() {
+        this.renderer.code = ({ text, lang }) => {
+            const valid = lang && hljs.getLanguage(lang);
+            const highlighted = valid
+                ? hljs.highlight(text, { language: lang }).value
+                : hljs.highlightAuto(text).value;
 
+            return `<pre><code class="hljs ${lang ?? ''}">${highlighted}</code></pre>`;
+        };
     }
 
     readonly renderedHtml = computed(() => {
-        const raw = marked.parse(this.markdown());
+        const raw = marked.parse(this.markdown(), {
+            gfm: true,
+            breaks: true,
+            renderer: this.renderer,
+        });
         return this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
     });
 }
