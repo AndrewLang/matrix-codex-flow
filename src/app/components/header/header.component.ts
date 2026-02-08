@@ -29,7 +29,7 @@ export class HeaderComponent implements OnInit {
             return;
         }
         try {
-            this.projectService.saveProject(project);
+            await this.projectService.saveProject(project);
             this.setMessage({ content: 'Project saved', type: 'success', timestamp: new Date() });
         } catch {
             this.setMessage({ content: 'Failed to save project', type: 'error', timestamp: new Date() });

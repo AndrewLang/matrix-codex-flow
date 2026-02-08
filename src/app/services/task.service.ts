@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { effect, Injectable, inject, signal } from '@angular/core';
 
 import { Task, TaskStep, TaskStepType } from '../models/task';
 import { ProjectService } from './project.service';
@@ -9,6 +9,13 @@ export class TaskService {
     private readonly tasksState = signal<Task[]>([]);
 
     readonly tasks = this.tasksState.asReadonly();
+
+    constructor() {
+        effect(() => {
+            const project = this.projectService.currentProject();
+            this.tasksState.set(project?.tasks.map((task) => ({ ...task })) ?? []);
+        });
+    }
 
     addTask(): void {
         const nextTaskIndex = this.tasksState().length + 1;
@@ -28,6 +35,7 @@ export class TaskService {
         };
 
         this.tasksState.update((tasks) => [nextTask, ...tasks]);
+        this.syncCurrentProjectTasks();
     }
 
     runTask(taskId: string): void {
@@ -44,10 +52,12 @@ export class TaskService {
                     : task
             )
         );
+        this.syncCurrentProjectTasks();
     }
 
     deleteTask(taskId: string): void {
         this.tasksState.update((tasks) => tasks.filter((task) => task.id !== taskId));
+        this.syncCurrentProjectTasks();
     }
 
     updateTask(taskId: string, title: string, description: string): void {
@@ -65,6 +75,7 @@ export class TaskService {
                     : task
             )
         );
+        this.syncCurrentProjectTasks();
     }
 
     findTask(taskId: string): Task | undefined {
@@ -108,6 +119,7 @@ export class TaskService {
                 };
             })
         );
+        this.syncCurrentProjectTasks();
 
         return createdStepId;
     }
@@ -141,6 +153,7 @@ export class TaskService {
                 };
             })
         );
+        this.syncCurrentProjectTasks();
     }
 
     deleteStep(taskId: string, stepId: string): void {
@@ -161,6 +174,19 @@ export class TaskService {
                     updatedAt: currentTimestamp
                 };
             })
+        );
+        this.syncCurrentProjectTasks();
+    }
+
+    private syncCurrentProjectTasks(): void {
+        this.projectService.currentProject.update((project) =>
+            project
+                ? {
+                    ...project,
+                    tasks: this.tasksState().map((task) => ({ ...task })),
+                    updatedAt: Date.now()
+                }
+                : project
         );
     }
 }

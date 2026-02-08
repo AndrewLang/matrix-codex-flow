@@ -5,6 +5,7 @@ import { marked } from 'marked';
 
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
 import { IconComponent } from "../icon/icon.component";
+import { ContextService } from '../../services/context.service';
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
 
@@ -16,7 +17,8 @@ const INITIAL_AGENT_RULES: AgentRule[] = [];
     imports: [DatePipe, IconComponent, MarkdownEditorComponent, MarkdownRendererComponent]
 })
 export class ContextComponent {
-    protected readonly agentRules = signal<AgentRule[]>(INITIAL_AGENT_RULES);
+    private readonly contextService = inject(ContextService);
+    protected readonly agentRules = this.contextService.agentRules;
     protected readonly collapsedRuleIds = signal<Record<string, boolean>>(
         INITIAL_AGENT_RULES.reduce<Record<string, boolean>>((state, rule) => {
             state[rule.id] = true;
@@ -39,7 +41,7 @@ export class ContextComponent {
             updatedAt: currentTimestamp
         };
 
-        this.agentRules.update((rules) => [...rules, nextAgentRule]);
+        this.contextService.addRule(nextAgentRule);
         this.collapsedRuleIds.update((state) => ({ ...state, [nextAgentRule.id]: true }));
     }
 
@@ -125,24 +127,18 @@ export class ContextComponent {
 
         const currentTimestamp = Date.now();
 
-        this.agentRules.update((rules) =>
-            rules.map((rule) =>
-                rule.id === ruleId
-                    ? {
-                        ...rule,
-                        name: trimmedName,
-                        description: trimmedDescription || undefined,
-                        updatedAt: currentTimestamp
-                    }
-                    : rule
-            )
+        this.contextService.updateRule(
+            ruleId,
+            trimmedName,
+            trimmedDescription || undefined,
+            currentTimestamp
         );
 
         this.editingRuleIds.update((state) => ({ ...state, [ruleId]: false }));
     }
 
     protected deleteRule(ruleId: string): void {
-        this.agentRules.update((rules) => rules.filter((rule) => rule.id !== ruleId));
+        this.contextService.deleteRule(ruleId);
 
         this.collapsedRuleIds.update((state) => {
             const nextState = { ...state };
