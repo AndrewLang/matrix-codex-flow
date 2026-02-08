@@ -8,10 +8,10 @@
     </div>
     <div class="flex items-end">
         @if(message(); as msg){
-        <div class="mr-4 self-end rounded px-3 py-1 text-sm" [ngClass]="{
-                ' text-green-800': msg.type === 'success',
-                ' text-red-800': msg.type === 'error',
-                ' text-blue-800': msg.type === 'info'
+        <div class="mr-4 self-end rounded-xl px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur" [ngClass]="{
+                'bg-emerald-500/20 text-emerald-200': msg.type === 'success',
+                'bg-rose-500/20 text-rose-200': msg.type === 'error',
+                'bg-sky-500/20 text-sky-200': msg.type === 'info'
             }">
             {{msg.content}}
         </div>

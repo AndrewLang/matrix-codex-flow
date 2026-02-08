@@ -16,7 +16,7 @@ export class ProjectService {
     currentProject = signal<Project | null>(null);
 
     constructor() {
-
+        void this.initializeProjectState();
     }
 
     async chooseFolder(): Promise<string> {
@@ -93,6 +93,10 @@ export class ProjectService {
         try {
             const project = await invoke<Project | null>('load_project', { projectId });
             this.currentProject.set(project);
+            if (project) {
+                this.setProjectPath(project.path);
+                localStorage.setItem(ProjectService.LOADED_PROJECT_ID_KEY, project.id);
+            }
             return project;
         } catch {
             return null;
@@ -159,5 +163,17 @@ export class ProjectService {
         } catch {
             return [];
         }
+    }
+
+    private async initializeProjectState(): Promise<void> {
+        const savedProjectPath = this.projectPath().trim();
+
+        if (savedProjectPath) {
+            await this.loadOrCreateProjectByPath(savedProjectPath);
+        } else {
+            await this.loadLastProject();
+        }
+
+        await this.loadRecentProjects();
     }
 }
