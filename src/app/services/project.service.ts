@@ -7,14 +7,16 @@ import { Project } from '../models/project';
 export class ProjectService {
     static readonly PROJECT_PATH_KEY = 'projectPath';
     static readonly RECENT_PROJECT_PATHS_KEY = 'recentProjectPaths';
+    static readonly LOADED_PROJECT_ID_KEY = 'loadedProjectId';
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
+
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
     currentProject = signal<Project | null>(null);
 
     constructor() {
-        void this.loadRecentProjects();
+
     }
 
     async chooseFolder(): Promise<string> {
@@ -53,6 +55,7 @@ export class ProjectService {
                 return [project, ...deduplicatedProjects].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
             });
             this.recentProjectPaths.set(this.recentProjects().map((projectItem) => projectItem.path));
+            localStorage.setItem(ProjectService.LOADED_PROJECT_ID_KEY, project.id);
             localStorage.setItem(
                 ProjectService.RECENT_PROJECT_PATHS_KEY,
                 JSON.stringify(this.recentProjectPaths())
@@ -76,6 +79,14 @@ export class ProjectService {
         } catch {
             return [];
         }
+    }
+
+    async loadLastProject(): Promise<Project | null> {
+        const lastProjectId = localStorage.getItem(ProjectService.LOADED_PROJECT_ID_KEY);
+        if (lastProjectId) {
+            return await this.loadProject(lastProjectId);
+        }
+        return null;
     }
 
     async loadProject(projectId: string): Promise<Project | null> {
@@ -105,8 +116,8 @@ export class ProjectService {
 
     async revealProjectInFolder(): Promise<void> {
         let projectPath = this.projectPath();
-        if(projectPath) {
-            await this.openFolder(projectPath)  ;
+        if (projectPath) {
+            await this.openFolder(projectPath);
         }
     }
 
