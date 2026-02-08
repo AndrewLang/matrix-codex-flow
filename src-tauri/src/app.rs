@@ -3,6 +3,7 @@ use std::sync::{Mutex, Once};
 use tauri::{Builder, Error, Manager, WindowEvent, Wry};
 
 use crate::services::app_service::AppService;
+use crate::services::data_service::DataService;
 
 pub struct App;
 
@@ -21,6 +22,12 @@ impl App {
     fn build(&self) -> Builder<Wry> {
         Builder::default()
             .plugin(tauri_plugin_dialog::init())
+            .invoke_handler(tauri::generate_handler![
+                crate::commands::project_commands::load_recent_projects,
+                crate::commands::project_commands::load_project,
+                crate::commands::project_commands::save_project,
+                crate::commands::project_commands::delete_project
+            ])
             .on_window_event(|window, event| {
                 if window.label() != "main" {
                     return;
@@ -40,6 +47,10 @@ impl App {
             .setup(|app| {
                 let app_service = AppService::load(app.handle());
                 log::info!("app data directory: {}", app_service.app_data_dir().display());
+                let data_service = match DataService::new(app_service.app_data_dir().clone()) {
+                    Ok(service) => service,
+                    Err(error) => return Err(error.into()),
+                };
 
                 if let Some(main_window) = app.get_webview_window("main") {
                     app_service.restore_main_window(&main_window);
@@ -47,6 +58,7 @@ impl App {
                 }
 
                 app.manage(Mutex::new(app_service));
+                app.manage(Mutex::new(data_service));
                 log::info!("backend logging initialized");
                 log::info!("app name: {}", app.package_info().name);
 
