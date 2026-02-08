@@ -5,6 +5,7 @@ import { Task, TaskStep, TaskStepType } from '../models/task';
 const INITIAL_TASKS: Task[] = [
     {
         id: 'task-1',
+        projectId: 'project-1',
         title: 'Prepare project brief',
         description: 'Compile a comprehensive project brief outlining objectives, scope, and deliverables.',
         presteps: [],
@@ -35,6 +36,7 @@ const INITIAL_TASKS: Task[] = [
     },
     {
         id: 'task-2',
+        projectId: 'project-1',
         title: 'Build context timeline',
         description: 'Create a chronological timeline of key events and interactions to provide context for the project.',
         presteps: [],
@@ -56,6 +58,7 @@ const INITIAL_TASKS: Task[] = [
     },
     {
         id: 'task-3',
+        projectId: 'project-1',
         title: 'Validate workflow sync',
         description: 'Ensure that the workflow synchronization mechanism is functioning correctly across all components.',
         presteps: [],
@@ -89,6 +92,7 @@ export class TaskService {
 
         const nextTask: Task = {
             id: `task-${currentTimestamp}`,
+            projectId: 'project-1',
             title: `New Task ${nextTaskIndex}`,
             description: 'Task description goes here.',
             steps: [],

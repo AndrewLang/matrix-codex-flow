@@ -4,6 +4,7 @@ export type TaskFilterTab = 'pending' | 'finished' | 'failed';
 
 export interface Task {
     id: string;
+    projectId: string;
     title: string;
     description: string;
     steps: TaskStep[];
@@ -13,7 +14,6 @@ export interface Task {
     createdAt: number;
     updatedAt: number;
 }
-
 
 export interface TaskStep {
     id: string;
