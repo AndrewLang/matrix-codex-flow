@@ -36,6 +36,7 @@
         <mtx-task-list
             [tasks]="filteredTasks()"
             [emptyMessage]="emptyMessage()"
+            (viewTask)="viewTask($event)"
             (editTask)="editTask($event)"
             (runTask)="runTask($event)"
             (deleteTask)="deleteTask($event)"></mtx-task-list>

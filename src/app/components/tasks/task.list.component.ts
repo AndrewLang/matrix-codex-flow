@@ -12,6 +12,7 @@ import { IconComponent } from '../icon/icon.component';
 export class TaskListComponent {
     readonly tasks = input<Task[]>([]);
     readonly emptyMessage = input<string>('No tasks found.');
+    readonly viewTask = output<string>();
     readonly editTask = output<string>();
     readonly runTask = output<string>();
     readonly deleteTask = output<string>();
@@ -38,6 +39,10 @@ export class TaskListComponent {
 
     protected onEditTask(taskId: string): void {
         this.editTask.emit(taskId);
+    }
+
+    protected onViewTask(taskId: string): void {
+        this.viewTask.emit(taskId);
     }
 
     protected onDeleteTask(taskId: string): void {

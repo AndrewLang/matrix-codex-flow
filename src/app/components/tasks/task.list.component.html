@@ -18,6 +18,11 @@
                     <mtx-icon icon="play text"></mtx-icon>
                 </button>
                 <button type="button"
+                    class="rounded-full bg-slate-700 px-2 py-1.5 text-xs text-indigo-400 transition hover:bg-indigo-600/30 hover:text-indigo-200"
+                    aria-label="View task" (click)="onViewTask(task.id)">
+                    <mtx-icon icon="eye text"></mtx-icon>
+                </button>
+                <button type="button"
                     class="rounded-full bg-slate-700 px-2 py-1.5 text-xs text-sky-400 transition hover:bg-sky-600/30 hover:text-sky-200"
                     aria-label="Edit task" (click)="onEditTask(task.id)">
                     <mtx-icon icon="pencil text"></mtx-icon>

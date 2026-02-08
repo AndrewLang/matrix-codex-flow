@@ -60,6 +60,10 @@ export class TasksComponent {
         void this.router.navigate(['/workspace/tasks/edit', taskId]);
     }
 
+    protected viewTask(taskId: string): void {
+        void this.router.navigate(['/workspace/tasks/view', taskId]);
+    }
+
     protected deleteTask(taskId: string): void {
         this.taskService.deleteTask(taskId);
     }

@@ -19,6 +19,11 @@ export const routes: Routes = [
                 loadComponent: () =>
                     import('../components/tasks/task.edit.component').then((module) => module.TaskEditComponent)
             },
+            {
+                path: 'tasks/view/:taskId',
+                loadComponent: () =>
+                    import('../components/tasks/task.view.component').then((module) => module.TaskViewComponent)
+            },
             { path: 'tasks', component: TasksComponent },
             { path: 'settings', component: SettingsComponent },
             { path: '**', redirectTo: 'chat' }
