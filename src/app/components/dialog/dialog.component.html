@@ -1,0 +1,40 @@
+@if (open()) {
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-4" (click)="onBackdropClick()">
+    <div class="rounded-xl border border-slate-700/70 bg-slate-900/95 p-4 shadow-2xl backdrop-blur-xl"
+        [ngClass]="containerClass()" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+        <div class="flex items-start justify-between gap-3">
+            <h3 class="text-base font-semibold text-slate-100">
+                {{ title() }}
+            </h3>
+            @if (showCloseButton()) {
+            <button type="button"
+                class="rounded bg-slate-800 px-2 py-1 text-xs text-slate-200 transition hover:bg-slate-700"
+                aria-label="Close dialog" (click)="onCloseClick()">
+                x
+            </button>
+            }
+        </div>
+
+        <div class="mt-3">
+            @if (mode() === 'prompt') {
+            <p class="whitespace-pre-wrap text-sm leading-6 text-slate-300">{{ message() }}</p>
+            } @else {
+            <ng-content></ng-content>
+            }
+        </div>
+
+        <div class="mt-4 flex items-center justify-end gap-2">
+            @if (mode() === 'prompt') {
+            <button type="button" [class]="cancelButtonClass()" (click)="onCancelClick()">
+                {{ cancelLabel() }}
+            </button>
+            <button type="button" [class]="confirmButtonClass()" (click)="onConfirmClick()">
+                {{ confirmLabel() }}
+            </button>
+            } @else {
+            <ng-content select="[dialogFooter]"></ng-content>
+            }
+        </div>
+    </div>
+</div>
+}

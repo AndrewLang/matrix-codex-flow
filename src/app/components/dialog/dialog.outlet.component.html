@@ -1,0 +1,14 @@
+@if (dialog(); as currentDialog) {
+<mtx-dialog [open]="isOpen()" [mode]="currentDialog.mode" [title]="currentDialog.title" [size]="currentDialog.size"
+    [closeOnBackdrop]="currentDialog.closeOnBackdrop" [showCloseButton]="currentDialog.showCloseButton"
+    [message]="currentDialog.mode === 'prompt' ? currentDialog.message : ''"
+    [confirmLabel]="currentDialog.mode === 'prompt' ? currentDialog.confirmLabel : 'OK'"
+    [cancelLabel]="currentDialog.mode === 'prompt' ? currentDialog.cancelLabel : 'Cancel'"
+    [confirmButtonClass]="currentDialog.mode === 'prompt' ? currentDialog.confirmButtonClass : ''"
+    [cancelButtonClass]="currentDialog.mode === 'prompt' ? currentDialog.cancelButtonClass : ''" (closed)="onClose()"
+    (cancelled)="onCancel()" (confirmed)="onConfirm()">
+    @if (currentDialog.mode === 'content') {
+    <ng-container *ngComponentOutlet="currentDialog.component; inputs: currentDialog.componentInputs"></ng-container>
+    }
+</mtx-dialog>
+}

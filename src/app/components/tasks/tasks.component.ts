@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 
 import { CommandDescriptor } from '../../models/command';
 import { Task, TaskFilterTab, TaskTabItem } from '../../models/task';
+import { DialogService } from '../../services/dialog.service';
 import { TaskService } from '../../services/task.service';
 import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 import { TaskListComponent } from './task.list.component';
@@ -23,6 +24,7 @@ export class TasksComponent {
     readonly selectedTab = signal<TaskFilterTab>('pending');
 
     private readonly taskService = inject(TaskService);
+    private readonly dialogService = inject(DialogService);
     private readonly router = inject(Router);
 
     readonly tasks = this.taskService.tasks;
@@ -72,7 +74,22 @@ export class TasksComponent {
         void this.router.navigate(['/workspace/tasks/view', taskId]);
     }
 
-    deleteTask(taskId: string): void {
+    async deleteTask(taskId: string): Promise<void> {
+        const task = this.tasks().find((currentTask) => currentTask.id === taskId);
+        const taskTitle = task?.title ?? 'this task';
+        const isConfirmed = await this.dialogService.openPrompt({
+            title: 'Delete Task',
+            message: `Delete "${taskTitle}"? This action cannot be undone.`,
+            confirmLabel: 'Delete',
+            cancelLabel: 'Cancel',
+            confirmButtonClass: 'rounded bg-rose-600 px-3 py-1.5 text-xs text-white transition hover:bg-rose-500',
+            size: 'sm',
+        });
+
+        if (!isConfirmed) {
+            return;
+        }
+
         this.taskService.deleteTask(taskId);
     }
 }
