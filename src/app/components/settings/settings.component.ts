@@ -1,12 +1,14 @@
 import { Component, computed, inject, signal } from '@angular/core';
 
+import { CommandDescriptor } from '../../models/command';
 import { SettingService } from '../../services/setting.service';
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
+import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 
 @Component({
     selector: 'mtx-settings',
     templateUrl: 'settings.component.html',
-    imports: [MarkdownEditorComponent]
+    imports: [MarkdownEditorComponent, WorkspaceHeaderComponent]
 })
 export class SettingsComponent {
     private readonly settingService = inject(SettingService);
@@ -25,6 +27,10 @@ export class SettingsComponent {
             this.generateVibeflowFolder() !== this.settingService.generateVibeflowFolder()
         );
     });
+    protected readonly headerRightCommands = computed<CommandDescriptor[]>(() => [
+        { id: 'reset-settings', title: 'Reset', action: () => this.resetToDefault() },
+        { id: 'save-settings', title: 'Save Settings', action: () => this.saveSettings() }
+    ]);
 
     protected setAgentProvider(value: string): void {
         this.agentProvider.set(value);
@@ -47,6 +53,10 @@ export class SettingsComponent {
     }
 
     protected saveSettings(): void {
+        if (!this.hasUnsavedChanges()) {
+            return;
+        }
+
         this.settingService.updateSettingValue('agent.provider', this.agentProvider());
         this.settingService.updateSettingValue('agent.codex.apiKey', this.codexApiKey().trim());
         this.settingService.updateSettingValue('agent.model', this.agentModel().trim());
