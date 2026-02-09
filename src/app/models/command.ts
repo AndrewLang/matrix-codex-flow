@@ -3,6 +3,7 @@ export interface CommandDescriptor {
     title: string;
     description?: string;
     icon?: string;
+    tag?: string;
     subCommands?: CommandDescriptor[];
-    action?: () => void | Promise<void>;
+    action?: (context?: any) => void | Promise<void>;
 }
