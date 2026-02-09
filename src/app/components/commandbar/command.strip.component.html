@@ -1,0 +1,21 @@
+<div class="flex items-center gap-{{space()}}">
+    @for (command of commands(); track command.id) {
+    <div class="relative inline-flex items-center" [attr.data-command-menu]="command.id">
+        @if (hasSubCommands(command)) {
+        <mtx-split-button [command]="command"></mtx-split-button>
+        } @else {
+        <button type="button"
+            class="inline-flex items-center rounded bg-slate-800/80 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
+            (click)="invokeCommand(command)">
+
+            @if (command.icon) {
+            <mtx-icon [icon]="command.icon"></mtx-icon>
+            }
+            @if(command.title !== '') {
+            <span>{{ command.title }}</span>
+            }
+        </button>
+        }
+    </div>
+    }
+</div>

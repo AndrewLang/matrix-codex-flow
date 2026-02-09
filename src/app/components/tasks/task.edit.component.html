@@ -1,14 +1,8 @@
 <div class="flex h-full min-h-0 flex-col gap-4 overflow-visible p-2 text-slate-200">
-    <mtx-workspace-header [rightCommands]="headerCommands()" (commandSelected)="onHeaderCommand($event)"
+    <mtx-workspace-header [leftCommands]="headerLeftCommands()" [rightCommands]="headerRightCommands()"
         leftLabel="Edit task steps and markdown step content.">
 
         <div headerContent class="flex items-start gap-2">
-            <button type="button"
-                class="rounded-full bg-slate-800 px-2 py-1 mt-1 text-sm text-slate-200 transition hover:bg-slate-700"
-                (click)="goBack()" aria-label="Back to tasks">
-                <mtx-icon icon="arrow-left"></mtx-icon>
-            </button>
-
             <div class="space-y-2 w-full">
                 <mtx-input-editable [value]="task()?.title ?? 'Task Not Found'" placeholder="Task title"
                     textClass="text-lg font-semibold text-slate-100"
@@ -17,7 +11,7 @@
                     (submitValue)="submitTaskTitle($event)">
                 </mtx-input-editable>
 
-                <div class="mt-1 mb-2">
+                <div class="mt-1">
                     <mtx-input-editable [value]="task()?.description ?? ''" [multiline]="true"
                         placeholder="Task description" textClass="text-xs text-slate-400"
                         editorClass="min-h-20 w-full resize-y rounded bg-slate-900/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500 border border-amber-600"
@@ -28,76 +22,6 @@
             </div>
         </div>
     </mtx-workspace-header>
-
-    <!-- <header class="relative z-30 flex flex-col overflow-visible rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
-        <div class="flex items-start gap-2">
-            <button type="button"
-                class="rounded-full bg-slate-800 px-2 py-1 mt-1 text-sm text-slate-200 transition hover:bg-slate-700"
-                (click)="goBack()" aria-label="Back to tasks">
-                <mtx-icon icon="arrow-left"></mtx-icon>
-            </button>
-
-            <div class="space-y-2 w-full">
-                <mtx-input-editable [value]="task()?.title ?? 'Task Not Found'" placeholder="Task title"
-                    textClass="text-lg font-semibold text-slate-100"
-                    editorClass="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 border border-amber-600"
-                    editIconButtonClass="rounded px-2 py-1 text-sky-300 transition hover:bg-slate-700"
-                    (submitValue)="submitTaskTitle($event)">
-                </mtx-input-editable>
-
-                <div class="mt-1 mb-2">
-                    <mtx-input-editable [value]="task()?.description ?? ''" [multiline]="true"
-                        placeholder="Task description" textClass="text-xs text-slate-400"
-                        editorClass="min-h-20 w-full resize-y rounded bg-slate-900/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500 border border-amber-600"
-                        editIconButtonClass="rounded-full px-2 py-1 text-sky-300 transition hover:bg-slate-700"
-                        (submitValue)="submitTaskDescription($event)">
-                    </mtx-input-editable>
-                </div>
-            </div>
-        </div>
-
-        <div class="flex items-center justify-between gap-2 border-t border-slate-800/80 pt-3">
-            <div>
-                <p class="text-xs text-slate-500">Edit task steps and markdown step content.</p>
-            </div>
-            <div>
-                @if (task()) {
-                <div #addStepMenu class="relative flex items-center gap-2">
-
-                    <div class="flex items-center">
-                        <button type="button"
-                            class="rounded-l bg-slate-800 px-3 py-2 text-sm font-medium text-slate-100 transition hover:bg-slate-700"
-                            (click)="addStep()" title="Add step to task">
-                            Add Step
-                        </button>
-                        <button type="button"
-                            class="rounded-r border-l border-slate-700 bg-slate-800 px-2.5 py-1.5 text-slate-200 transition hover:bg-slate-700"
-                            (click)="toggleAddStepMenu()" aria-label="Open add step options">
-                            <mtx-icon
-                                [icon]="isAddStepMenuOpen() ? 'chevron-up text-xs' : 'chevron-down text-xs'"></mtx-icon>
-                        </button>
-                    </div>
-
-                    @if (isAddStepMenuOpen()) {
-                    <div
-                        class="absolute right-0 top-11 z-50 min-w-44 rounded-lg bg-slate-900/95 p-1.5 shadow-[8px_8px_20px_rgba(0,0,0,0.6),-8px_-8px_20px_rgba(255,255,255,0.03)]">
-                        <button type="button"
-                            class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
-                            (click)="addPreStep()">
-                            Add PreStep
-                        </button>
-                        <button type="button"
-                            class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800"
-                            (click)="addPostStep()">
-                            Add PostStep
-                        </button>
-                    </div>
-                    }
-                </div>
-                }
-            </div>
-        </div>
-    </header> -->
 
     <section class="relative z-0 flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 backdrop-blur-xl">
         @if (task()) {

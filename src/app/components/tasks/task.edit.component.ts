@@ -1,4 +1,4 @@
-import { Component, computed, ElementRef, inject, OnDestroy, Renderer2, signal, ViewChild } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
@@ -6,7 +6,6 @@ import { map } from 'rxjs';
 import { CommandDescriptor } from '../../models/command';
 import { StepViewModel, TaskStep, TaskStepType } from '../../models/task';
 import { TaskService } from '../../services/task.service';
-import { IconComponent } from '../icon/icon.component';
 import { InputEditableComponent } from '../input-editable/input.editable.component';
 import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 import { StepListComponent } from './step.list.component';
@@ -14,9 +13,9 @@ import { StepListComponent } from './step.list.component';
 @Component({
     selector: 'mtx-task-editor',
     templateUrl: 'task.edit.component.html',
-    imports: [IconComponent, StepListComponent, InputEditableComponent, WorkspaceHeaderComponent]
+    imports: [StepListComponent, InputEditableComponent, WorkspaceHeaderComponent]
 })
-export class TaskEditComponent implements OnDestroy {
+export class TaskEditComponent {
     private readonly taskService = inject(TaskService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
@@ -25,9 +24,12 @@ export class TaskEditComponent implements OnDestroy {
         this.route.paramMap.pipe(map((params) => params.get('taskId') ?? '')),
         { initialValue: '' }
     );
+    readonly collapsedStepIds = signal<Record<string, boolean>>({});
+    readonly editingStepIds = signal<Record<string, boolean>>({});
+    readonly stepDrafts = signal<Record<string, StepViewModel>>({});
 
-    protected readonly task = computed(() => this.taskService.findTask(this.taskId()));
-    protected readonly preSteps = computed(() => {
+    readonly task = computed(() => this.taskService.findTask(this.taskId()));
+    readonly preSteps = computed(() => {
         const selectedTask = this.task();
 
         if (!selectedTask) {
@@ -36,8 +38,7 @@ export class TaskEditComponent implements OnDestroy {
 
         return selectedTask.presteps;
     });
-
-    protected readonly mainSteps = computed(() => {
+    readonly mainSteps = computed(() => {
         const selectedTask = this.task();
 
         if (!selectedTask) {
@@ -46,8 +47,7 @@ export class TaskEditComponent implements OnDestroy {
 
         return selectedTask.steps;
     });
-
-    protected readonly postSteps = computed(() => {
+    readonly postSteps = computed(() => {
         const selectedTask = this.task();
 
         if (!selectedTask) {
@@ -56,8 +56,7 @@ export class TaskEditComponent implements OnDestroy {
 
         return selectedTask.poststeps;
     });
-
-    protected readonly headerCommands = computed<CommandDescriptor[]>(() => {
+    readonly headerRightCommands = computed<CommandDescriptor[]>(() => {
         if (!this.task()) {
             return [];
         }
@@ -68,77 +67,43 @@ export class TaskEditComponent implements OnDestroy {
                 title: 'Add Step',
                 icon: 'plus-lg',
                 subCommands: [
-                    { id: 'add-pre-step', title: 'Add PreStep' },
-                    { id: 'add-post-step', title: 'Add PostStep' },
+                    { id: 'add-pre-step', title: 'Add PreStep', action: () => this.addPreStep() },
+                    { id: 'add-post-step', title: 'Add PostStep', action: () => this.addPostStep() },
                 ],
+                action: () => this.addStep()
             }
         ];
     });
-
-    protected readonly collapsedStepIds = signal<Record<string, boolean>>({});
-    protected readonly editingStepIds = signal<Record<string, boolean>>({});
-    protected readonly stepDrafts = signal<Record<string, StepViewModel>>({});
-    protected readonly isAddStepMenuOpen = signal(false);
-    private readonly renderer = inject(Renderer2);
-    private readonly removeDocumentPointerListener: () => void;
-
-    @ViewChild('addStepMenu')
-    private addStepMenu?: ElementRef<HTMLElement>;
+    readonly headerLeftCommands = computed<CommandDescriptor[]>(() => {
+        return [{
+            id: 'go-back',
+            title: '',
+            icon: 'arrow-left',
+            action: () => this.goBack()
+        }];
+    });
 
     constructor() {
-        this.removeDocumentPointerListener = this.renderer.listen('document', 'pointerdown', (event: PointerEvent) => {
-            const targetNode = event.target as Node | null;
 
-            if (!targetNode) {
-                return;
-            }
-
-            if (this.isAddStepMenuOpen()) {
-                const addStepMenuElement = this.addStepMenu?.nativeElement;
-                if (addStepMenuElement && !addStepMenuElement.contains(targetNode)) {
-                    this.isAddStepMenuOpen.set(false);
-                }
-            }
-        });
     }
 
-    protected goBack(): void {
+    goBack(): void {
         void this.router.navigate(['/workspace/tasks']);
     }
 
-    protected toggleAddStepMenu(): void {
-        this.isAddStepMenuOpen.update((value) => !value);
-    }
-
-    protected addPreStep(): void {
+    addPreStep(): void {
         this.addStepByType('pre');
     }
 
-    protected addPostStep(): void {
+    addPostStep(): void {
         this.addStepByType('post');
     }
 
-    protected addStep(): void {
+    addStep(): void {
         this.addStepByType('normal');
     }
 
-    protected onHeaderCommand(command: CommandDescriptor): void {
-        if (command.id === 'add-step') {
-            this.addStep();
-            return;
-        }
-
-        if (command.id === 'add-pre-step') {
-            this.addPreStep();
-            return;
-        }
-
-        if (command.id === 'add-post-step') {
-            this.addPostStep();
-        }
-    }
-
-    protected saveTaskEditor(): void {
+    saveTaskEditor(): void {
         const editingStepIds = Object.entries(this.editingStepIds())
             .filter(([, isEditing]) => isEditing)
             .map(([stepId]) => stepId);
@@ -156,7 +121,6 @@ export class TaskEditComponent implements OnDestroy {
         }
 
         const createdStepId = this.taskService.addStep(taskId, stepType);
-        this.isAddStepMenuOpen.set(false);
 
         if (!createdStepId) {
             return;
@@ -165,7 +129,7 @@ export class TaskEditComponent implements OnDestroy {
         this.collapsedStepIds.update((state) => ({ ...state, [createdStepId]: false }));
     }
 
-    protected submitTaskTitle(value: string): void {
+    submitTaskTitle(value: string): void {
         const taskId = this.taskId();
         const trimmedTitle = value.trim();
         const currentTask = this.task();
@@ -177,7 +141,7 @@ export class TaskEditComponent implements OnDestroy {
         this.taskService.updateTask(taskId, trimmedTitle, currentTask.description);
     }
 
-    protected submitTaskDescription(value: string): void {
+    submitTaskDescription(value: string): void {
         const taskId = this.taskId();
         const currentTask = this.task();
 
@@ -188,18 +152,14 @@ export class TaskEditComponent implements OnDestroy {
         this.taskService.updateTask(taskId, currentTask.title, value.trim());
     }
 
-    protected toggleStepCollapse(stepId: string): void {
+    toggleStepCollapse(stepId: string): void {
         this.collapsedStepIds.update((state) => ({
             ...state,
             [stepId]: !(state[stepId] ?? true)
         }));
     }
 
-    protected isStepCollapsed(stepId: string): boolean {
-        return this.collapsedStepIds()[stepId] ?? true;
-    }
-
-    protected startEditStep(step: TaskStep): void {
+    startEditStep(step: TaskStep): void {
         this.editingStepIds.update((state) => ({ ...state, [step.id]: true }));
         this.stepDrafts.update((state) => ({
             ...state,
@@ -210,15 +170,11 @@ export class TaskEditComponent implements OnDestroy {
         }));
     }
 
-    protected cancelEditStep(stepId: string): void {
+    cancelEditStep(stepId: string): void {
         this.editingStepIds.update((state) => ({ ...state, [stepId]: false }));
     }
 
-    protected isStepEditing(stepId: string): boolean {
-        return this.editingStepIds()[stepId] ?? false;
-    }
-
-    protected updateStepDraftTitle(stepId: string, value: string): void {
+    updateStepDraftTitle(stepId: string, value: string): void {
         this.stepDrafts.update((state) => ({
             ...state,
             [stepId]: {
@@ -228,7 +184,7 @@ export class TaskEditComponent implements OnDestroy {
         }));
     }
 
-    protected updateStepDraftContent(stepId: string, value: string): void {
+    updateStepDraftContent(stepId: string, value: string): void {
         this.stepDrafts.update((state) => ({
             ...state,
             [stepId]: {
@@ -238,15 +194,7 @@ export class TaskEditComponent implements OnDestroy {
         }));
     }
 
-    protected getStepDraftTitle(step: TaskStep): string {
-        return this.stepDrafts()[step.id]?.title ?? step.title;
-    }
-
-    protected getStepDraftContent(step: TaskStep): string {
-        return this.stepDrafts()[step.id]?.content ?? step.content;
-    }
-
-    protected saveStep(stepId: string): void {
+    saveStep(stepId: string): void {
         const draft = this.stepDrafts()[stepId];
         const taskId = this.taskId();
 
@@ -264,7 +212,7 @@ export class TaskEditComponent implements OnDestroy {
         this.editingStepIds.update((state) => ({ ...state, [stepId]: false }));
     }
 
-    protected deleteStep(stepId: string): void {
+    deleteStep(stepId: string): void {
         const taskId = this.taskId();
 
         if (!taskId) {
@@ -290,9 +238,5 @@ export class TaskEditComponent implements OnDestroy {
             delete nextState[stepId];
             return nextState;
         });
-    }
-
-    ngOnDestroy(): void {
-        this.removeDocumentPointerListener();
     }
 }

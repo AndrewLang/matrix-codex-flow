@@ -4,4 +4,5 @@ export interface CommandDescriptor {
     description?: string;
     icon?: string;
     subCommands?: CommandDescriptor[];
+    action?: () => void | Promise<void>;
 }

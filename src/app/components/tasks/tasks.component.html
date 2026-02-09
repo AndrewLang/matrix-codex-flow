@@ -1,7 +1,7 @@
 <div class="flex h-full min-h-0 flex-col gap-4 p-2 text-slate-200">
     <mtx-workspace-header title="Tasks" description="Track pending, finished, and failed task execution."
-        icon="list-task" [leftCommands]="headerLeftCommand()" [rightCommands]="headerCommands"
-        (commandSelected)="onHeaderCommand($event)"></mtx-workspace-header>
+        icon="list-task" [leftCommands]="headerLeftCommands()"
+        [rightCommands]="headerRightCommands()"></mtx-workspace-header>
 
     <section class="z-0 flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 backdrop-blur-xl">
         <mtx-task-list [tasks]="filteredTasks()" [emptyMessage]="emptyMessage()" (viewTask)="viewTask($event)"

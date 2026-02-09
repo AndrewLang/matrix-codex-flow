@@ -1,0 +1,44 @@
+@if (command(); as cmd) {
+<div class="relative inline-flex items-center" data-split-button-root="true">
+    @if (hasSubCommands()) {
+    <button type="button"
+        class="inline-flex items-center gap-2 rounded-l bg-slate-800 px-2.5 py-1.5 text-sm text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="isRunning()" (click)="onClickMain()">
+        @if (cmd.icon) {
+        <mtx-icon [icon]="cmd.icon"></mtx-icon>
+        }
+        <span>{{ cmd.title }}</span>
+    </button>
+    <button type="button"
+        class="rounded-r border-l border-slate-700 bg-slate-800 px-2 py-1 text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="isRunning()" [attr.aria-label]="'Open ' + cmd.title + ' sub commands'" (click)="toggleMenu()">
+        <mtx-icon [icon]="isMenuOpen() ? 'chevron-up text-xs' : 'chevron-down text-xs'"></mtx-icon>
+    </button>
+
+    @if (isMenuOpen()) {
+    <div
+        class="absolute left-0 top-10 z-50 min-w-44 rounded-lg bg-slate-900/95 p-1 shadow-[8px_8px_20px_rgba(0,0,0,0.6),-8px_-8px_20px_rgba(255,255,255,0.03)]">
+        @for (subCommand of cmd.subCommands ?? []; track subCommand.id) {
+        <button type="button"
+            class="block w-full rounded px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+            [disabled]="isRunning()" (click)="onClickSub(subCommand)">
+            @if (subCommand.icon) {
+            <mtx-icon [icon]="subCommand.icon"></mtx-icon>
+            }
+            <span>{{ subCommand.title }}</span>
+        </button>
+        }
+    </div>
+    }
+    } @else {
+    <button type="button"
+        class="inline-flex items-center gap-2 rounded bg-slate-800 px-2.5 py-1.5 text-sm text-slate-200 transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:opacity-60"
+        [disabled]="isRunning()" (click)="onClickMain()">
+        @if (cmd.icon) {
+        <mtx-icon [icon]="cmd.icon"></mtx-icon>
+        }
+        <span>{{ cmd.title }}</span>
+    </button>
+    }
+</div>
+}

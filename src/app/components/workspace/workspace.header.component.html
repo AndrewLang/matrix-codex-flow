@@ -16,11 +16,10 @@
         </div>
     </div>
 
-
     @if (hasCommands()) {
     <div class="mt-4 border-t border-slate-800/80 pt-3">
-        <mtx-commandbar [leftCommands]="leftCommands()" [rightCommands]="rightCommands()" [leftLabel]="leftLabel()"
-            (commandSelected)="onCommandSelected($event)"></mtx-commandbar>
+        <mtx-commandbar [leftCommands]="leftCommands()" [rightCommands]="rightCommands()"
+            [leftLabel]="leftLabel()"></mtx-commandbar>
     </div>
     }
 </header>
