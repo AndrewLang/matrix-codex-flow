@@ -1,7 +1,7 @@
 import { DatePipe } from '@angular/common';
-import { Component, input, output, signal } from '@angular/core';
+import { Component, computed, effect, input, signal } from '@angular/core';
 
-import { StepViewModel, TaskStep } from '../../models/task';
+import { EMPTY_TASK, StepViewModel, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { IconComponent } from '../icon/icon.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
 import { StepEditorComponent } from './step.edit.component';
@@ -12,76 +12,67 @@ import { StepEditorComponent } from './step.edit.component';
     imports: [DatePipe, IconComponent, MarkdownRendererComponent, StepEditorComponent]
 })
 export class StepListComponent {
-    readonly steps = input<TaskStep[]>([]);
-    readonly collapsedStepIds = input<Record<string, boolean>>({});
-    readonly editingStepIds = input<Record<string, boolean>>({});
-    readonly stepDrafts = input<Record<string, StepViewModel>>({});
+    readonly task = input.required<TaskViewModel>();
+    readonly editableTask = signal<TaskViewModel>(EMPTY_TASK);
+    readonly stepType = input<TaskStepType>('normal');
+    readonly steps = computed(() => {
+        let steps = [];
+        if (this.stepType() === 'pre') {
+            steps = this.editableTask().presteps;
+        } else if (this.stepType() === 'post') {
+            steps = this.editableTask().poststeps;
+        } else {
+            steps = this.editableTask().steps;
+        }
+
+        return TaskStepExtensions.toViewModels(steps);
+    });
+
     readonly title = input<string>('Steps');
     readonly subtitle = input<string>('');
     readonly titleIcon = input<string>('arrow-right');
+    readonly isCollapsed = signal(false);
 
-    readonly toggleStepCollapse = output<string>();
-    readonly startEditStep = output<TaskStep>();
-    readonly cancelEditStep = output<string>();
-    readonly updateStepDraftTitle = output<{ stepId: string; value: string }>();
-    readonly updateStepDraftContent = output<{ stepId: string; value: string }>();
-    readonly saveStep = output<string>();
-    readonly deleteStep = output<string>();
-    protected readonly isListCollapsed = signal(false);
-
-    protected isStepListCollapsed(): boolean {
-        return this.steps().length === 0 || this.isListCollapsed();
+    constructor() {
+        effect(() => {
+            const task = this.task();
+            if (task) {
+                this.editableTask.set(task);
+            }
+        });
     }
 
-    protected isStepCollapsed(stepId: string): boolean {
-        return this.collapsedStepIds()[stepId] ?? true;
+    toggleStepExpanded(step: StepViewModel): void {
+        step.isExpanded.set(!step.isExpanded());
     }
 
-    protected isStepEditing(stepId: string): boolean {
-        return this.editingStepIds()[stepId] ?? false;
+    toggleStepEditing(step: StepViewModel): void {
+        step.isEditing.set(!step.isEditing());
     }
 
-    protected getStepDraftTitle(step: TaskStep): string {
-        return this.stepDrafts()[step.id]?.title ?? step.title;
+    isListCollapsed(): boolean {
+        return this.steps().length === 0 || this.isCollapsed();
     }
 
-    protected getStepDraftContent(step: TaskStep): string {
-        return this.stepDrafts()[step.id]?.content ?? step.content;
-    }
-
-    protected onToggleStepCollapse(stepId: string): void {
-        this.toggleStepCollapse.emit(stepId);
-    }
-
-    protected onStartEditStep(step: TaskStep): void {
-        this.startEditStep.emit(step);
-    }
-
-    protected onCancelEditStep(stepId: string): void {
-        this.cancelEditStep.emit(stepId);
-    }
-
-    protected onUpdateStepDraftTitle(stepId: string, value: string): void {
-        this.updateStepDraftTitle.emit({ stepId, value });
-    }
-
-    protected onUpdateStepDraftContent(stepId: string, value: string): void {
-        this.updateStepDraftContent.emit({ stepId, value });
-    }
-
-    protected onSaveStep(stepId: string): void {
-        this.saveStep.emit(stepId);
-    }
-
-    protected onDeleteStep(stepId: string): void {
-        this.deleteStep.emit(stepId);
-    }
-
-    protected toggleListCollapse(): void {
+    toggleListCollapse(): void {
         if (this.steps().length === 0) {
             return;
         }
 
-        this.isListCollapsed.update((value) => !value);
+        this.isCollapsed.update((value) => !value);
+    }
+
+    onCancelEditStep(step: StepViewModel): void {
+        step.isEditing.set(false);
+    }
+
+    onSaveStep(updatedStep: StepViewModel): void {
+        TaskExtensions.updateStep(this.editableTask, updatedStep);
+
+        updatedStep.isEditing.set(false);
+    }
+
+    deleteStep(step: StepViewModel): void {
+        TaskExtensions.deleteStep(this.editableTask, step);
     }
 }

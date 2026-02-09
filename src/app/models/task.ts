@@ -1,4 +1,4 @@
-import { signal } from "@angular/core";
+import { signal, WritableSignal } from "@angular/core";
 import { IdGenerator } from "./id";
 export type TaskStatus = 'pending' | 'in_progress' | 'completed' | 'failed';
 export type TaskStepType = 'normal' | 'post' | 'pre';
@@ -71,6 +71,18 @@ export class TaskStepExtensions {
             type: stepViewModel.type
         };
     }
+
+    static toViewModels(steps: TaskStep[]): StepViewModel[] {
+        if (!steps) {
+            return [];
+        }
+
+        return steps.map(TaskStepExtensions.fromTaskStep);
+    }
+
+    static toSteps(stepViewModels: StepViewModel[]): TaskStep[] {
+        return stepViewModels.map(TaskStepExtensions.toTaskStep);
+    }
 }
 
 export class TaskViewModel implements Task {
@@ -133,9 +145,77 @@ export class TaskExtensions {
             updatedAt: currentTimestamp
         };
     }
+
+    static addStep(task: Task, index: number, template: string, stepType: TaskStepType): string {
+        const currentTimestamp = Date.now();
+        const title = `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${index}`;
+        const newStep: TaskStep = {
+            id: IdGenerator.generateId(),
+            title: title,
+            content: template,
+            status: 'pending',
+            createdAt: currentTimestamp,
+            updatedAt: currentTimestamp,
+            type: stepType
+        };
+
+        switch (stepType) {
+            case 'pre':
+                task.presteps.push(newStep);
+                break;
+            case 'post':
+                task.poststeps.push(newStep);
+                break;
+            default:
+                task.steps.push(newStep);
+                break;
+        }
+
+        return newStep.id;
+    }
+
+    static updateStep(task: WritableSignal<TaskViewModel>, updatedStep: TaskStep): void {
+        const now = Date.now();
+        if (updatedStep.type === 'pre') {
+            task().presteps = task().presteps.map((step) =>
+                step.id === updatedStep.id
+                    ? { ...step, ...updatedStep, updatedAt: now }
+                    : step
+            );
+        } else if (updatedStep.type === 'post') {
+            task().poststeps = task().poststeps.map((step) =>
+                step.id === updatedStep.id
+                    ? { ...step, ...updatedStep, updatedAt: now }
+                    : step
+            );
+        } else {
+            task().steps = task().steps.map((step) =>
+                step.id === updatedStep.id
+                    ? { ...step, ...updatedStep, updatedAt: now }
+                    : step
+            );
+        }
+        task.update(t => ({
+            ...t,
+            updatedAt: now
+        }));
+    }
+
+    static deleteStep(task: WritableSignal<TaskViewModel>, step: TaskStep): void {
+        if (step.type === 'pre') {
+            task().presteps = task().presteps.filter((s) => s.id !== step.id);
+        } else if (step.type === 'post') {
+            task().poststeps = task().poststeps.filter((s) => s.id !== step.id);
+        } else {
+            task().steps = task().steps.filter((s) => s.id !== step.id);
+        }
+
+        task.update(t => ({
+            ...t,
+            updatedAt: Date.now()
+        }));
+    }
 }
-
-
 
 export interface TaskTabItem {
     key: TaskFilterTab;

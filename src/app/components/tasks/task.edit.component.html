@@ -4,7 +4,7 @@
 
         <div headerContent class="flex items-start gap-2">
             <div class="space-y-2 w-full">
-                <mtx-input-editable [value]="task()?.title ?? 'Task Not Found'" placeholder="Task title"
+                <mtx-input-editable [value]="task().title" placeholder="Task title"
                     textClass="text-lg font-semibold text-slate-100"
                     editorClass="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500 border border-amber-600"
                     editIconButtonClass="rounded px-2 py-1 text-sky-300 transition hover:bg-slate-700"
@@ -12,8 +12,8 @@
                 </mtx-input-editable>
 
                 <div class="mt-1">
-                    <mtx-input-editable [value]="task()?.description ?? ''" [multiline]="true"
-                        placeholder="Task description" textClass="text-xs text-slate-400"
+                    <mtx-input-editable [value]="task().description" [multiline]="true" placeholder="Task description"
+                        textClass="text-xs text-slate-400"
                         editorClass="min-h-20 w-full resize-y rounded bg-slate-900/70 px-3 py-2 text-sm leading-6 text-slate-200 outline-none placeholder:text-slate-500 border border-amber-600"
                         editIconButtonClass="rounded-full px-2 py-1 text-sky-300 transition hover:bg-slate-700"
                         (submitValue)="submitTaskDescription($event)">
@@ -27,30 +27,12 @@
         @if (task()) {
         <div class="flex flex-col gap-3">
             <mtx-step-list title="Pre Steps" subtitle="Steps will be executed before each main step."
-                titleIcon="arrow-90deg-right" [steps]="preSteps()" [collapsedStepIds]="collapsedStepIds()"
-                [editingStepIds]="editingStepIds()" [stepDrafts]="stepDrafts()"
-                (toggleStepCollapse)="toggleStepCollapse($event)" (startEditStep)="startEditStep($event)"
-                (cancelEditStep)="cancelEditStep($event)"
-                (updateStepDraftTitle)="updateStepDraftTitle($event.stepId, $event.value)"
-                (updateStepDraftContent)="updateStepDraftContent($event.stepId, $event.value)"
-                (saveStep)="saveStep($event)" (deleteStep)="deleteStep($event)"></mtx-step-list>
+                titleIcon="arrow-90deg-right" [stepType]="'pre'" [task]="task()"></mtx-step-list>
 
-            <mtx-step-list title="Main Steps" subtitle="Main steps do your job" [steps]="mainSteps()"
-                [collapsedStepIds]="collapsedStepIds()" [editingStepIds]="editingStepIds()" [stepDrafts]="stepDrafts()"
-                (toggleStepCollapse)="toggleStepCollapse($event)" (startEditStep)="startEditStep($event)"
-                (cancelEditStep)="cancelEditStep($event)"
-                (updateStepDraftTitle)="updateStepDraftTitle($event.stepId, $event.value)"
-                (updateStepDraftContent)="updateStepDraftContent($event.stepId, $event.value)"
-                (saveStep)="saveStep($event)" (deleteStep)="deleteStep($event)"></mtx-step-list>
+            <mtx-step-list title="Main Steps" subtitle="Main steps do your job" [task]="task()"></mtx-step-list>
 
             <mtx-step-list title="Post Steps" subtitle="Steps will be executed after each main step."
-                titleIcon="arrow-return-right" [steps]="postSteps()" [collapsedStepIds]="collapsedStepIds()"
-                [editingStepIds]="editingStepIds()" [stepDrafts]="stepDrafts()"
-                (toggleStepCollapse)="toggleStepCollapse($event)" (startEditStep)="startEditStep($event)"
-                (cancelEditStep)="cancelEditStep($event)"
-                (updateStepDraftTitle)="updateStepDraftTitle($event.stepId, $event.value)"
-                (updateStepDraftContent)="updateStepDraftContent($event.stepId, $event.value)"
-                (saveStep)="saveStep($event)" (deleteStep)="deleteStep($event)"></mtx-step-list>
+                titleIcon="arrow-return-right" [stepType]="'post'" [task]="task()"></mtx-step-list>
         </div>
         } @else {
         <p class="rounded bg-slate-800/60 px-3 py-2 text-sm text-slate-400">

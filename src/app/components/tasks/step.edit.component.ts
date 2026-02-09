@@ -1,4 +1,5 @@
-import { Component, input, output } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
+import { StepViewModel } from '../../models/task';
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 
 @Component({
@@ -7,27 +8,35 @@ import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
     imports: [MarkdownEditorComponent]
 })
 export class StepEditorComponent {
-    readonly title = input<string>('');
-    readonly content = input<string>('');
+    readonly step = input.required<StepViewModel>();
+    readonly title = signal<string>('');
+    readonly content = signal<string>('');
 
-    readonly updateTitle = output<string>();
-    readonly updateContent = output<string>();
-    readonly cancel = output<void>();
-    readonly save = output<void>();
+    readonly cancel = output<StepViewModel>();
+    readonly save = output<StepViewModel>();
 
-    protected onUpdateTitle(value: string): void {
-        this.updateTitle.emit(value);
-    }
-
-    protected onUpdateContent(value: string): void {
-        this.updateContent.emit(value);
+    constructor() {
+        effect(() => {
+            const step = this.step();
+            this.title.set(step.title);
+            this.content.set(step.content);
+        });
     }
 
     protected onCancel(): void {
-        this.cancel.emit();
+        this.cancel.emit(this.step());
     }
 
     protected onSave(): void {
-        this.save.emit();
+        this.step().title = this.title();
+        this.step().content = this.content();
+
+        const updatedStep: StepViewModel = {
+            ...this.step(),
+            title: this.title(),
+            content: this.content()
+        };
+
+        this.save.emit(updatedStep);
     }
 }

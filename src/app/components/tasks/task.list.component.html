@@ -12,10 +12,10 @@
                 <span>{{ task.title }}</span>
             </h3>
             <div class="flex shrink-0 items-center gap-2">
-                @for(task of taskActions; track task.id) {
-                <button type="button" class="rounded-full bg-slate-700 px-2 py-1.5 text-sm {{task.tag}}"
-                    aria-label="{{task.title}}" (click)="task.action!(task.id)" title="{{task.description}}">
-                    <mtx-icon [icon]="task.icon!"></mtx-icon>
+                @for(action of taskActions; track action.id) {
+                <button type="button" class="rounded-full bg-slate-700 px-2 py-1.5 text-sm {{action.tag}}"
+                    aria-label="{{task.title}}" (click)="action.action!(task.id)" title="{{task.description}}">
+                    <mtx-icon [icon]="action.icon!"></mtx-icon>
                 </button>
                 }
             </div>
