@@ -60,7 +60,7 @@ export class TaskViewComponent {
             id: 'edit-task',
             title: 'Edit',
             icon: 'pencil',
-            action: () => { }
+            action: () => { this.router.navigate(['/workspace/tasks/edit', this.taskId()]); }
         }];
     });
     readonly timeline = computed(() => {
