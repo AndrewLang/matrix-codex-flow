@@ -5,7 +5,7 @@
         <mtx-split-button [command]="command"></mtx-split-button>
         } @else {
         <button type="button"
-            class="inline-flex items-center rounded bg-slate-800/80 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
+            class="inline-flex gap-1 items-center rounded bg-slate-800/80 px-2.5 py-1.5 text-sm transition hover:bg-slate-700"
             (click)="invokeCommand(command)">
 
             @if (command.icon) {

@@ -1,35 +1,52 @@
 import { DatePipe } from '@angular/common';
-import { Component, inject, SecurityContext, signal } from '@angular/core';
+import { Component, computed, inject, SecurityContext, signal } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
 import { marked } from 'marked';
 
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
-import { IconComponent } from "../icon/icon.component";
+import { CommandDescriptor } from '../../models/command';
 import { ContextService } from '../../services/context.service';
+import { IconComponent } from "../icon/icon.component";
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
+import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 
 const INITIAL_AGENT_RULES: AgentRule[] = [];
 
 @Component({
     selector: 'mtx-context-manage',
     templateUrl: 'context.component.html',
-    imports: [DatePipe, IconComponent, MarkdownEditorComponent, MarkdownRendererComponent]
+    imports: [DatePipe, IconComponent, MarkdownEditorComponent, MarkdownRendererComponent, WorkspaceHeaderComponent]
 })
 export class ContextComponent {
     private readonly contextService = inject(ContextService);
-    protected readonly agentRules = this.contextService.agentRules;
-    protected readonly collapsedRuleIds = signal<Record<string, boolean>>(
+    readonly agentRules = this.contextService.agentRules;
+
+    readonly headerRightCommands = computed<CommandDescriptor[]>(() => [
+        {
+            id: 'add-rule',
+            title: 'Add Rule',
+            icon: 'plus',
+            action: () => this.addAgentRule()
+        },
+        {
+            id: 'download-rules',
+            title: 'Download',
+            icon: 'box-arrow-down',
+            action: () => this.downloadAgentRules()
+        }
+    ]);
+    readonly collapsedRuleIds = signal<Record<string, boolean>>(
         INITIAL_AGENT_RULES.reduce<Record<string, boolean>>((state, rule) => {
             state[rule.id] = true;
             return state;
         }, {})
     );
-    protected readonly editingRuleIds = signal<Record<string, boolean>>({});
-    protected readonly editDrafts = signal<Record<string, AgentRuleViewModel>>({});
+    readonly editingRuleIds = signal<Record<string, boolean>>({});
+    readonly editDrafts = signal<Record<string, AgentRuleViewModel>>({});
     private readonly sanitizer = inject(DomSanitizer);
 
-    protected addAgentRule(): void {
+    addAgentRule(): void {
         const currentTimestamp = Date.now();
         const nextIndex = this.agentRules().length + 1;
 
@@ -48,18 +65,18 @@ export class ContextComponent {
     downloadAgentRules(): void {
     }
 
-    protected toggleRuleCollapse(ruleId: string): void {
+    toggleRuleCollapse(ruleId: string): void {
         this.collapsedRuleIds.update((state) => ({
             ...state,
             [ruleId]: !state[ruleId]
         }));
     }
 
-    protected isRuleCollapsed(ruleId: string): boolean {
+    isRuleCollapsed(ruleId: string): boolean {
         return this.collapsedRuleIds()[ruleId] ?? true;
     }
 
-    protected startEdit(rule: AgentRule): void {
+    startEdit(rule: AgentRule): void {
         this.editingRuleIds.update((state) => ({ ...state, [rule.id]: true }));
         this.editDrafts.update((state) => ({
             ...state,
@@ -70,15 +87,15 @@ export class ContextComponent {
         }));
     }
 
-    protected cancelEdit(ruleId: string): void {
+    cancelEdit(ruleId: string): void {
         this.editingRuleIds.update((state) => ({ ...state, [ruleId]: false }));
     }
 
-    protected isRuleEditing(ruleId: string): boolean {
+    isRuleEditing(ruleId: string): boolean {
         return this.editingRuleIds()[ruleId] ?? false;
     }
 
-    protected updateDraftName(ruleId: string, value: string): void {
+    updateDraftName(ruleId: string, value: string): void {
         this.editDrafts.update((state) => ({
             ...state,
             [ruleId]: {
@@ -88,7 +105,7 @@ export class ContextComponent {
         }));
     }
 
-    protected updateDraftDescription(ruleId: string, value: string): void {
+    updateDraftDescription(ruleId: string, value: string): void {
         this.editDrafts.update((state) => ({
             ...state,
             [ruleId]: {
@@ -98,20 +115,20 @@ export class ContextComponent {
         }));
     }
 
-    protected getDraftName(rule: AgentRule): string {
+    getDraftName(rule: AgentRule): string {
         return this.editDrafts()[rule.id]?.name ?? rule.name;
     }
 
-    protected getDraftDescription(rule: AgentRule): string {
+    getDraftDescription(rule: AgentRule): string {
         return this.editDrafts()[rule.id]?.description ?? (rule.description ?? '');
     }
 
-    protected renderMarkdownPreview(content: string): string {
+    renderMarkdownPreview(content: string): string {
         const rawHtml = marked.parse(content, { async: false, breaks: true, gfm: true });
         return this.sanitizer.sanitize(SecurityContext.HTML, rawHtml) ?? '';
     }
 
-    protected saveEdit(ruleId: string): void {
+    saveEdit(ruleId: string): void {
         const draft = this.editDrafts()[ruleId];
 
         if (!draft) {
@@ -137,7 +154,7 @@ export class ContextComponent {
         this.editingRuleIds.update((state) => ({ ...state, [ruleId]: false }));
     }
 
-    protected deleteRule(ruleId: string): void {
+    deleteRule(ruleId: string): void {
         this.contextService.deleteRule(ruleId);
 
         this.collapsedRuleIds.update((state) => {
