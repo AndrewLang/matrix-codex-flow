@@ -1,4 +1,4 @@
-import { Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Project } from '../models/project';
@@ -14,6 +14,12 @@ export class ProjectService {
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
     currentProject = signal<Project | null>(null);
+    project = computed(() => {
+        const project = this.currentProject();
+        if (!project)
+            throw new Error('Project not loaded');
+        return project;
+    });
 
     constructor() {
         void this.initializeProjectState();

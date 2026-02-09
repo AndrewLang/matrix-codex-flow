@@ -5,6 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
 import { CommandDescriptor } from '../../models/command';
 import { IdGenerator } from '../../models/id';
+import { ProjectOperations as ProjOps } from '../../models/project';
 import { ProjectService } from '../../services/project.service';
 import { IconComponent } from "../icon/icon.component";
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
@@ -57,15 +58,7 @@ export class ContextComponent {
             updatedAt: now
         };
 
-        this.projectService.currentProject.update((project) =>
-            project
-                ? {
-                    ...project,
-                    rules: [...project.rules, newRule],
-                    updatedAt: Date.now()
-                }
-                : project
-        );
+        this.projectService.currentProject.set(ProjOps.addRule(this.project()!, newRule));
     }
 
     async downloadAgentRules(): Promise<void> {
@@ -115,34 +108,16 @@ export class ContextComponent {
             updatedAt: now
         } : existingRule;
 
-        this.syncToProjectRules(existingRule);
+        this.projectService.currentProject.set(ProjOps.updateRule(this.project()!, existingRule!));
 
         existingRuleViewModel?.isEditing.set(false);
     }
 
     deleteRule(ruleId: string): void {
-        this.projectService.currentProject.update((project) =>
-            project
-                ? {
-                    ...project,
-                    rules: project.rules.filter((rule) => rule.id !== ruleId),
-                    updatedAt: Date.now()
-                }
-                : project
-        );
+        this.projectService.currentProject.set(ProjOps.deleteRule(this.project()!, ruleId));
+
     }
 
-    private syncToProjectRules(updated: AgentRule): void {
-        this.projectService.currentProject.update((project) =>
-            project
-                ? {
-                    ...project,
-                    rules: project.rules.map((rule) => rule.id === updated.id ? updated : rule),
-                    updatedAt: Date.now()
-                }
-                : project
-        );
-    }
 
     private toSafeFileName(value: string): string {
         const sanitized = value
