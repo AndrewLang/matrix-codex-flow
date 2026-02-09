@@ -1,7 +1,6 @@
 import { Component, HostListener, inject, OnDestroy, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavItem } from '../../models/nav.model';
-import { ContextService } from '../../services/context.service';
 import { ProjectService } from '../../services/project.service';
 import { TaskService } from '../../services/task.service';
 import { HeaderComponent } from '../header/header.component';
@@ -14,7 +13,6 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 })
 export class WorkspaceComponent implements OnDestroy {
     private readonly projectService = inject(ProjectService);
-    private readonly contextService = inject(ContextService);
     private readonly taskService = inject(TaskService);
     private isSaving = false;
     private saveIndicatorTimer: ReturnType<typeof setTimeout> | null = null;
@@ -50,7 +48,7 @@ export class WorkspaceComponent implements OnDestroy {
 
         const projectToSave = {
             ...project,
-            rules: this.contextService.agentRules().map((rule) => ({ ...rule })),
+            rules: project.rules,
             tasks: this.taskService.tasks().map((task) => ({ ...task })),
             updatedAt: Date.now()
         };

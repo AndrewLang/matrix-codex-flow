@@ -1,7 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { StatusMessage } from '../../models/status.message';
-import { ContextService } from '../../services/context.service';
 import { ProjectService } from '../../services/project.service';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
@@ -13,7 +12,6 @@ import { IconComponent } from '../icon/icon.component';
 })
 export class HeaderComponent implements OnInit {
     projectService = inject(ProjectService);
-    contextService = inject(ContextService);
     taskService = inject(TaskService);
     currentProjectPath = computed(() => this.projectService.projectPath());
     message = signal<StatusMessage | null>(null);
@@ -35,7 +33,7 @@ export class HeaderComponent implements OnInit {
 
         const projectToSave = {
             ...project,
-            rules: this.contextService.agentRules().map((rule) => ({ ...rule })),
+            rules: project.rules,
             tasks: this.taskService.tasks().map((task) => ({ ...task })),
             updatedAt: Date.now()
         };

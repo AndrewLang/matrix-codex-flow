@@ -1,0 +1,21 @@
+<div class="mt-3 space-y-3">
+    <input #nameInput
+        class="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500"
+        type="text" [value]="name()" (input)="name.set($event.target.value)" placeholder="Rule title" />
+
+    <mtx-md-editor [value]="description()" (valueChange)="description.set($event)"
+        placeholder="Rule content (markdown supported)"></mtx-md-editor>
+
+    <div class="mt-3 flex justify-end gap-2">
+        <button type="button"
+            class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
+            (click)="cancel()">
+            Cancel
+        </button>
+        <button type="button"
+            class="rounded bg-emerald-600 px-3 py-1.5 text-xs text-white transition hover:bg-emerald-500"
+            (click)="save()">
+            Save
+        </button>
+    </div>
+</div>

@@ -9,13 +9,13 @@
             <div class="absolute bottom-0 left-2 top-0 w-px bg-slate-700/80"></div>
 
             <div class="space-y-5">
-                @for (agentRule of agentRules(); track agentRule.id) {
+                @for (agentRule of ruleViewModels(); track agentRule.id) {
                 <article class="relative rounded-xl bg-slate-800/50 p-4">
                     <div class="absolute -left-[1.35rem] top-5 h-3 w-3 rounded-full bg-emerald-400"></div>
 
                     <div class="flex items-start justify-between gap-3">
                         <button type="button" class="flex min-w-0 flex-1 items-start gap-3 text-left"
-                            (click)="toggleRuleCollapse(agentRule.id)">
+                            (click)="toggleRuleExpand(agentRule)">
                             <div>
                                 <h3 class="text-lg font-semibold capitalize text-slate-100">{{ agentRule.name }}</h3>
                             </div>
@@ -25,39 +25,18 @@
                             <time class="text-xs text-slate-500">{{ agentRule.createdAt | date:'MMM d, y HH:mm'
                                 }}</time>
                             <button type="button" class="rounded-full bg-slate-700 px-2 py-1.5 text-xs text-slate-200"
-                                [attr.aria-label]="isRuleCollapsed(agentRule.id) ? 'Expand rule' : 'Collapse rule'"
-                                (click)="toggleRuleCollapse(agentRule.id)">
+                                [attr.aria-label]="!agentRule.isExpanded ? 'Expand rule' : 'Collapse rule'"
+                                (click)="toggleRuleExpand(agentRule)">
                                 <mtx-icon
-                                    [icon]="isRuleCollapsed(agentRule.id) ? 'chevron-down text-xs' : 'chevron-up text-xs'"></mtx-icon>
+                                    [icon]="!agentRule.isExpanded ? 'chevron-down text-xs' : 'chevron-up text-xs'"></mtx-icon>
                             </button>
                         </div>
                     </div>
 
-                    @if (!isRuleCollapsed(agentRule.id)) {
-                    @if (isRuleEditing(agentRule.id)) {
-                    <div class="mt-3 space-y-3">
-                        <input #nameInput
-                            class="w-full rounded bg-slate-900/70 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-500"
-                            type="text" [value]="getDraftName(agentRule)" placeholder="Rule title"
-                            (input)="updateDraftName(agentRule.id, nameInput.value)" />
-
-                        <mtx-md-editor [value]="getDraftDescription(agentRule)"
-                            placeholder="Rule content (markdown supported)"
-                            (valueChange)="updateDraftDescription(agentRule.id, $event)"></mtx-md-editor>
-
-                        <div class="flex justify-end gap-2 mt-3">
-                            <button type="button"
-                                class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
-                                (click)="cancelEdit(agentRule.id)">
-                                Cancel
-                            </button>
-                            <button type="button"
-                                class="rounded bg-emerald-600 px-3 py-1.5 text-xs text-white transition hover:bg-emerald-500"
-                                (click)="saveEdit(agentRule.id)">
-                                Save
-                            </button>
-                        </div>
-                    </div>
+                    @if (agentRule.isExpanded()) {
+                    @if (agentRule.isEditing()) {
+                    <mtx-rule-editor [rule]="agentRule" (saved)="saveEdit($event)"
+                        (cancelled)="cancelEdit($event)"></mtx-rule-editor>
                     } @else {
                     @if (agentRule.description) {
                     <mtx-md-renderer [markdown]="agentRule.description">
