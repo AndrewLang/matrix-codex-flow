@@ -3,12 +3,10 @@ import { invoke } from '@tauri-apps/api/core';
 
 import { Task, TaskStep } from '../models/task';
 import { ProjectService } from './project.service';
-import { SettingService } from './setting.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskService {
     private readonly projectService = inject(ProjectService);
-    private readonly settingService = inject(SettingService);
     private readonly tasksState = signal<Task[]>([]);
 
     readonly tasks = this.tasksState.asReadonly();
@@ -22,6 +20,12 @@ export class TaskService {
 
     runTask(taskId: string): void {
 
+    }
+
+    async exportTasks(tasks: Task[]): Promise<void> {
+        for (const task of tasks) {
+            await this.exportTask(task);
+        }
     }
 
     async exportTask(task: Task): Promise<void> {

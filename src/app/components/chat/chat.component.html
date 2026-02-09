@@ -29,12 +29,12 @@
     </section>
 
     <div class="">
-        <div class="rounded-xl bg-slate-900/60 p-3 backdrop-blur-xl shadow-xl">
+        <div class="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 backdrop-blur-xl shadow-xl">
             <div class="flex flex-col gap-4 space-y-2">
                 <textarea #composerTextarea
                     class="w-full resize-none rounded-2xl bg-transparent px-3 py-3 text-[15px]leading-5 text-slate-200 placeholder:text-slate-500/90 focus:outline-none"
                     [value]="composerText()" [style.min-height.px]="minComposerHeightPixels" rows="4"
-                    [style.max-height.px]="maxComposerHeightPixels" placeholder="Message VibeFlow"
+                    [style.max-height.px]="maxComposerHeightPixels" placeholder="Ask VibeFlow"
                     (input)="onComposerInput($event)" (keydown)="onComposerKeydown($event)"></textarea>
 
                 <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">

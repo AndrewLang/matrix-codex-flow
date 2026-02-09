@@ -6,6 +6,7 @@ import { ProjectExtensions } from '../../models/project.extensions';
 import { Task, TaskExtensions, TaskFilterTab, TaskTabItem, TaskViewModel } from '../../models/task';
 import { DialogService } from '../../services/dialog.service';
 import { ProjectService } from '../../services/project.service';
+import { TaskService } from '../../services/task.service';
 import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 import { TaskListComponent } from './task.list.component';
 
@@ -26,6 +27,7 @@ export class TasksComponent {
 
     private readonly projectService = inject(ProjectService);
     private readonly dialogService = inject(DialogService);
+    private readonly taskService = inject(TaskService);
     private readonly router = inject(Router);
 
     readonly taskViewModels = computed(() => {
@@ -59,7 +61,10 @@ export class TasksComponent {
         }));
     });
     readonly headerRightCommands = computed<CommandDescriptor[]>(() => {
-        return [{ id: 'add-task', title: 'Add Task', icon: 'plus-lg', action: () => this.addTask() }];
+        return [
+            { id: 'add-task', title: 'Add Task', icon: 'plus-lg', action: () => this.addTask() },
+            { id: 'export-tasks', title: 'Export', icon: 'box-arrow-down', description: 'Export each task to a markdown file', action: () => { this.exportTasks(); } }
+        ];
     });
 
     addTask(): void {
@@ -70,16 +75,21 @@ export class TasksComponent {
         this.selectedTab.set('pending');
     }
 
+    async exportTasks(): Promise<void> {
+        const tasks = this.taskViewModels();
+        await this.taskService.exportTasks(tasks);
+    }
+
     runTask(taskId: string): void {
         this.selectedTab.set('pending');
     }
 
     editTask(taskId: string): void {
-        void this.router.navigate(['/workspace/tasks/edit', taskId]);
+        this.router.navigate(['/workspace/tasks/edit', taskId]);
     }
 
     viewTask(taskId: string): void {
-        void this.router.navigate(['/workspace/tasks/view', taskId]);
+        this.router.navigate(['/workspace/tasks/view', taskId]);
     }
 
     async deleteTask(taskId: string): Promise<void> {
