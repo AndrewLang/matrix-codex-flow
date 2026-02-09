@@ -1,8 +1,9 @@
 import { DatePipe } from '@angular/common';
-import { Component, input, output } from '@angular/core';
+import { Component, inject, input, OnDestroy, output } from '@angular/core';
 
 import { CommandDescriptor } from '../../models/command';
 import { Task } from '../../models/task';
+import { ProjectService } from '../../services/project.service';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({
@@ -10,7 +11,12 @@ import { IconComponent } from '../icon/icon.component';
     templateUrl: 'task.list.component.html',
     imports: [DatePipe, IconComponent]
 })
-export class TaskListComponent {
+export class TaskListComponent implements OnDestroy {
+    private readonly projectService = inject(ProjectService);
+    private readonly savingSubscription = this.projectService.onSaving.subscribe(() => {
+        console.log('Project is saving, refreshing task list...');
+    });
+
     readonly tasks = input<Task[]>([]);
     readonly emptyMessage = input<string>('No tasks found.');
     readonly viewTask = output<string>();
@@ -49,7 +55,11 @@ export class TaskListComponent {
         },
     ];
 
-    protected statusIcon(status: Task['status']): string {
+    ngOnDestroy(): void {
+        this.savingSubscription.unsubscribe();
+    }
+
+    statusIcon(status: Task['status']): string {
         if (status === 'completed') {
             return 'check-circle text-emerald-400';
         }
@@ -65,19 +75,19 @@ export class TaskListComponent {
         return 'clock text-slate-300';
     }
 
-    protected onRunTask(taskId: string): void {
+    onRunTask(taskId: string): void {
         this.runTask.emit(taskId);
     }
 
-    protected onEditTask(taskId: string): void {
+    onEditTask(taskId: string): void {
         this.editTask.emit(taskId);
     }
 
-    protected onViewTask(taskId: string): void {
+    onViewTask(taskId: string): void {
         this.viewTask.emit(taskId);
     }
 
-    protected onDeleteTask(taskId: string): void {
+    onDeleteTask(taskId: string): void {
         this.deleteTask.emit(taskId);
     }
 }

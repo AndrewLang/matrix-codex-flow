@@ -1,9 +1,10 @@
-import { Component, computed, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, OnDestroy, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
 import { CommandDescriptor } from '../../models/command';
+import { ProjectExtensions } from '../../models/project.extensions';
 import { EMPTY_TASK, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { ProjectService } from '../../services/project.service';
 import { SettingService } from '../../services/setting.service';
@@ -17,13 +18,20 @@ import { StepListComponent } from './step.list.component';
     templateUrl: 'task.edit.component.html',
     imports: [StepListComponent, InputEditableComponent, WorkspaceHeaderComponent]
 })
-export class TaskEditComponent {
+export class TaskEditComponent implements OnDestroy {
     private readonly projectService = inject(ProjectService);
     private readonly settingService = inject(SettingService);
     private readonly tasksService = inject(TaskService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
 
+    private savingSubscription = this.projectService.onSaving.subscribe(() => {
+        console.log('Project is saving, saving current task...');
+        let project = this.projectService.currentProject;
+
+        ProjectExtensions.updateTask(project, this.editableTask());
+        console.log('Update project with task', project());
+    });
     private readonly taskId = toSignal(
         this.route.paramMap.pipe(map((params) => params.get('taskId') ?? '')),
         { initialValue: '' }
@@ -79,6 +87,10 @@ export class TaskEditComponent {
                 this.editableTask.set(TaskExtensions.fromTask(task));
             }
         });
+    }
+
+    ngOnDestroy(): void {
+        this.savingSubscription.unsubscribe();
     }
 
     async export(): Promise<void> {

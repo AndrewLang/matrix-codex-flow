@@ -7,15 +7,6 @@
         </p>
     </div>
     <div class="flex items-end">
-        @if(message(); as msg){
-        <div class="mr-4 self-end rounded-xl px-3 py-1.5 text-xs font-medium shadow-sm backdrop-blur" [ngClass]="{
-                'bg-emerald-500/20 text-emerald-200': msg.type === 'success',
-                'bg-rose-500/20 text-rose-200': msg.type === 'error',
-                'bg-sky-500/20 text-sky-200': msg.type === 'info'
-            }">
-            {{msg.content}}
-        </div>
-        }
         <button type="button"
             class="grid h-9 w-9 place-items-center rounded-full bg-slate-800/75 text-slate-300 shadow-none transition hover:bg-slate-700/80 hover:text-white"
             aria-label="Settings" (click)="saveProject()" title="Save project">

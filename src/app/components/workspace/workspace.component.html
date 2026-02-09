@@ -1,11 +1,6 @@
 <div class="h-screen overflow-hidden">
-    @if (saveMessage()) {
-    <div class="fixed right-19 top-5 z-50 rounded-xl px-3 py-2 text-xs font-medium shadow-sm backdrop-blur"
-        [class.bg-emerald-500/20]="saveMessageType() === 'success'"
-        [class.text-emerald-200]="saveMessageType() === 'success'"
-        [class.bg-rose-500/20]="saveMessageType() === 'error'" [class.text-rose-200]="saveMessageType() === 'error'">
-        {{ saveMessage() }}
-    </div>
+    @if (notification(); as notification) {
+    <mtx-notification [notification]="notification"></mtx-notification>
     }
     <main class="flex h-full overflow-hidden">
         <mtx-sidebar class="h-full shrink-0" [items]="navItems"></mtx-sidebar>

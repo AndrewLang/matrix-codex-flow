@@ -1,7 +1,9 @@
-import { computed, Injectable, signal, WritableSignal } from '@angular/core';
+import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
+import { Subject } from 'rxjs';
 import { EMPTY_PROJECT, Project } from '../models/project';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
@@ -10,16 +12,21 @@ export class ProjectService {
     static readonly LOADED_PROJECT_ID_KEY = 'loadedProjectId';
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
 
+    private readonly notificationService = inject(NotificationService);
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
     currentProject: WritableSignal<Project> = signal<Project>(EMPTY_PROJECT);
+
     project = computed(() => {
         const project = this.currentProject();
         if (!project)
             throw new Error('Project not loaded');
         return project;
     });
+
+    private readonly savingSubject = new Subject<void>();
+    readonly onSaving = this.savingSubject.asObservable();
 
     constructor() {
         void this.initializeProjectState();
@@ -110,8 +117,17 @@ export class ProjectService {
         }
     }
 
-    async saveProject(project: Project): Promise<void> {
-        await invoke('save_project', { project });
+    async saveProject(): Promise<void> {
+        this.savingSubject.next();
+        try {
+            let project: Project = this.currentProject();
+            console.log('Saving project:', project);
+            await invoke('save_project', { project });
+            this.notificationService.success('Project saved');
+        } catch (error) {
+            this.notificationService.error('Failed to save project');
+            throw error;
+        }
     }
 
     async deleteProject(projectId: string): Promise<void> {

@@ -1,23 +1,24 @@
-import { Component, HostListener, inject, OnDestroy, signal } from '@angular/core';
+import { Component, HostListener, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavItem } from '../../models/nav.model';
+import { NotificationService } from '../../services/notification.service';
 import { ProjectService } from '../../services/project.service';
 import { TaskService } from '../../services/task.service';
 import { HeaderComponent } from '../header/header.component';
+import { NotificationComponent } from '../notification/notification.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
 
 @Component({
     selector: 'mtx-workspace',
     templateUrl: 'workspace.component.html',
-    imports: [SidebarComponent, RouterOutlet, HeaderComponent]
+    imports: [SidebarComponent, RouterOutlet, HeaderComponent, NotificationComponent]
 })
-export class WorkspaceComponent implements OnDestroy {
+export class WorkspaceComponent {
     private readonly projectService = inject(ProjectService);
     private readonly taskService = inject(TaskService);
-    private isSaving = false;
-    private saveIndicatorTimer: ReturnType<typeof setTimeout> | null = null;
-    protected readonly saveMessage = signal('');
-    protected readonly saveMessageType = signal<'success' | 'error'>('success');
+    private readonly notificationService = inject(NotificationService);
+    private isSaving = signal(false);
+    protected readonly notification = this.notificationService.notification;
 
     protected readonly navItems: NavItem[] = [
         { label: 'Home', icon: 'house text-xl', route: '/' },
@@ -30,12 +31,12 @@ export class WorkspaceComponent implements OnDestroy {
     protected onWindowKeyDown(event: KeyboardEvent): void {
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
             event.preventDefault();
-            void this.saveProjectFromShortcut();
+            void this.saveProject();
         }
     }
 
-    private async saveProjectFromShortcut(): Promise<void> {
-        if (this.isSaving) {
+    private async saveProject(): Promise<void> {
+        if (this.isSaving()) {
             return;
         }
 
@@ -44,45 +45,16 @@ export class WorkspaceComponent implements OnDestroy {
             return;
         }
 
-        this.isSaving = true;
-
-        const projectToSave = {
-            ...project,
-            rules: project.rules,
-            tasks: this.taskService.tasks().map((task) => ({ ...task })),
-            updatedAt: Date.now()
-        };
-
-        this.projectService.currentProject.set(projectToSave);
+        this.isSaving.set(true);
 
         try {
-            await this.projectService.saveProject(projectToSave);
-            this.showSaveIndicator('Project saved', 'success');
-        } catch {
-            this.showSaveIndicator('Failed to save project', 'error');
+            await this.projectService.saveProject();
         } finally {
-            this.isSaving = false;
-        }
-    }
-
-    private showSaveIndicator(message: string, type: 'success' | 'error'): void {
-        this.saveMessage.set(message);
-        this.saveMessageType.set(type);
-
-        if (this.saveIndicatorTimer) {
-            clearTimeout(this.saveIndicatorTimer);
-        }
-
-        this.saveIndicatorTimer = setTimeout(() => {
-            this.saveMessage.set('');
-            this.saveIndicatorTimer = null;
-        }, 2500);
-    }
-
-    ngOnDestroy(): void {
-        if (this.saveIndicatorTimer) {
-            clearTimeout(this.saveIndicatorTimer);
-            this.saveIndicatorTimer = null;
+            this.isSaving.set(false);
+            this.notificationService.show({
+                message: 'Project saved successfully',
+                type: 'success'
+            });
         }
     }
 }

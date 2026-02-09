@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, OnDestroy } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
@@ -18,8 +18,11 @@ import { RuleEditorComponent } from './rule.editor.component';
     imports: [DatePipe, IconComponent, MarkdownRendererComponent,
         WorkspaceHeaderComponent, RuleEditorComponent]
 })
-export class ContextComponent {
+export class ContextComponent implements OnDestroy {
     private readonly projectService = inject(ProjectService);
+    private readonly savingSubscription = this.projectService.onSaving.subscribe(() => {
+        console.log('Project is saving, refreshing context rules...');
+    });
     readonly ruleViewModels = computed(() => {
         let project = this.projectService.currentProject();
         return project?.rules.map(rule => {
@@ -41,6 +44,10 @@ export class ContextComponent {
             action: () => this.downloadAgentRules()
         }
     ]);
+
+    ngOnDestroy(): void {
+        this.savingSubscription.unsubscribe();
+    }
 
     addAgentRule(): void {
         let now = Date.now();
