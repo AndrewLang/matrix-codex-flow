@@ -1,3 +1,4 @@
+use std::fs;
 use std::path::Path;
 use std::process::Command;
 
@@ -38,4 +39,19 @@ pub fn open_folder(path: String) -> Result<(), String> {
         .spawn()
         .map(|_| ())
         .map_err(|error| format!("failed to open folder: {error}"))
+}
+
+#[tauri::command]
+pub fn write_text_file(path: String, content: String) -> Result<(), String> {
+    let file_path = Path::new(&path);
+
+    let parent = file_path
+        .parent()
+        .ok_or_else(|| format!("invalid file path: {path}"))?;
+
+    fs::create_dir_all(parent)
+        .map_err(|error| format!("failed to create directory '{}': {error}", parent.display()))?;
+
+    fs::write(file_path, content)
+        .map_err(|error| format!("failed to write file '{}': {error}", file_path.display()))
 }

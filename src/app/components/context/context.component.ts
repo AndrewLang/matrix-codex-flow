@@ -1,5 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
 import { CommandDescriptor } from '../../models/command';
@@ -67,7 +68,26 @@ export class ContextComponent {
         );
     }
 
-    downloadAgentRules(): void {
+    async downloadAgentRules(): Promise<void> {
+        let project = this.project();
+        if (!project) {
+            return;
+        }
+
+        let normalizedProjectPath = project.path.replace(/[\\/]+$/, '');
+
+        try {
+            for (const rule of project.rules) {
+                const safeFileName = this.toSafeFileName(rule.name || rule.id);
+                const targetFilePath = `${normalizedProjectPath}/.vibeflow/${safeFileName}.md`;
+                await invoke('write_text_file', {
+                    path: targetFilePath,
+                    content: rule.description?.trim() ?? ''
+                });
+            }
+        } catch (error) {
+            console.error('Failed to export agent rules:', error);
+        }
     }
 
     toggleRuleExpand(rule: AgentRuleViewModel): void {
@@ -122,5 +142,17 @@ export class ContextComponent {
                 }
                 : project
         );
+    }
+
+    private toSafeFileName(value: string): string {
+        const sanitized = value
+            .trim()
+            .toLowerCase()
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, ' ')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        return sanitized || 'rule';
     }
 }
