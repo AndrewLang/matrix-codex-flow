@@ -6,6 +6,7 @@ import { map } from 'rxjs';
 
 import { CommandDescriptor } from '../../models/command';
 import { TaskStep } from '../../models/task';
+import { TaskExecuteService } from '../../services/task.execuer.service';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
@@ -27,6 +28,7 @@ interface TaskTimelineItem {
 })
 export class TaskViewComponent {
     private readonly taskService = inject(TaskService);
+    private readonly taskExecuteService = inject(TaskExecuteService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     readonly collapsedTimelineItemIds = signal<Record<string, boolean>>({});
@@ -106,7 +108,7 @@ export class TaskViewComponent {
             return;
         }
 
-        this.taskService.runTask(selectedTask.id);
+        this.taskExecuteService.execute(selectedTask);
     }
 
     timelineTitle(item: TaskTimelineItem): string {

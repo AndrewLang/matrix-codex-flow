@@ -13,6 +13,7 @@ export class ProjectService {
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
 
     private readonly notificationService = inject(NotificationService);
+
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
@@ -34,7 +35,6 @@ export class ProjectService {
 
     async chooseFolder(): Promise<string> {
         try {
-            console.log('Opening folder dialog...');
             const selected = await open({
                 directory: true,
                 multiple: false
@@ -121,9 +121,9 @@ export class ProjectService {
         this.savingSubject.next();
         try {
             let project: Project = this.currentProject();
-            console.log('Saving project:', project);
+            let title = project.name.trim();
             await invoke('save_project', { project });
-            this.notificationService.success('Project saved');
+            this.notificationService.success(`Project "${title}" is saved`);
         } catch (error) {
             this.notificationService.error('Failed to save project');
             throw error;

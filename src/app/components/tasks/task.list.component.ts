@@ -1,9 +1,11 @@
 import { DatePipe } from '@angular/common';
 import { Component, inject, input, OnDestroy, output } from '@angular/core';
 
+import { Router } from '@angular/router';
 import { CommandDescriptor } from '../../models/command';
 import { Task } from '../../models/task';
 import { ProjectService } from '../../services/project.service';
+import { TaskExecuteService } from '../../services/task.execuer.service';
 import { IconComponent } from '../icon/icon.component';
 
 @Component({
@@ -13,15 +15,15 @@ import { IconComponent } from '../icon/icon.component';
 })
 export class TaskListComponent implements OnDestroy {
     private readonly projectService = inject(ProjectService);
+    private readonly router = inject(Router);
+    private readonly taskExecuteService = inject(TaskExecuteService);
+
     private readonly savingSubscription = this.projectService.onSaving.subscribe(() => {
         console.log('Project is saving, refreshing task list...');
     });
 
     readonly tasks = input<Task[]>([]);
     readonly emptyMessage = input<string>('No tasks found.');
-    readonly viewTask = output<string>();
-    readonly editTask = output<string>();
-    readonly runTask = output<string>();
     readonly deleteTask = output<string>();
 
     readonly taskActions: CommandDescriptor[] = [
@@ -30,21 +32,21 @@ export class TaskListComponent implements OnDestroy {
             title: 'Run',
             icon: 'play',
             tag: 'text-green-500 transition hover:bg-emerald-600/30 hover:text-emerald-300',
-            action: (taskId: string) => this.runTask.emit(taskId)
+            action: (taskId: string) => this.onRunTask(taskId)
         },
         {
             id: 'view-task',
             title: 'View',
             icon: 'eye',
             tag: 'text-indigo-400 transition hover:bg-indigo-600/30 hover:text-indigo-200',
-            action: (taskId: string) => this.viewTask.emit(taskId)
+            action: (taskId: string) => this.onViewTask(taskId)
         },
         {
             id: 'edit-task',
             title: 'Edit',
             icon: 'pencil',
             tag: 'text-sky-400 transition hover:bg-sky-600/30 hover:text-sky-200',
-            action: (taskId: string) => this.editTask.emit(taskId)
+            action: (taskId: string) => this.onEditTask(taskId)
         },
         {
             id: 'delete-task',
@@ -76,15 +78,18 @@ export class TaskListComponent implements OnDestroy {
     }
 
     onRunTask(taskId: string): void {
-        this.runTask.emit(taskId);
+        const task = this.tasks().find((t) => t.id === taskId);
+        if (task) {
+            this.taskExecuteService.execute(task);
+        }
     }
 
     onEditTask(taskId: string): void {
-        this.editTask.emit(taskId);
+        this.router.navigate(['/workspace/tasks/edit', taskId]);
     }
 
     onViewTask(taskId: string): void {
-        this.viewTask.emit(taskId);
+        this.router.navigate(['/workspace/tasks/view', taskId]);
     }
 
     onDeleteTask(taskId: string): void {

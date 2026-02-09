@@ -4,7 +4,7 @@
         [rightCommands]="headerRightCommands()"></mtx-workspace-header>
 
     <section class="z-0 flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 backdrop-blur-xl">
-        <mtx-task-list [tasks]="filteredTasks()" [emptyMessage]="emptyMessage()" (viewTask)="viewTask($event)"
-            (editTask)="editTask($event)" (runTask)="runTask($event)" (deleteTask)="deleteTask($event)"></mtx-task-list>
+        <mtx-task-list [tasks]="filteredTasks()" [emptyMessage]="emptyMessage()"
+            (deleteTask)="deleteTask($event)"></mtx-task-list>
     </section>
 </div>

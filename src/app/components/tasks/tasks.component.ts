@@ -28,6 +28,7 @@ export class TasksComponent {
     private readonly projectService = inject(ProjectService);
     private readonly dialogService = inject(DialogService);
     private readonly taskService = inject(TaskService);
+
     private readonly router = inject(Router);
 
     readonly taskViewModels = computed(() => {
@@ -78,18 +79,6 @@ export class TasksComponent {
     async exportTasks(): Promise<void> {
         const tasks = this.taskViewModels();
         await this.taskService.exportTasks(tasks);
-    }
-
-    runTask(taskId: string): void {
-        this.selectedTab.set('pending');
-    }
-
-    editTask(taskId: string): void {
-        this.router.navigate(['/workspace/tasks/edit', taskId]);
-    }
-
-    viewTask(taskId: string): void {
-        this.router.navigate(['/workspace/tasks/view', taskId]);
     }
 
     async deleteTask(taskId: string): Promise<void> {
