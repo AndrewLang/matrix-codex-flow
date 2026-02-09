@@ -20,7 +20,6 @@ import { RuleEditorComponent } from './rule.editor.component';
 })
 export class ContextComponent {
     private readonly projectService = inject(ProjectService);
-
     readonly ruleViewModels = computed(() => {
         let project = this.projectService.currentProject();
         return project?.rules.map(rule => {
@@ -28,9 +27,6 @@ export class ContextComponent {
             return viewModel;
         }) ?? [];
     });
-
-    readonly project = computed(() => this.projectService.currentProject());
-
     readonly headerRightCommands = computed<CommandDescriptor[]>(() => [
         {
             id: 'add-rule',
@@ -62,7 +58,7 @@ export class ContextComponent {
     }
 
     async downloadAgentRules(): Promise<void> {
-        let project = this.project();
+        let project = this.projectService.currentProject();
         if (!project) {
             return;
         }

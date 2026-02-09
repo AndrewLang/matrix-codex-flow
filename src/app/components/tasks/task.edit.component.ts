@@ -161,13 +161,13 @@ export class TaskEditComponent {
 
     startEditStep(step: TaskStep): void {
         this.editingStepIds.update((state) => ({ ...state, [step.id]: true }));
-        this.stepDrafts.update((state) => ({
-            ...state,
-            [step.id]: {
-                title: step.title,
-                content: step.content
-            }
-        }));
+        // this.stepDrafts.update((state) => ({
+        //     ...state,
+        //     [step.id]: {
+        //         title: step.title,
+        //         content: step.content
+        //     }
+        // }));
     }
 
     cancelEditStep(stepId: string): void {
@@ -175,23 +175,23 @@ export class TaskEditComponent {
     }
 
     updateStepDraftTitle(stepId: string, value: string): void {
-        this.stepDrafts.update((state) => ({
-            ...state,
-            [stepId]: {
-                title: value,
-                content: state[stepId]?.content ?? ''
-            }
-        }));
+        // this.stepDrafts.update((state) => ({
+        //     ...state,
+        //     [stepId]: {
+        //         title: value,
+        //         content: state[stepId]?.content ?? ''
+        //     }
+        // }));
     }
 
     updateStepDraftContent(stepId: string, value: string): void {
-        this.stepDrafts.update((state) => ({
-            ...state,
-            [stepId]: {
-                title: state[stepId]?.title ?? '',
-                content: value
-            }
-        }));
+        // this.stepDrafts.update((state) => ({
+        //     ...state,
+        //     [stepId]: {
+        //         title: state[stepId]?.title ?? '',
+        //         content: value
+        //     }
+        // }));
     }
 
     saveStep(stepId: string): void {

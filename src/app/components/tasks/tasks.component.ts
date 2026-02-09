@@ -2,9 +2,10 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { CommandDescriptor } from '../../models/command';
-import { Task, TaskFilterTab, TaskTabItem } from '../../models/task';
+import { ProjectExtensions } from '../../models/project.extensions';
+import { Task, TaskExtensions, TaskFilterTab, TaskTabItem, TaskViewModel } from '../../models/task';
 import { DialogService } from '../../services/dialog.service';
-import { TaskService } from '../../services/task.service';
+import { ProjectService } from '../../services/project.service';
 import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 import { TaskListComponent } from './task.list.component';
 
@@ -23,25 +24,30 @@ export class TasksComponent {
     readonly tabs = TASK_TABS;
     readonly selectedTab = signal<TaskFilterTab>('pending');
 
-    private readonly taskService = inject(TaskService);
+    private readonly projectService = inject(ProjectService);
     private readonly dialogService = inject(DialogService);
     private readonly router = inject(Router);
 
-    readonly tasks = this.taskService.tasks;
-    readonly filteredTasks = computed<Task[]>(() => {
+    readonly taskViewModels = computed(() => {
+        const project = this.projectService.currentProject();
+        return project?.tasks.map(task => {
+            let viewModel = TaskExtensions.fromTask(task);
+            return viewModel;
+        }) ?? [];
+    });
+    readonly filteredTasks = computed<TaskViewModel[]>(() => {
         const selectedTab = this.selectedTab();
 
         if (selectedTab === 'pending') {
-            return this.tasks().filter((task) => task.status === 'pending' || task.status === 'in_progress');
+            return this.taskViewModels().filter((task) => task.status === 'pending' || task.status === 'in_progress');
         }
 
         if (selectedTab === 'finished') {
-            return this.tasks().filter((task) => task.status === 'completed');
+            return this.taskViewModels().filter((task) => task.status === 'completed');
         }
 
-        return this.tasks().filter((task) => task.status === 'failed');
+        return this.taskViewModels().filter((task) => task.status === 'failed');
     });
-
     readonly emptyMessage = computed(() => `No tasks in ${this.selectedTab()}.`);
     readonly headerLeftCommands = computed<CommandDescriptor[]>(() => {
         const selected = this.selectedTab();
@@ -57,12 +63,14 @@ export class TasksComponent {
     });
 
     addTask(): void {
-        this.taskService.addTask();
+        const nextTaskIndex = this.taskViewModels().length + 1;
+        const nextTask: Task = TaskExtensions.newTask(this.projectService.currentProject()?.id ?? '', nextTaskIndex);
+
+        ProjectExtensions.addTask(this.projectService.currentProject, nextTask);
         this.selectedTab.set('pending');
     }
 
     runTask(taskId: string): void {
-        this.taskService.runTask(taskId);
         this.selectedTab.set('pending');
     }
 
@@ -75,7 +83,7 @@ export class TasksComponent {
     }
 
     async deleteTask(taskId: string): Promise<void> {
-        const task = this.tasks().find((currentTask) => currentTask.id === taskId);
+        const task = this.taskViewModels().find((task) => task.id === taskId);
         const taskTitle = task?.title ?? 'this task';
         const isConfirmed = await this.dialogService.openPrompt({
             title: 'Delete Task',
@@ -89,7 +97,6 @@ export class TasksComponent {
         if (!isConfirmed) {
             return;
         }
-
-        this.taskService.deleteTask(taskId);
+        ProjectExtensions.deleteTask(this.projectService.currentProject, taskId);
     }
 }
