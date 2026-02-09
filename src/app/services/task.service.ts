@@ -1,6 +1,7 @@
 import { effect, inject, Injectable, signal } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 
-import { Task, TaskStep, TaskStepType } from '../models/task';
+import { Task, TaskStep } from '../models/task';
 import { ProjectService } from './project.service';
 import { SettingService } from './setting.service';
 
@@ -19,177 +20,72 @@ export class TaskService {
         });
     }
 
-    addTask(): void {
-        const nextTaskIndex = this.tasksState().length + 1;
-        const currentTimestamp = Date.now();
-
-        const nextTask: Task = {
-            id: `task-${currentTimestamp}`,
-            projectId: this.projectService.currentProject()?.id ?? '',
-            title: `New Task ${nextTaskIndex}`,
-            description: 'Task description goes here.',
-            steps: [],
-            presteps: [],
-            poststeps: [],
-            status: 'pending',
-            createdAt: currentTimestamp,
-            updatedAt: currentTimestamp
-        };
-
-        this.tasksState.update((tasks) => [nextTask, ...tasks]);
-        this.syncCurrentProjectTasks();
-    }
-
     runTask(taskId: string): void {
-        const currentTimestamp = Date.now();
 
-        this.tasksState.update((tasks) =>
-            tasks.map((task) =>
-                task.id === taskId
-                    ? {
-                        ...task,
-                        status: 'in_progress',
-                        updatedAt: currentTimestamp
-                    }
-                    : task
-            )
-        );
-        this.syncCurrentProjectTasks();
     }
 
-    deleteTask(taskId: string): void {
-        this.tasksState.update((tasks) => tasks.filter((task) => task.id !== taskId));
-        this.syncCurrentProjectTasks();
-    }
+    async exportTask(task: Task): Promise<void> {
+        const project = this.projectService.currentProject();
+        if (!project) {
+            return;
+        }
 
-    updateTask(taskId: string, title: string, description: string): void {
-        const currentTimestamp = Date.now();
+        const normalizedProjectPath = project.path.replace(/[\\/]+$/, '');
+        const safeTaskName = this.toSafeFileName(task.title || task.id);
+        const targetFilePath = `${normalizedProjectPath}/.vibeflow/${safeTaskName}.md`;
+        const content = this.toTaskMarkdown(task);
 
-        this.tasksState.update((tasks) =>
-            tasks.map((task) =>
-                task.id === taskId
-                    ? {
-                        ...task,
-                        title,
-                        description,
-                        updatedAt: currentTimestamp
-                    }
-                    : task
-            )
-        );
-        this.syncCurrentProjectTasks();
+        try {
+            await invoke('write_text_file', {
+                path: targetFilePath,
+                content
+            });
+        } catch (error) {
+            console.error('Failed to export task markdown:', error);
+        }
     }
 
     findTask(taskId: string): Task | undefined {
         return this.tasksState().find((task) => task.id === taskId);
     }
 
-    addStep(taskId: string, stepType: TaskStepType = 'normal'): string | undefined {
-        const currentTimestamp = Date.now();
-        let createdStepId: string | undefined;
+    private toTaskMarkdown(task: Task): string {
+        const lines: string[] = [`# ${task.title || 'Task'}`, ''];
 
-        this.tasksState.update((tasks) =>
-            tasks.map((task) => {
-                if (task.id !== taskId) {
-                    return task;
-                }
+        if (task.description?.trim()) {
+            lines.push(task.description.trim(), '');
+        }
 
-                const targetSteps =
-                    stepType === 'pre'
-                        ? task.presteps
-                        : stepType === 'post'
-                            ? task.poststeps
-                            : task.steps;
-                const nextStepIndex = targetSteps.length + 1;
-                const defaultStepContent = this.settingService.promptTemplate();
-                const nextStep: TaskStep = {
-                    id: `${taskId}-step-${currentTimestamp}`,
-                    title: `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${nextStepIndex}`,
-                    content: defaultStepContent,
-                    status: 'pending',
-                    type: stepType,
-                    createdAt: currentTimestamp,
-                    updatedAt: currentTimestamp
-                };
-                createdStepId = nextStep.id;
+        this.appendStepSection(lines, 'Pre Steps', task.presteps);
+        this.appendStepSection(lines, 'Main Steps', task.steps);
+        this.appendStepSection(lines, 'Post Steps', task.poststeps);
 
-                return {
-                    ...task,
-                    presteps: stepType === 'pre' ? [...task.presteps, nextStep] : task.presteps,
-                    poststeps: stepType === 'post' ? [...task.poststeps, nextStep] : task.poststeps,
-                    steps: stepType === 'normal' ? [...task.steps, nextStep] : task.steps,
-                    updatedAt: currentTimestamp
-                };
-            })
-        );
-        this.syncCurrentProjectTasks();
-
-        return createdStepId;
+        return lines.join('\n').trimEnd() + '\n';
     }
 
-    updateStep(taskId: string, stepId: string, title: string, content: string): void {
-        const currentTimestamp = Date.now();
-        const updateStepCollection = (steps: TaskStep[]): TaskStep[] =>
-            steps.map((step) =>
-                step.id === stepId
-                    ? {
-                        ...step,
-                        title,
-                        content,
-                        updatedAt: currentTimestamp
-                    }
-                    : step
-            );
+    private appendStepSection(lines: string[], title: string, steps: TaskStep[]): void {
+        lines.push(`## ${title}`, '');
 
-        this.tasksState.update((tasks) =>
-            tasks.map((task) => {
-                if (task.id !== taskId) {
-                    return task;
-                }
+        if (!steps.length) {
+            lines.push('_None_', '');
+            return;
+        }
 
-                return {
-                    ...task,
-                    presteps: updateStepCollection(task.presteps),
-                    poststeps: updateStepCollection(task.poststeps),
-                    steps: updateStepCollection(task.steps),
-                    updatedAt: currentTimestamp
-                };
-            })
-        );
-        this.syncCurrentProjectTasks();
+        steps.forEach((step, index) => {
+            lines.push(`### ${index + 1}. ${step.title || 'Untitled step'}`, '');
+            lines.push(step.content?.trim() || '_No content_', '');
+        });
     }
 
-    deleteStep(taskId: string, stepId: string): void {
-        const currentTimestamp = Date.now();
-        const filterStepCollection = (steps: TaskStep[]): TaskStep[] => steps.filter((step) => step.id !== stepId);
+    private toSafeFileName(value: string): string {
+        const sanitized = value
+            .trim()
+            .toLowerCase()
+            .replace(/[<>:\"/\\|?*\x00-\x1F]/g, ' ')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
 
-        this.tasksState.update((tasks) =>
-            tasks.map((task) => {
-                if (task.id !== taskId) {
-                    return task;
-                }
-
-                return {
-                    ...task,
-                    presteps: filterStepCollection(task.presteps),
-                    poststeps: filterStepCollection(task.poststeps),
-                    steps: filterStepCollection(task.steps),
-                    updatedAt: currentTimestamp
-                };
-            })
-        );
-        this.syncCurrentProjectTasks();
-    }
-
-    private syncCurrentProjectTasks(): void {
-        this.projectService.currentProject.update((project) =>
-            project
-                ? {
-                    ...project,
-                    tasks: this.tasksState().map((task) => ({ ...task })),
-                    updatedAt: Date.now()
-                }
-                : project
-        );
+        return sanitized || 'task';
     }
 }

@@ -7,6 +7,7 @@ import { CommandDescriptor } from '../../models/command';
 import { EMPTY_TASK, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { ProjectService } from '../../services/project.service';
 import { SettingService } from '../../services/setting.service';
+import { TaskService } from '../../services/task.service';
 import { InputEditableComponent } from '../input-editable/input.editable.component';
 import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 import { StepListComponent } from './step.list.component';
@@ -19,6 +20,7 @@ import { StepListComponent } from './step.list.component';
 export class TaskEditComponent {
     private readonly projectService = inject(ProjectService);
     private readonly settingService = inject(SettingService);
+    private readonly tasksService = inject(TaskService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
 
@@ -42,10 +44,6 @@ export class TaskEditComponent {
         return TaskStepExtensions.toViewModels(this.editableTask().poststeps);
     });
     readonly headerRightCommands = computed<CommandDescriptor[]>(() => {
-        if (!this.task()) {
-            return [];
-        }
-
         return [
             {
                 id: 'add-step',
@@ -83,8 +81,10 @@ export class TaskEditComponent {
         });
     }
 
-    export(): void {
+    async export(): Promise<void> {
+        const task = this.editableTask();
 
+        await this.tasksService.exportTask(task);
     }
 
     submitTaskTitle(value: string): void {
