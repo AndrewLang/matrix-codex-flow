@@ -1,7 +1,7 @@
-import { computed, Injectable, signal } from '@angular/core';
+import { computed, Injectable, signal, WritableSignal } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 import { open } from '@tauri-apps/plugin-dialog';
-import { Project } from '../models/project';
+import { EMPTY_PROJECT, Project } from '../models/project';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
@@ -13,7 +13,7 @@ export class ProjectService {
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
-    currentProject = signal<Project | null>(null);
+    currentProject: WritableSignal<Project> = signal<Project>(EMPTY_PROJECT);
     project = computed(() => {
         const project = this.currentProject();
         if (!project)
@@ -95,9 +95,10 @@ export class ProjectService {
         return null;
     }
 
-    async loadProject(projectId: string): Promise<Project | null> {
+    async loadProject(projectId: string): Promise<Project> {
         try {
-            const project = await invoke<Project | null>('load_project', { projectId });
+            const project = await invoke<Project | null>('load_project', { projectId }) || EMPTY_PROJECT;
+
             this.currentProject.set(project);
             if (project) {
                 this.setProjectPath(project.path);
@@ -105,7 +106,7 @@ export class ProjectService {
             }
             return project;
         } catch {
-            return null;
+            return EMPTY_PROJECT;
         }
     }
 

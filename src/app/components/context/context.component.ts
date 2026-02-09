@@ -5,7 +5,7 @@ import { invoke } from '@tauri-apps/api/core';
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
 import { CommandDescriptor } from '../../models/command';
 import { IdGenerator } from '../../models/id';
-import { ProjectOperations as ProjOps } from '../../models/project';
+import { ProjectExtensions } from "../../models/project.extensions";
 import { ProjectService } from '../../services/project.service';
 import { IconComponent } from "../icon/icon.component";
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
@@ -58,7 +58,7 @@ export class ContextComponent {
             updatedAt: now
         };
 
-        this.projectService.currentProject.set(ProjOps.addRule(this.project()!, newRule));
+        ProjectExtensions.addRule(this.projectService.currentProject, newRule);
     }
 
     async downloadAgentRules(): Promise<void> {
@@ -108,16 +108,14 @@ export class ContextComponent {
             updatedAt: now
         } : existingRule;
 
-        this.projectService.currentProject.set(ProjOps.updateRule(this.project()!, existingRule!));
+        ProjectExtensions.updateRule(this.projectService.currentProject, existingRule!);
 
         existingRuleViewModel?.isEditing.set(false);
     }
 
     deleteRule(ruleId: string): void {
-        this.projectService.currentProject.set(ProjOps.deleteRule(this.project()!, ruleId));
-
+        ProjectExtensions.deleteRule(this.projectService.currentProject, ruleId);
     }
-
 
     private toSafeFileName(value: string): string {
         const sanitized = value
