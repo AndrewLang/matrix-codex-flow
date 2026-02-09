@@ -1,9 +1,8 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
 
 import { CommandDescriptor } from '../../models/command';
 import { ProjectExtensions } from '../../models/project.extensions';
-import { Task, TaskExtensions, TaskFilterTab, TaskTabItem, TaskViewModel } from '../../models/task';
+import { Task, TaskExtensions, TaskFilterTab, TaskStatus, TaskTabItem, TaskViewModel } from '../../models/task';
 import { DialogService } from '../../services/dialog.service';
 import { ProjectService } from '../../services/project.service';
 import { TaskService } from '../../services/task.service';
@@ -29,8 +28,6 @@ export class TasksComponent {
     private readonly dialogService = inject(DialogService);
     private readonly taskService = inject(TaskService);
 
-    private readonly router = inject(Router);
-
     readonly taskViewModels = computed(() => {
         const project = this.projectService.currentProject();
         return project?.tasks.map(task => {
@@ -41,15 +38,15 @@ export class TasksComponent {
     readonly filteredTasks = computed<TaskViewModel[]>(() => {
         const selectedTab = this.selectedTab();
 
-        if (selectedTab === 'pending') {
-            return this.taskViewModels().filter((task) => task.status === 'pending' || task.status === 'in_progress');
+        if (selectedTab === TaskFilterTab.Pending) {
+            return this.taskViewModels().filter((task) => task.status === TaskStatus.Pending || task.status === TaskStatus.InProgress);
         }
 
-        if (selectedTab === 'finished') {
-            return this.taskViewModels().filter((task) => task.status === 'completed');
+        if (selectedTab === TaskFilterTab.Finished) {
+            return this.taskViewModels().filter((task) => task.status === TaskStatus.Completed);
         }
 
-        return this.taskViewModels().filter((task) => task.status === 'failed');
+        return this.taskViewModels().filter((task) => task.status === TaskStatus.Failed);
     });
     readonly emptyMessage = computed(() => `No tasks in ${this.selectedTab()}.`);
     readonly headerLeftCommands = computed<CommandDescriptor[]>(() => {

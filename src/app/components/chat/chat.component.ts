@@ -1,10 +1,13 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, ElementRef, inject, OnInit, signal, viewChild } from '@angular/core';
+import { Component, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { ChatMessage } from '../../models/chat.message';
+import { TaskStatus } from '../../models/task';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
 import { ChatService } from '../../services/chat.service';
+import { TaskExecuteService } from '../../services/task.execuer.service';
 import { IconComponent } from "../icon/icon.component";
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
+import { TaskRuntimeComponent } from '../tasks/task.runtime.component';
 
 const MAX_COMPOSER_HEIGHT_PIXELS = 220;
 const MIN_COMPOSER_HEIGHT_PIXELS = 56;
@@ -12,16 +15,25 @@ const MIN_COMPOSER_HEIGHT_PIXELS = 56;
 @Component({
     selector: 'mtx-chat',
     templateUrl: 'chat.component.html',
-    imports: [CommonModule, FormatTimestampPipe, IconComponent, MarkdownRendererComponent]
+    imports: [CommonModule, FormatTimestampPipe, IconComponent,
+        MarkdownRendererComponent, TaskRuntimeComponent]
 })
-export class ChatComponent implements OnInit {
+export class ChatComponent implements OnInit, OnDestroy {
     readonly minComposerHeightPixels = MIN_COMPOSER_HEIGHT_PIXELS;
     readonly maxComposerHeightPixels = MAX_COMPOSER_HEIGHT_PIXELS;
     readonly composerText = signal('');
     readonly copiedMessageId = signal<string | null>(null);
     readonly messages;
+    readonly isRunningTask = signal(false);
 
     private readonly chatService = inject(ChatService);
+    private readonly taskRuntimeService = inject(TaskExecuteService);
+    private readonly runningTaskSubscription = this.taskRuntimeService.onRunTask.subscribe(data => {
+        console.log('[Chat] Task started:', data);
+        let isRunning = data.status === TaskStatus.InProgress;
+        this.isRunningTask.set(isRunning);
+    });
+
     private readonly transcriptContainer = viewChild<ElementRef<HTMLDivElement>>('transcriptContainer');
     private readonly composerTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('composerTextarea');
 
@@ -35,6 +47,10 @@ export class ChatComponent implements OnInit {
     }
 
     ngOnInit() { }
+
+    ngOnDestroy() {
+        this.runningTaskSubscription.unsubscribe();
+    }
 
     isUserMessage(message: ChatMessage): boolean {
         return message.role === 'user';

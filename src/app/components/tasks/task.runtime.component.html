@@ -1,0 +1,65 @@
+<div class="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-3 text-slate-200">
+    <header class="rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+        <h2 class="truncate text-lg font-semibold text-slate-100">
+            Runtime: {{ runtimeTask().title || 'No running task' }}
+        </h2>
+        @if (runtimeTask().description) {
+        <p class="mt-1 text-xs text-slate-400">{{ runtimeTask().description }}</p>
+        }
+    </header>
+
+    <section class="relative flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+        @if (!runtimeTask().id) {
+        <p class="rounded bg-slate-800/60 px-3 py-2 text-sm text-slate-400">
+            No task is running.
+        </p>
+        } @else if (timeline().length === 0) {
+        <p class="rounded bg-slate-800/60 px-3 py-2 text-sm text-slate-400">
+            No runtime timeline available.
+        </p>
+        } @else {
+        <div class="relative pl-8">
+            <div class="absolute bottom-0 left-3 top-0 w-px bg-slate-700/80"></div>
+
+            <div class="space-y-0">
+                @for (item of timeline(); track item.id; let itemIndex = $index) {
+                <article
+                    [ngClass]="[timelineCardClass(item, itemIndex), timelineColor(item), timelineStatusBackground(item)]"
+                    [class.runtime-step-running]="isTimelineItemRunning(item)">
+                    <div
+                        class="absolute -left-[1.95rem] top-4 grid h-6 w-6 place-items-center rounded-full bg-slate-700 text-slate-200">
+                        <mtx-icon [icon]="timelineIcon(item)"></mtx-icon>
+                    </div>
+
+                    <div class="flex items-start justify-between gap-3">
+                        <h3 class="truncate text-sm font-semibold text-slate-100">
+                            <span class="mr-2 text-xs font-medium uppercase tracking-wide text-slate-400">{{
+                                timelineTitle(item) }}</span>
+                            <span>{{ item.step.title }}</span>
+                        </h3>
+                        <span class="rounded px-2 py-1 text-xs capitalize"
+                            [class.bg-slate-700]="item.step.runtimeStatus() === 'pending'"
+                            [class.text-slate-200]="item.step.runtimeStatus() === 'pending'"
+                            [class.bg-amber-600/30]="item.step.runtimeStatus() === 'in_progress'"
+                            [class.text-amber-200]="item.step.runtimeStatus() === 'in_progress'"
+                            [class.bg-emerald-600/30]="item.step.runtimeStatus() === 'completed'"
+                            [class.text-emerald-200]="item.step.runtimeStatus() === 'completed'"
+                            [class.bg-rose-600/30]="item.step.runtimeStatus() === 'failed'"
+                            [class.text-rose-200]="item.step.runtimeStatus() === 'failed'">
+                            {{ item.step.runtimeStatus() }}
+                        </span>
+                    </div>
+                </article>
+                @if (shouldShowCycleSeparator(item, timeline()[itemIndex + 1])) {
+                <div class="mx-4 flex items-center gap-3 py-3">
+                    <div class="h-px flex-1 border-t border-dashed border-slate-700/80"></div>
+                    <span class="text-[10px] uppercase tracking-[0.16em] text-slate-500">Next Step Cycle</span>
+                    <div class="h-px flex-1 border-t border-dashed border-slate-700/80"></div>
+                </div>
+                }
+                }
+            </div>
+        </div>
+        }
+    </section>
+</div>

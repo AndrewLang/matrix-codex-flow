@@ -1,85 +1,97 @@
-import { inject, Injectable } from '@angular/core';
-import { TaskStatus, TaskStep, TaskViewModel } from '../models/task';
+import { inject, Injectable, signal } from '@angular/core';
+import { Router } from '@angular/router';
+import { Subject } from 'rxjs';
+import { RuntimeTaskViewModel, StepViewModel, StepViewModelGroup, TaskRuntimeData, TaskStatus, TaskViewModel } from '../models/task';
 import { ProjectService } from './project.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskExecuteService {
     private readonly projectService = inject(ProjectService);
+    private readonly router = inject(Router);
+
+    private readonly runTaskSubject = new Subject<TaskRuntimeData>();
+    readonly onRunTask = this.runTaskSubject.asObservable();
+    readonly currentTask = signal<TaskViewModel | null>(null);
+    readonly runtimeTask = signal<RuntimeTaskViewModel | null>(null);
 
     async execute(task: TaskViewModel): Promise<void> {
         if (!task?.id) {
             return;
         }
 
-        this.setTaskStatus(task, 'in_progress');
-        this.resetStepStatuses(task);
-        this.syncTaskToProject(task);
+        let runtimeTask = await this.prepareExecute(task);
 
         try {
-            let preSteps = task.presteps.map(step => ({ ...step }));
-            let mainSteps = task.steps.map(step => ({ ...step }));
-            let postSteps = task.poststeps.map(step => ({ ...step }));
-
-            for (let step of task.steps) {
-                this.executeSteps(preSteps, 'pre', task);
-                this.executeStep(step, 'main', task);
-                this.executeSteps(postSteps, 'post', task);
+            for (const stepGroup of runtimeTask.steps) {
+                await this.executeStepGroup(stepGroup, task);
             }
 
-
-            this.setTaskStatus(task, 'completed');
+            this.updateTaskStatus(task, TaskStatus.Completed);
         } catch (error) {
-            this.setTaskStatus(task, 'failed');
+            this.updateTaskStatus(task, TaskStatus.Failed);
             throw error;
         } finally {
             this.syncTaskToProject(task);
+            this.runTaskSubject.next({
+                runtimeTask: runtimeTask,
+                status: runtimeTask.task.status || TaskStatus.Pending
+            });
+
             await this.saveCurrentProject();
         }
     }
 
-    private async executeSteps(
-        steps: TaskStep[],
-        phase: 'pre' | 'post',
-        task: TaskViewModel
-    ): Promise<void> {
-        for (const step of steps) {
-            await this.executeStep(step, phase, task);
+    private async prepareExecute(task: TaskViewModel) {
+        this.router.navigate(['/workspace/chat']);
+        await this.delay(1000);
+
+        let runtimeTask = new RuntimeTaskViewModel(task);
+        this.runtimeTask.set(runtimeTask);
+
+        this.updateTaskStatus(task, TaskStatus.InProgress);
+        this.resetStepStatuses(runtimeTask);
+
+        this.runTaskSubject.next({
+            runtimeTask,
+            status: TaskStatus.InProgress
+        });
+        return runtimeTask;
+    }
+
+    private async executeStepGroup(stepGroup: StepViewModelGroup, task: TaskViewModel): Promise<void> {
+        for (const step of stepGroup.steps) {
+            await this.executeStep(step);
         }
     }
 
     private async executeStep(
-        step: TaskStep,
-        phase: 'pre' | 'main' | 'post',
-        task: TaskViewModel
+        step: StepViewModel
     ): Promise<void> {
-        this.setStepStatus(step, 'in_progress');
+        this.updateStepStatus(step, TaskStatus.InProgress);
 
+        console.log(`[TaskExecutor] ${step.title}`);
+        await this.delay(5000);
 
-        console.log(`[TaskExecutor] ${phase}: ${step.title}`);
-
-        this.setStepStatus(step, 'completed');
+        this.updateStepStatus(step, TaskStatus.Completed);
     }
 
-    private resetStepStatuses(task: TaskViewModel): void {
-        const allSteps = [...task.presteps, ...task.steps, ...task.poststeps];
-
-        for (const step of allSteps) {
-            this.setStepStatus(step, 'pending');
+    private resetStepStatuses(task: RuntimeTaskViewModel): void {
+        for (const stepGroup of task.steps) {
+            for (const step of stepGroup.steps) {
+                this.updateStepStatus(step, TaskStatus.Pending);
+            }
         }
     }
 
-    private setTaskStatus(task: TaskViewModel, status: TaskStatus): void {
+    private updateTaskStatus(task: TaskViewModel, status: TaskStatus): void {
         task.status = status;
-        this.touchTask(task);
-    }
-
-    private setStepStatus(step: TaskStep, status: TaskStatus): void {
-        step.status = status;
-        step.updatedAt = Date.now();
-    }
-
-    private touchTask(task: TaskViewModel): void {
         task.updatedAt = Date.now();
+    }
+
+    private updateStepStatus(step: StepViewModel, status: TaskStatus): void {
+        step.status = status;
+        step.runtimeStatus.set(status);
+        step.updatedAt = Date.now();
     }
 
     private syncTaskToProject(task: TaskViewModel): void {
@@ -106,12 +118,10 @@ export class TaskExecuteService {
     }
 
     private async saveCurrentProject(): Promise<void> {
-        const project = this.projectService.currentProject();
-
-        if (!project) {
-            return;
-        }
-
         await this.projectService.saveProject();
+    }
+
+    private async delay(ms: number = 1000): Promise<void> {
+        return new Promise((resolve) => setTimeout(resolve, ms));
     }
 }

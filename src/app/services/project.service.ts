@@ -123,7 +123,7 @@ export class ProjectService {
             let project: Project = this.currentProject();
             let title = project.name.trim();
             await invoke('save_project', { project });
-            this.notificationService.success(`Project "${title}" is saved`);
+            this.notificationService.success(`Project "${title}" is updated.`);
         } catch (error) {
             this.notificationService.error('Failed to save project');
             throw error;

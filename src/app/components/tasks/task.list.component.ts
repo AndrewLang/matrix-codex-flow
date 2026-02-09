@@ -3,7 +3,7 @@ import { Component, inject, input, OnDestroy, output } from '@angular/core';
 
 import { Router } from '@angular/router';
 import { CommandDescriptor } from '../../models/command';
-import { Task } from '../../models/task';
+import { Task, TaskStatus } from '../../models/task';
 import { ProjectService } from '../../services/project.service';
 import { TaskExecuteService } from '../../services/task.execuer.service';
 import { IconComponent } from '../icon/icon.component';
@@ -62,15 +62,15 @@ export class TaskListComponent implements OnDestroy {
     }
 
     statusIcon(status: Task['status']): string {
-        if (status === 'completed') {
+        if (status === TaskStatus.Completed) {
             return 'check-circle text-emerald-400';
         }
 
-        if (status === 'failed') {
+        if (status === TaskStatus.Failed) {
             return 'x-circle text-rose-400';
         }
 
-        if (status === 'in_progress') {
+        if (status === TaskStatus.InProgress) {
             return 'arrow-repeat text-amber-300';
         }
 

@@ -4,7 +4,6 @@ import { CommandService } from './command.service';
 import { OpenaiService } from './openai.service';
 import { ProjectService } from './project.service';
 
-
 const USER_ROLE: ChatRole = 'user';
 const AGENT_ROLE: ChatRole = 'agent';
 const IDENTIFIER_RANDOM_RADIX = 36;
