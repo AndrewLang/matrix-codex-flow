@@ -146,32 +146,36 @@ export class TaskExtensions {
         };
     }
 
-    static addStep(task: Task, index: number, template: string, stepType: TaskStepType): string {
-        const currentTimestamp = Date.now();
+
+
+    static addStep(task: WritableSignal<TaskViewModel>, index: number, template: string, stepType: TaskStepType) {
+        const now = Date.now();
         const title = `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${index}`;
         const newStep: TaskStep = {
             id: IdGenerator.generateId(),
             title: title,
             content: template,
             status: 'pending',
-            createdAt: currentTimestamp,
-            updatedAt: currentTimestamp,
+            createdAt: now,
+            updatedAt: now,
             type: stepType
         };
 
         switch (stepType) {
             case 'pre':
-                task.presteps.push(newStep);
+                task().presteps.push(newStep);
                 break;
             case 'post':
-                task.poststeps.push(newStep);
+                task().poststeps.push(newStep);
                 break;
             default:
-                task.steps.push(newStep);
+                task().steps.push(newStep);
                 break;
         }
-
-        return newStep.id;
+        task.update(t => ({
+            ...t,
+            updatedAt: now
+        }));
     }
 
     static updateStep(task: WritableSignal<TaskViewModel>, updatedStep: TaskStep): void {
