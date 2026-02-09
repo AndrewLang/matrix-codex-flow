@@ -51,7 +51,7 @@ export class TasksComponent {
         }));
     });
     readonly headerRightCommands = computed<CommandDescriptor[]>(() => {
-        return [{ id: 'add-task', title: 'Add Task', icon: 'plus-lg' }];
+        return [{ id: 'add-task', title: 'Add Task', icon: 'plus-lg', action: () => this.addTask() }];
     });
 
     addTask(): void {

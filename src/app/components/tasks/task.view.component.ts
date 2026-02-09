@@ -4,10 +4,12 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
 import { map } from 'rxjs';
 
+import { CommandDescriptor } from '../../models/command';
 import { TaskStep } from '../../models/task';
 import { TaskService } from '../../services/task.service';
 import { IconComponent } from '../icon/icon.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
+import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
 
 type TimelineStepKind = 'pre' | 'main' | 'post';
 
@@ -21,21 +23,47 @@ interface TaskTimelineItem {
 @Component({
     selector: 'mtx-task-view',
     templateUrl: 'task.view.component.html',
-    imports: [CommonModule, IconComponent, MarkdownRendererComponent]
+    imports: [CommonModule, IconComponent, MarkdownRendererComponent, WorkspaceHeaderComponent]
 })
 export class TaskViewComponent {
     private readonly taskService = inject(TaskService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
-    protected readonly collapsedTimelineItemIds = signal<Record<string, boolean>>({});
+    readonly collapsedTimelineItemIds = signal<Record<string, boolean>>({});
 
     private readonly taskId = toSignal(
         this.route.paramMap.pipe(map((params) => params.get('taskId') ?? '')),
         { initialValue: '' }
     );
 
-    protected readonly task = computed(() => this.taskService.findTask(this.taskId()));
-    protected readonly timeline = computed(() => {
+    readonly task = computed(() => this.taskService.findTask(this.taskId()));
+    readonly headerTitle = computed(() => this.task()?.title ?? 'Task Not Found');
+    readonly headerDescription = computed(() => this.task()?.description || 'No task description.');
+    readonly headerLeftCommands = computed<CommandDescriptor[]>(() => [{
+        id: 'go-back',
+        title: '',
+        icon: 'arrow-left',
+        action: () => { this.router.navigate(['/workspace/tasks']); }
+    }]);
+    readonly headerRightCommands = computed<CommandDescriptor[]>(() => {
+        if (!this.task()) {
+            return [];
+        }
+
+        return [{
+            id: 'run-task',
+            title: 'Run',
+            icon: 'play text-green-400',
+            action: () => this.runTask()
+        },
+        {
+            id: 'edit-task',
+            title: 'Edit',
+            icon: 'pencil',
+            action: () => { }
+        }];
+    });
+    readonly timeline = computed(() => {
         const selectedTask = this.task();
         if (!selectedTask) {
             return [] as TaskTimelineItem[];
@@ -72,11 +100,7 @@ export class TaskViewComponent {
         return timelineItems;
     });
 
-    protected goBack(): void {
-        void this.router.navigate(['/workspace/tasks']);
-    }
-
-    protected runTask(): void {
+    runTask(): void {
         const selectedTask = this.task();
         if (!selectedTask) {
             return;
@@ -85,14 +109,14 @@ export class TaskViewComponent {
         this.taskService.runTask(selectedTask.id);
     }
 
-    protected timelineTitle(item: TaskTimelineItem): string {
+    timelineTitle(item: TaskTimelineItem): string {
         const phase = item.kind === 'pre' ? 'Pre Step' : item.kind === 'post' ? 'Post Step' : 'Main Step';
         return `${phase} - Cycle ${item.mainStepIndex + 1}`;
     }
 
-    protected timelineIcon(item: TaskTimelineItem): string {
+    timelineIcon(item: TaskTimelineItem): string {
         if (item.kind === 'pre') {
-            return 'arrow-90deg-right text-xs text-amber-300';
+            return 'arrow-90deg-down text-xs text-amber-300';
         }
 
         if (item.kind === 'post') {
@@ -102,7 +126,7 @@ export class TaskViewComponent {
         return 'arrow-right text-sm text-sky-300';
     }
 
-    protected timelineColor(item: TaskTimelineItem): string {
+    timelineColor(item: TaskTimelineItem): string {
         if (item.kind === 'pre') {
             return 'border-amber-500/30 bg-amber-950/20';
         }
@@ -114,11 +138,11 @@ export class TaskViewComponent {
         return 'border-sky-500/30 bg-sky-950/20';
     }
 
-    protected isAttachedStep(item: TaskTimelineItem): boolean {
+    isAttachedStep(item: TaskTimelineItem): boolean {
         return item.kind === 'pre' || item.kind === 'post';
     }
 
-    protected timelineCardClass(item: TaskTimelineItem, itemIndex: number): string {
+    timelineCardClass(item: TaskTimelineItem, itemIndex: number): string {
         if (item.kind === 'pre') {
             const isFirstPre = this.isFirstPreStep(item, itemIndex);
 
@@ -159,7 +183,7 @@ export class TaskViewComponent {
         return classes;
     }
 
-    protected isTimelineItemCollapsed(item: TaskTimelineItem): boolean {
+    isTimelineItemCollapsed(item: TaskTimelineItem): boolean {
         const collapsed = this.collapsedTimelineItemIds()[item.id];
         if (collapsed !== undefined) {
             return collapsed;
@@ -168,14 +192,14 @@ export class TaskViewComponent {
         return item.kind === 'pre' || item.kind === 'post';
     }
 
-    protected toggleTimelineItemCollapse(item: TaskTimelineItem): void {
+    toggleTimelineItemCollapse(item: TaskTimelineItem): void {
         this.collapsedTimelineItemIds.update((state) => ({
             ...state,
             [item.id]: !this.isTimelineItemCollapsed(item),
         }));
     }
 
-    protected shouldShowCycleSeparator(current: TaskTimelineItem, next?: TaskTimelineItem): boolean {
+    shouldShowCycleSeparator(current: TaskTimelineItem, next?: TaskTimelineItem): boolean {
         if (!next) {
             return false;
         }
