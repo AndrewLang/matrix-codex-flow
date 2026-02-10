@@ -10,9 +10,9 @@ import { WorkspaceHeaderComponent } from '../workspace/workspace.header.componen
 import { TaskListComponent } from './task.list.component';
 
 const TASK_TABS: TaskTabItem[] = [
-    { key: 'pending', label: 'Pending', tag: 'text-indigo-400 transition hover:bg-indigo-600/30 hover:text-indigo-200' },
-    { key: 'finished', label: 'Finished', tag: 'text-green-500 transition hover:bg-emerald-600/30 hover:text-emerald-300' },
-    { key: 'failed', label: 'Failed', tag: 'text-red-500 transition hover:bg-red-600/30 hover:text-red-300' }
+    { key: 'pending', label: 'Pending', tag: '' },
+    { key: 'finished', label: 'Finished', tag: '' },
+    { key: 'failed', label: 'Failed', tag: '' }
 ];
 
 @Component({
@@ -55,7 +55,7 @@ export class TasksComponent {
             id: `filter-${tab.key}`,
             title: tab.label,
             icon: 'text-xs',
-            tag: selected === tab.key ? tab.tag + '  border border-amber-700 shadow-amber-600 shadow' : tab.tag,
+            tag: selected === tab.key ? tab.tag + '  border border-amber-700 shadow-amber-600 shadow-xs' : tab.tag,
             action: () => this.selectedTab.set(tab.key)
         }));
     });
