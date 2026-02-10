@@ -6,7 +6,7 @@
   "build": {
     "frontendDist": "../dist/matrix-codex-flow/browser",
     "devUrl": "http://localhost:8990",
-    "beforeDevCommand": "npm run dev",
+    "beforeDevCommand": "npm start",
     "beforeBuildCommand": "npm run build"
   },
   "app": {
