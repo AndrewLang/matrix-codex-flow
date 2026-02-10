@@ -30,6 +30,7 @@ export class ChatService {
     private readonly chatMessagesState = signal<ChatMessage[]>([]);
 
     readonly messages = this.chatMessagesState.asReadonly();
+    readonly isReceiving = signal(false);
 
     async sendMessage(text: string): Promise<void> {
         const prompt = text.trim();
@@ -63,6 +64,7 @@ export class ChatService {
             });
 
             try {
+                this.isReceiving.set(true);
                 let workingDirectory = this.projectService.currentProject()?.path || undefined;
                 let payload = {
                     payload: {
@@ -76,6 +78,8 @@ export class ChatService {
                 unlistenItem();
                 unlistenDone();
                 reject(err);
+            } finally {
+                this.isReceiving.set(false);
             }
         });
     }

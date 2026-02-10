@@ -27,6 +27,7 @@
             "styles": [
               "src/styles.css",
               "public/css/markdown.css",
+              "public/css/loader.css",
               "bootstrap-icons/font/bootstrap-icons.css",
               "highlight.js/styles/github-dark.css"
             ]

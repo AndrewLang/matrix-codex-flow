@@ -30,6 +30,6 @@ export class MarkdownRendererComponent {
             breaks: true,
             renderer: this.renderer,
         });
-        return this.sanitizer.sanitize(SecurityContext.HTML, raw) ?? '';
+        return this.sanitizer.sanitize(SecurityContext.NONE, raw) ?? '';
     });
 }

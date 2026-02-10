@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { ChatMessage } from '../../models/chat.message';
 import { TaskStatus } from '../../models/task';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
 import { ChatService } from '../../services/chat.service';
 import { TaskExecuteService } from '../../services/task.execuer.service';
 import { IconComponent } from "../icon/icon.component";
+import { LoaderComponent } from '../loader/loader.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
 import { TaskRuntimeComponent } from '../tasks/task.runtime.component';
 
@@ -16,7 +17,9 @@ const MIN_COMPOSER_HEIGHT_PIXELS = 56;
     selector: 'mtx-chat',
     templateUrl: 'chat.component.html',
     imports: [CommonModule, FormatTimestampPipe, IconComponent,
-        MarkdownRendererComponent, TaskRuntimeComponent]
+        MarkdownRendererComponent, TaskRuntimeComponent,
+        LoaderComponent
+    ]
 })
 export class ChatComponent implements OnInit, OnDestroy {
     readonly minComposerHeightPixels = MIN_COMPOSER_HEIGHT_PIXELS;
@@ -24,6 +27,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly composerText = signal('');
     readonly copiedMessageId = signal<string | null>(null);
     readonly messages;
+    readonly isReceiving = computed(() => this.chatService.isReceiving());
     readonly isRunningTask = signal(false);
 
     private readonly chatService = inject(ChatService);
