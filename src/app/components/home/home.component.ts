@@ -1,5 +1,6 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
+import { AppService } from '../../services/app.service';
 import { ProjectService } from '../../services/project.service';
 import { IconComponent } from "../icon/icon.component";
 
@@ -9,11 +10,12 @@ import { IconComponent } from "../icon/icon.component";
     templateUrl: 'home.component.html'
 })
 export class HomeComponent {
-    readonly title = signal('Agent Workflow');
-    readonly recentProjectPaths = computed(() => this.projectService.recentProjectPaths());
-
+    private readonly appService = inject(AppService);
     readonly projectService = inject(ProjectService);
     readonly router = inject(Router);
+
+    readonly title = computed(() => this.appService.splashName);
+    readonly recentProjectPaths = computed(() => this.projectService.recentProjectPaths());
 
     async openProject(): Promise<void> {
         const selectedProjectPath = await this.projectService.chooseFolder();

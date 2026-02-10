@@ -18,7 +18,8 @@
         "height": 1000,
         "visible": false,
         "resizable": true,
-        "fullscreen": false
+        "fullscreen": false,
+        "decorations": false
       }
     ],
     "security": {
