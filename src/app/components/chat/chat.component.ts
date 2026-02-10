@@ -7,6 +7,7 @@ import { ChatService } from '../../services/chat.service';
 import { TaskExecuteService } from '../../services/task.execuer.service';
 import { IconComponent } from "../icon/icon.component";
 import { LoaderComponent } from '../loader/loader.component';
+import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
 import { TaskRuntimeComponent } from '../tasks/task.runtime.component';
 
@@ -18,8 +19,8 @@ const SCROLL_BOTTOM_THRESHOLD_PIXELS = 24;
     selector: 'mtx-chat',
     templateUrl: 'chat.component.html',
     imports: [CommonModule, FormatTimestampPipe, IconComponent,
-        MarkdownRendererComponent, TaskRuntimeComponent,
-        LoaderComponent
+        MarkdownRendererComponent, MarkdownEditorComponent,
+        TaskRuntimeComponent, LoaderComponent
     ]
 })
 export class ChatComponent implements OnInit, OnDestroy {
@@ -27,7 +28,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly maxComposerHeightPixels = MAX_COMPOSER_HEIGHT_PIXELS;
     readonly composerText = signal('');
     readonly copiedMessageId = signal<string | null>(null);
-    readonly messages;
+    readonly messages = computed(() => this.chatService.messages());
     readonly isReceiving = computed(() => this.chatService.isReceiving());
     readonly showScrollToBottom = signal(false);
     readonly isRunningTask = signal(false);
@@ -44,8 +45,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     private readonly composerTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('composerTextarea');
 
     constructor() {
-        this.messages = this.chatService.messages;
-
         effect(() => {
             this.messages().length;
             queueMicrotask(() => this.onMessagesUpdated());
@@ -94,10 +93,6 @@ export class ChatComponent implements OnInit, OnDestroy {
     sendMessage(): void {
         const messageContent = this.composerText();
         this.chatService.sendMessage(messageContent);
-
-        if (!messageContent.trim()) {
-            return;
-        }
 
         this.composerText.set('');
         this.resetComposerHeight();

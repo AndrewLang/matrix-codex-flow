@@ -63,6 +63,7 @@ export class StepViewModel implements TaskStep {
     type: TaskStepType = 'normal';
     isExpanded = signal<boolean>(false);
     isEditing = signal<boolean>(false);
+    tag = signal<string>('');
 }
 
 export class StepViewModelGroup {
@@ -132,7 +133,8 @@ export const EMPTY_STEP: StepViewModel = {
     type: 'normal',
     runtimeStatus: signal<TaskStatus>('pending'),
     isExpanded: signal<boolean>(false),
-    isEditing: signal<boolean>(false)
+    isEditing: signal<boolean>(false),
+    tag: signal<string>('')
 };
 
 export const EMPTY_RUNTIME_TASK = new RuntimeTaskViewModel(EMPTY_TASK_VIEW_MODEL);
@@ -144,7 +146,8 @@ export class TaskStepExtensions {
             runtimeId: IdGenerator.generateId(),
             runtimeStatus: signal<TaskStatus>('pending'),
             isExpanded: signal<boolean>(false),
-            isEditing: signal<boolean>(false)
+            isEditing: signal<boolean>(false),
+            tag: signal<string>('')
         };
     }
 
@@ -180,7 +183,8 @@ export class TaskStepExtensions {
             updatedAt: Date.now(),
             runtimeStatus: signal<TaskStatus>('pending'),
             isExpanded: signal<boolean>(false),
-            isEditing: signal<boolean>(false)
+            isEditing: signal<boolean>(false),
+            tag: signal<string>('')
         };
     }
 }

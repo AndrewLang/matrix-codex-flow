@@ -1,6 +1,9 @@
 use crate::models::chat::{ChatRequest, ChatResponse};
 use crate::models::event_handler::CodexEventHandler;
-use codex_sdk::{Codex, CodexOptions, ThreadEvent, ThreadOptions, TurnOptions};
+use codex_sdk::{
+    ApprovalMode, Codex, CodexOptions, SandboxMode, ThreadEvent, ThreadOptions, TurnOptions,
+    WebSearchMode,
+};
 use futures::StreamExt;
 
 pub struct CodexService {
@@ -9,8 +12,9 @@ pub struct CodexService {
 
 impl CodexService {
     pub fn new() -> Self {
+        let options = CodexOptions::default();
         Self {
-            codex: Codex::new(CodexOptions::default())
+            codex: Codex::new(options)
                 .expect("failed to initialize codex-sdk in CodexService::new"),
         }
     }
@@ -20,14 +24,19 @@ impl CodexService {
         payload: ChatRequest,
         handler: H,
     ) -> Result<(), String> {
-        let trimmed_prompt = payload.prompt.trim();
+        let trimmed_prompt = payload.content.trim();
 
         if trimmed_prompt.is_empty() {
             return Err("prompt cannot be empty".to_string());
         }
 
         let thread_options = ThreadOptions {
+            model: payload.model.clone(),
             working_directory: payload.working_directory.clone(),
+            network_access_enabled: Some(true),
+            approval_policy: Some(ApprovalMode::Never),
+            sandbox_mode: Some(SandboxMode::DangerFullAccess),
+            web_search_mode: Some(WebSearchMode::Cached),
             ..ThreadOptions::default()
         };
 
@@ -36,6 +45,7 @@ impl CodexService {
             trimmed_prompt,
             thread_options.working_directory.as_deref().unwrap_or(".")
         );
+        log::info!("Thread options: {}", thread_options);
 
         let thread = if let Some(id) = payload.thread_id {
             self.codex.resume_thread(id, thread_options)
@@ -50,8 +60,10 @@ impl CodexService {
 
         while let Some(event) = events.next().await {
             match event.map_err(|e| e.to_string())? {
-                ThreadEvent::TurnStarted { .. } => {
-                    log::info!(" Turn started");
+                ThreadEvent::ThreadStarted { thread_id } => {
+                    log::info!(" Turn started with thread ID: {}", thread_id);
+                    let response = ChatResponse::ThreadStarted { thread_id };
+                    handler.on_thread_started(response.to_json());
                 }
                 ThreadEvent::ItemUpdated { item } => {
                     log::info!("Received item update: {:?}", item);

@@ -2,6 +2,7 @@
     color: #abb2bf;
     line-height: 1.5rem;
     font-size: 14px;
+       overflow-wrap: break-word;
 }
 
 .mtx-prose h1,

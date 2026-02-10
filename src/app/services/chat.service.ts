@@ -41,25 +41,32 @@ export class ChatService {
         const message = this.createMessage(USER_ROLE, prompt);
         this.chatMessagesState.update((messages) => [...messages, message]);
 
-        await this.sendToLocalAgent(prompt);
+        await this.sendToLocalAgent(message);
     }
 
-    private sendToLocalAgent(prompt: string): Promise<void> {
+    private sendToLocalAgent(message: ChatMessage): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const unlistenItem = await listen('codex:message', (e) => {
                 const payload = e.payload as ChatResponsePayload;
-                console.log('Received codex:message event with payload:', payload);
+                console.log('Received codex:message:', payload);
                 if (payload.type !== 'token') {
                     this.handleChatResponse(payload);
                 }
             });
 
+            const unlistenThreadStarted = await listen('codex:thread-started', (e) => {
+                const payload = e.payload as { thread_id: string };
+                console.log('Received codex:thread-started:', payload);
+
+            });
+
             const unlistenDone = await listen('codex:done', (e) => {
                 const payload = e.payload as ChatResponsePayload;
-                console.log('Received codex:done event with payload:', payload);
+                console.log('Received codex:done:', payload);
                 this.handleChatResponse(payload);
                 unlistenItem();
                 unlistenDone();
+                unlistenThreadStarted();
                 resolve();
             });
 
@@ -67,16 +74,16 @@ export class ChatService {
                 this.isReceiving.set(true);
                 let workingDirectory = this.projectService.currentProject()?.path || undefined;
                 let payload = {
-                    payload: {
-                        prompt,
-                        workingDirectory: workingDirectory,
-                    }
+                    content: message.content,
+                    model: message.model,
+                    workingDirectory: workingDirectory,
                 };
                 console.log('Invoking chat command with payload:', payload);
-                await invoke('chat', payload);
+                await invoke('chat', { payload });
             } catch (err) {
                 unlistenItem();
                 unlistenDone();
+                unlistenThreadStarted();
                 reject(err);
             } finally {
                 this.isReceiving.set(false);
@@ -103,6 +110,7 @@ export class ChatService {
             id: this.createIdentifier(),
             role,
             content,
+            model: 'gpt-5.3-codex',
             createdAt: Date.now()
         };
     }

@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, input, OnDestroy, output, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, effect, ElementRef, input, OnDestroy, output, ViewChild } from '@angular/core';
 import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import { EditorState } from '@codemirror/state';
@@ -17,11 +17,36 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     readonly placeholder = input<string>('Write markdown content');
     readonly background = input<string>('#0f172a');
     readonly valueChange = output<string>();
+    readonly ctrlEnter = output<void>();
+    readonly shiftEnter = output<void>();
 
     @ViewChild('editor', { static: true })
     private readonly editorRef!: ElementRef<HTMLDivElement>;
 
     private editorView: EditorView | null = null;
+
+    constructor() {
+        effect(() => {
+            const nextValue = this.value();
+            const view = this.editorView;
+            if (!view) {
+                return;
+            }
+
+            const currentValue = view.state.doc.toString();
+            if (currentValue === nextValue) {
+                return;
+            }
+
+            view.dispatch({
+                changes: {
+                    from: 0,
+                    to: view.state.doc.length,
+                    insert: nextValue
+                }
+            });
+        });
+    }
 
     ngAfterViewInit(): void {
         this.editorView = new EditorView({
@@ -31,7 +56,23 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                 extensions: [
                     markdown(),
                     oneDark,
-                    keymap.of(defaultKeymap),
+                    keymap.of([
+                        {
+                            key: 'Mod-Enter',
+                            run: () => {
+                                this.ctrlEnter.emit();
+                                return true;
+                            }
+                        },
+                        {
+                            key: 'Shift-Enter',
+                            run: () => {
+                                this.shiftEnter.emit();
+                                return false;
+                            }
+                        },
+                        ...defaultKeymap
+                    ]),
                     EditorView.lineWrapping,
                     EditorView.updateListener.of((update) => {
                         if (update.docChanged) {
@@ -72,6 +113,8 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                 ]
             })
         });
+
+
     }
 
     ngOnDestroy(): void {

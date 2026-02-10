@@ -1,7 +1,7 @@
 <div class="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-3 text-slate-200">
     <header class="rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
         <h2 class="truncate text-lg font-semibold text-slate-100">
-            Runtime: {{ runtimeTask().title || 'No running task' }}
+            Running: {{ runtimeTask().title || 'No running task' }}
         </h2>
         @if (runtimeTask().description) {
         <p class="mt-1 text-xs text-slate-400">{{ runtimeTask().description }}</p>

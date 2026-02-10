@@ -2,12 +2,14 @@ import { inject, Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subject } from 'rxjs';
 import { RuntimeTaskViewModel, StepViewModel, StepViewModelGroup, TaskRuntimeData, TaskStatus, TaskViewModel } from '../models/task';
+import { ChatService } from './chat.service';
 import { ProjectService } from './project.service';
 
 @Injectable({ providedIn: 'root' })
 export class TaskExecuteService {
     private readonly projectService = inject(ProjectService);
     private readonly router = inject(Router);
+    private readonly chatService = inject(ChatService);
 
     private readonly runTaskSubject = new Subject<TaskRuntimeData>();
     readonly onRunTask = this.runTaskSubject.asObservable();
@@ -69,8 +71,8 @@ export class TaskExecuteService {
     ): Promise<void> {
         this.updateStepStatus(step, TaskStatus.InProgress);
 
-        console.log(`[TaskExecutor] ${step.title}`);
-        await this.delay(5000);
+        let prompt = step.content;
+        await this.chatService.sendMessage(prompt);
 
         this.updateStepStatus(step, TaskStatus.Completed);
     }

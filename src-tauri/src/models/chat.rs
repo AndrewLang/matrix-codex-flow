@@ -4,8 +4,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatRequest {
-    pub prompt: String,
+    pub content: String,
     pub thread_id: Option<String>,
+    pub model: Option<String>,
     pub working_directory: Option<String>,
 }
 
@@ -14,6 +15,7 @@ pub struct ChatRequest {
 #[serde(rename_all = "camelCase")]
 pub enum ChatResponse {
     Token { text: String },
+    ThreadStarted { thread_id: String },
     Message { role: String, content: String },
     Done { total_tokens: u32 },
     Error { message: String },
