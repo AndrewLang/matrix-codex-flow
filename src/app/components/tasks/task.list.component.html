@@ -1,6 +1,7 @@
 <div class="space-y-2">
     @if (tasks().length === 0) {
-    <p class="rounded bg-slate-800/60 px-3 py-8 text-sm text-slate-400">
+    <p class="flex items-center justify-center rounded bg-slate-800/60 px-3 py-8 gap-2 text-sm text-slate-400">
+        <mtx-icon icon="exclamation-triangle text-2xl text-slate-500"></mtx-icon>
         {{ emptyMessage() }}
     </p>
     } @else {

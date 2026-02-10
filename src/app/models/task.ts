@@ -313,6 +313,7 @@ export class TaskExtensions {
 export interface TaskTabItem {
     key: TaskFilterTab;
     label: string;
+    tag: string;
 }
 
 export interface TaskRuntimeData {
