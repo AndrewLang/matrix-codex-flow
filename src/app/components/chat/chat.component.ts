@@ -29,6 +29,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly composerText = signal('');
     readonly copiedMessageId = signal<string | null>(null);
     readonly messages = computed(() => this.chatService.messages());
+    readonly hasMessages = computed(() => this.messages().length > 0);
     readonly isReceiving = computed(() => this.chatService.isReceiving());
     readonly showScrollToBottom = signal(false);
     readonly isRunningTask = signal(false);

@@ -8,9 +8,7 @@ import { EditorView, keymap } from '@codemirror/view';
 
 @Component({
     selector: 'mtx-md-editor',
-    template: `
-    <div #editor class="bg-transparent"></div>
-  `
+    templateUrl: 'md.editor.component.html',
 })
 export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     readonly value = input<string>('');

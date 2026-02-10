@@ -54,8 +54,19 @@
     padding: 0;
 }
 
-
 .mtx-prose hr{
     color:#1f2937;
 }
 
+.mtx-prose .cm-editor{
+    border: none;
+    background: transparent ;
+}
+
+.mtx-prose .cm-content{
+    padding: 0;
+    caret-color: #9a3412;
+}
+.mtx-prose .cm-focused {
+  outline: none;
+}

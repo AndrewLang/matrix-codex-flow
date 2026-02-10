@@ -1,8 +1,10 @@
-<div class="flex h-full min-h-0 flex-col gap-6 text-slate-200 p-3">
+<div class="flex h-full min-h-0 flex-col gap-4 text-slate-200 p-3">
     <div class="relative flex-1 min-h-0">
         <section #transcriptContainer (scroll)="onTranscriptScroll()"
-            class="h-full overflow-y-auto rounded-xl pr-2 py-8 backdrop-blur-xl">
+            class="h-full overflow-y-auto rounded-xl pr-2 py-8 backdrop-blur-xl "
+            [ngClass]="{ 'bg-slate-900/60 border border-slate-800/80': !hasMessages(), 'bg-slate-900/30': hasMessages() }">
             <div class="space-y-6">
+                @if (hasMessages()) {
                 @for (message of messages(); track message.id) {
                 <article class="flex" [ngClass]="bubbleLayout(message)">
                     <div class="flex flex-col gap-1.5" [ngClass]="bubbleAlign(message)">
@@ -22,6 +24,13 @@
                         </div>
                     </div>
                 </article>
+                }} @else {
+                <div class="flex flex-col items-center gap-3 text-center">
+                    <mtx-icon icon="chat-dots text-4xl text-slate-500"></mtx-icon>
+                    <p class="max-w-xs text-sm text-slate-500">No messages yet. </p>
+                    <p class="max-w-xs text-sm text-slate-500">Start the conversation by asking a
+                        question or giving a command.</p>
+                </div>
                 }
                 @if (isReceiving()) {
                 <mtx-loader label="Thinking..."></mtx-loader>
@@ -38,7 +47,7 @@
     </div>
 
     <div class="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 backdrop-blur-xl shadow-xl">
-        <div class="flex flex-col gap-4 space-y-2">
+        <div class="flex flex-col gap-2">
             @if(isRunningTask()){
             <mtx-task-runtime></mtx-task-runtime>
             }
@@ -50,7 +59,7 @@
                 (input)="onComposerInput($event)" (keydown)="onComposerKeydown($event)">
             </textarea> -->
 
-            <mtx-md-editor [value]="composerText()" (valueChange)="composerText.set($event)" background="#0E1729"
+            <mtx-md-editor [value]="composerText()" (valueChange)="composerText.set($event)" background="0f172a99"
                 placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()"></mtx-md-editor>
 
             <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
