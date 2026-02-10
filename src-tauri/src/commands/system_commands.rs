@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 use std::process::Command;
+use tauri::Window;
 
 #[tauri::command]
 pub fn open_folder(path: String) -> Result<(), String> {
@@ -64,4 +65,18 @@ pub fn path_exists(path: String) -> bool {
 #[tauri::command]
 pub fn read_text_file(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|error| format!("failed to read file '{}': {error}", path))
+}
+
+#[tauri::command]
+pub fn toggle_main_window_always_on_top(window: Window) -> Result<bool, String> {
+    let is_always_on_top = window
+        .is_always_on_top()
+        .map_err(|error| format!("failed to read always-on-top state: {error}"))?;
+    let next_state = !is_always_on_top;
+
+    window
+        .set_always_on_top(next_state)
+        .map_err(|error| format!("failed to set always-on-top state: {error}"))?;
+
+    Ok(next_state)
 }

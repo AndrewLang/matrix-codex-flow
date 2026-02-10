@@ -55,7 +55,7 @@ export class TasksComponent {
             id: `filter-${tab.key}`,
             title: tab.label,
             icon: 'text-xs',
-            tag: selected === tab.key ? tab.tag + '  border border-amber-700 shadow-amber-600 shadow-xs' : tab.tag,
+            tag: selected === tab.key ? tab.tag + '  border border-amber-700' : tab.tag,
             action: () => this.selectedTab.set(tab.key)
         }));
     });

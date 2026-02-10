@@ -1,16 +1,19 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { getCurrentWindow } from '@tauri-apps/api/window';
+import { CommandDescriptor } from '../../models/command';
 import { AppService } from '../../services/app.service';
+import { IconComponent } from "../icon/icon.component";
 
 @Component({
     selector: 'app-title-bar',
-    imports: [CommonModule],
+    imports: [CommonModule, IconComponent],
     templateUrl: './titlebar.component.html',
 })
 export class TitleBarComponent implements OnInit {
     private readonly appService = inject(AppService);
     appName = computed(() => this.appService.appName);
+    appCommands = computed(() => this.appService.appCommands);
     isMac = navigator.userAgent.includes('Mac OS X');
     isMaximized = signal(false);
 
@@ -39,5 +42,9 @@ export class TitleBarComponent implements OnInit {
 
     close() {
         this.appWindow.close();
+    }
+
+    invokeCommand(command: CommandDescriptor) {
+        command.action?.(command);
     }
 }
