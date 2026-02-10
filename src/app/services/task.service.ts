@@ -82,7 +82,7 @@ export class TaskService {
     }
 
     private toSafeFileName(value: string): string {
-        const sanitized = value
+        const sanitized = (value ?? '')
             .trim()
             .toLowerCase()
             .replace(/[<>:\"/\\|?*\x00-\x1F]/g, ' ')

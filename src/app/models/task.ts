@@ -308,6 +308,75 @@ export class TaskExtensions {
             updatedAt: Date.now()
         }));
     }
+
+    static reorderSteps(task: WritableSignal<TaskViewModel>, stepType: TaskStepType, draggedStepId: string, targetStepId: string): void {
+        if (!draggedStepId || !targetStepId || draggedStepId === targetStepId) {
+            return;
+        }
+
+        const now = Date.now();
+        const sourceList = stepType === 'pre'
+            ? [...task().presteps]
+            : stepType === 'post'
+                ? [...task().poststeps]
+                : [...task().steps];
+
+        const draggedIndex = sourceList.findIndex((step) => step.id === draggedStepId);
+        const targetIndex = sourceList.findIndex((step) => step.id === targetStepId);
+
+        if (draggedIndex < 0 || targetIndex < 0) {
+            return;
+        }
+
+        const [draggedStep] = sourceList.splice(draggedIndex, 1);
+        sourceList.splice(targetIndex, 0, draggedStep);
+
+        if (stepType === 'pre') {
+            task().presteps = sourceList;
+        } else if (stepType === 'post') {
+            task().poststeps = sourceList;
+        } else {
+            task().steps = sourceList;
+        }
+
+        task.update(t => ({
+            ...t,
+            updatedAt: now
+        }));
+    }
+
+    static reorderStepsByIndex(task: WritableSignal<TaskViewModel>, stepType: TaskStepType, previousIndex: number, currentIndex: number): void {
+        if (previousIndex === currentIndex || previousIndex < 0 || currentIndex < 0) {
+            return;
+        }
+
+        const now = Date.now();
+        const sourceList = stepType === 'pre'
+            ? [...task().presteps]
+            : stepType === 'post'
+                ? [...task().poststeps]
+                : [...task().steps];
+
+        if (previousIndex >= sourceList.length || currentIndex >= sourceList.length) {
+            return;
+        }
+
+        const [movedStep] = sourceList.splice(previousIndex, 1);
+        sourceList.splice(currentIndex, 0, movedStep);
+
+        if (stepType === 'pre') {
+            task().presteps = sourceList;
+        } else if (stepType === 'post') {
+            task().poststeps = sourceList;
+        } else {
+            task().steps = sourceList;
+        }
+
+        task.update(t => ({
+            ...t,
+            updatedAt: now
+        }));
+    }
 }
 
 export interface TaskTabItem {

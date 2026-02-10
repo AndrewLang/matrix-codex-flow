@@ -29,7 +29,8 @@ export class WorkspaceComponent {
 
     @HostListener('window:keydown', ['$event'])
     protected onWindowKeyDown(event: KeyboardEvent): void {
-        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        const key = (event.key ?? '').toLowerCase();
+        if ((event.ctrlKey || event.metaKey) && key === 's') {
             event.preventDefault();
             void this.saveProject();
         }

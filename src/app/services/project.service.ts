@@ -196,7 +196,7 @@ export class ProjectService {
         }
 
         const alreadyInDb = (project.rules ?? []).some(
-            (rule) => rule.name.trim().toLowerCase() === 'agents.md'
+            (rule) => (rule.name ?? '').trim().toLowerCase() === 'agents.md'
         );
         if (alreadyInDb) {
             return;
@@ -282,7 +282,7 @@ export class ProjectService {
     }
 
     private toSafeFileName(value: string): string {
-        const sanitized = value
+        const sanitized = (value ?? '')
             .trim()
             .toLowerCase()
             .replace(/[<>:"/\\|?*\x00-\x1F]/g, ' ')
