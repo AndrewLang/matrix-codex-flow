@@ -25,3 +25,5 @@ tauri = { version = "2.10.0", features = [] }
 tauri-plugin-dialog = "2.6"
 env_logger = "0.11"
 rusqlite = { version = "0.37", features = ["bundled"] }
+futures = "0.3"
+codex-sdk = { path = "crates/codex-sdk-rs" }

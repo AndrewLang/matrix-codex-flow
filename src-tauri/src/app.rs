@@ -3,6 +3,7 @@ use std::sync::{Mutex, Once};
 use tauri::{Builder, Error, Manager, WindowEvent, Wry};
 
 use crate::services::app_service::AppService;
+use crate::services::codex_service::CodexService;
 use crate::services::command_service::CommandService;
 use crate::services::data_service::DataService;
 
@@ -33,7 +34,8 @@ impl App {
                 crate::commands::settings_commands::load_settings,
                 crate::commands::settings_commands::save_settings,
                 crate::commands::system_commands::open_folder,
-                crate::commands::system_commands::write_text_file
+                crate::commands::system_commands::write_text_file,
+                crate::commands::chat_commands::chat,
             ])
             .on_window_event(|window, event| {
                 if window.label() != "main" {
@@ -41,7 +43,9 @@ impl App {
                 }
 
                 match event {
-                    WindowEvent::Moved(_) | WindowEvent::Resized(_) | WindowEvent::CloseRequested { .. } => {
+                    WindowEvent::Moved(_)
+                    | WindowEvent::Resized(_)
+                    | WindowEvent::CloseRequested { .. } => {
                         let state = window.app_handle().state::<Mutex<AppService>>();
                         let lock_result = state.lock();
                         if let Ok(mut app_service) = lock_result {
@@ -53,7 +57,10 @@ impl App {
             })
             .setup(|app| {
                 let app_service = AppService::load(app.handle());
-                log::info!("app data directory: {}", app_service.app_data_dir().display());
+                log::info!(
+                    "app data directory: {}",
+                    app_service.app_data_dir().display()
+                );
                 let data_service = match DataService::new(app_service.app_data_dir().clone()) {
                     Ok(service) => service,
                     Err(error) => return Err(error.into()),
@@ -66,6 +73,7 @@ impl App {
 
                 app.manage(Mutex::new(app_service));
                 app.manage(Mutex::new(data_service));
+                app.manage(CodexService::new());
                 app.manage(CommandService::new());
                 log::info!("backend logging initialized");
                 log::info!("app name: {}", app.package_info().name);

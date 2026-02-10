@@ -57,11 +57,13 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     bubbleLayout(message: ChatMessage) {
-        return this.isUserMessage(message) ? 'justify-end' : 'justify-start';
+        return this.isUserMessage(message) ? 'justify-end' : 'justify-start w-full';
     }
 
     bubbleAlign(message: ChatMessage) {
-        return this.isUserMessage(message) ? 'items-end max-w-[75%] ' : 'items-start w-full';
+        return this.isUserMessage(message)
+            ? 'items-end max-w-[75%]'
+            : 'items-start w-full max-w-full min-w-0';
     }
 
     bubbleColor(message: ChatMessage) {
