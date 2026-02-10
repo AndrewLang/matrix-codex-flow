@@ -1,35 +1,45 @@
 <div class="flex h-full min-h-0 flex-col gap-6 text-slate-200 p-3">
-    <section #transcriptContainer class="flex-1 min-h-0 overflow-y-auto rounded-xl pr-2 py-8 backdrop-blur-xl">
-        <div class="space-y-6">
-            @for (message of messages(); track message.id) {
-            <article class="flex" [ngClass]="bubbleLayout(message)">
-                <div class="flex flex-col gap-1.5" [ngClass]="bubbleAlign(message)">
-                    <div class="w-full rounded-xl py-2 px-3 text-[15px] leading-7" [ngClass]="bubbleColor(message)">
-                        @if (isUserMessage(message)) {
-                        {{ message.content }}
-                        } @else {
-                        <mtx-md-renderer [markdown]="message.content"></mtx-md-renderer>
-                        }
+    <div class="relative flex-1 min-h-0">
+        <section #transcriptContainer (scroll)="onTranscriptScroll()"
+            class="h-full overflow-y-auto rounded-xl pr-2 py-8 backdrop-blur-xl">
+            <div class="space-y-6">
+                @for (message of messages(); track message.id) {
+                <article class="flex" [ngClass]="bubbleLayout(message)">
+                    <div class="flex flex-col gap-1.5" [ngClass]="bubbleAlign(message)">
+                        <div class="w-full rounded-xl py-2 px-3 text-[15px] leading-7" [ngClass]="bubbleColor(message)">
+                            @if (isUserMessage(message)) {
+                            {{ message.content }}
+                            } @else {
+                            <mtx-md-renderer [markdown]="message.content"></mtx-md-renderer>
+                            }
+                        </div>
+                        <div class="flex items-center gap-1 px-2">
+                            <time class="text-[11px] text-slate-500/90">
+                                {{ message.createdAt | formatTimestamp }}
+                            </time>
+                            <button type="button"
+                                class="grid h-6 w-6 place-items-center rounded text-slate-500 transition hover:bg-slate-700/60 hover:text-slate-300"
+                                [attr.aria-label]="'Copy message'" (click)="copyMessage(message)">
+                                <mtx-icon
+                                    [icon]="copiedMessageId() === message.id ? 'check text-xs' : 'copy text-xs'"></mtx-icon>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex items-center gap-1 px-2">
-                        <time class="text-[11px] text-slate-500/90">
-                            {{ message.createdAt | formatTimestamp }}
-                        </time>
-                        <button type="button"
-                            class="grid h-6 w-6 place-items-center rounded text-slate-500 transition hover:bg-slate-700/60 hover:text-slate-300"
-                            [attr.aria-label]="'Copy message'" (click)="copyMessage(message)">
-                            <mtx-icon
-                                [icon]="copiedMessageId() === message.id ? 'check text-xs' : 'copy text-xs'"></mtx-icon>
-                        </button>
-                    </div>
-                </div>
-            </article>
-            }
-            @if (isReceiving()) {
-            <mtx-loader label="Receiving response..."></mtx-loader>
-            }
-        </div>
-    </section>
+                </article>
+                }
+                @if (isReceiving()) {
+                <mtx-loader label="Thinking..."></mtx-loader>
+                }
+            </div>
+        </section>
+        @if (showScrollToBottom()) {
+        <button type="button"
+            class="absolute bottom-4 right-6 grid h-10 w-10 place-items-center rounded-full border-2 border-amber-700 bg-slate-900/95 text-slate-200 shadow shadow-amber-600 transition hover:bg-slate-800"
+            aria-label="Scroll to bottom" (click)="scrollToBottomFromButton()">
+            <mtx-icon icon="arrow-down"></mtx-icon>
+        </button>
+        }
+    </div>
 
     <div class="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 backdrop-blur-xl shadow-xl">
         <div class="flex flex-col gap-4 space-y-2">
