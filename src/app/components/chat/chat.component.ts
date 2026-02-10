@@ -12,6 +12,7 @@ import { TaskRuntimeComponent } from '../tasks/task.runtime.component';
 
 const MAX_COMPOSER_HEIGHT_PIXELS = 220;
 const MIN_COMPOSER_HEIGHT_PIXELS = 56;
+const SCROLL_BOTTOM_THRESHOLD_PIXELS = 24;
 
 @Component({
     selector: 'mtx-chat',
@@ -28,6 +29,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly copiedMessageId = signal<string | null>(null);
     readonly messages;
     readonly isReceiving = computed(() => this.chatService.isReceiving());
+    readonly showScrollToBottom = signal(false);
     readonly isRunningTask = signal(false);
 
     private readonly chatService = inject(ChatService);
@@ -46,7 +48,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
         effect(() => {
             this.messages().length;
-            queueMicrotask(() => this.scrollTranscriptToBottom());
+            queueMicrotask(() => this.onMessagesUpdated());
         });
     }
 
@@ -123,6 +125,45 @@ export class ChatComponent implements OnInit, OnDestroy {
     openFolder(): void {
     }
 
+    onTranscriptScroll(): void {
+        const transcriptElement = this.transcriptContainer()?.nativeElement;
+
+        if (!transcriptElement) {
+            return;
+        }
+
+        this.showScrollToBottom.set(!this.isAtBottom(transcriptElement));
+    }
+
+    scrollToBottomFromButton(): void {
+        const transcriptElement = this.transcriptContainer()?.nativeElement;
+
+        if (!transcriptElement) {
+            return;
+        }
+
+        transcriptElement.scrollTo({
+            top: transcriptElement.scrollHeight,
+            behavior: 'smooth'
+        });
+        this.showScrollToBottom.set(false);
+    }
+
+    private onMessagesUpdated(): void {
+        const transcriptElement = this.transcriptContainer()?.nativeElement;
+
+        if (!transcriptElement) {
+            return;
+        }
+
+        if (!this.showScrollToBottom()) {
+            this.scrollTranscriptToBottom();
+            return;
+        }
+
+        this.showScrollToBottom.set(!this.isAtBottom(transcriptElement));
+    }
+
     private scrollTranscriptToBottom(): void {
         const transcriptElement = this.transcriptContainer()?.nativeElement;
 
@@ -131,6 +172,12 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
 
         transcriptElement.scrollTop = transcriptElement.scrollHeight;
+    }
+
+    private isAtBottom(element: HTMLDivElement): boolean {
+        const distanceToBottom =
+            element.scrollHeight - element.scrollTop - element.clientHeight;
+        return distanceToBottom <= SCROLL_BOTTOM_THRESHOLD_PIXELS;
     }
 
     private resetComposerHeight(): void {
