@@ -1,6 +1,7 @@
 <div class="flex items-center gap-{{space()}}">
     @for (command of commands(); track command.id) {
     <div class="relative inline-flex items-center" [attr.data-command-menu]="command.id">
+        @if(isVisible(command)) {
         @if (hasSubCommands(command)) {
         <mtx-split-button [command]="command"></mtx-split-button>
         } @else {
@@ -15,6 +16,7 @@
             <span>{{ command.title }}</span>
             }
         </button>
+        }
         }
     </div>
     }

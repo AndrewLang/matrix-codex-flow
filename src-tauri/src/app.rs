@@ -35,6 +35,8 @@ impl App {
                 crate::commands::settings_commands::save_settings,
                 crate::commands::system_commands::open_folder,
                 crate::commands::system_commands::write_text_file,
+                crate::commands::system_commands::path_exists,
+                crate::commands::system_commands::read_text_file,
                 crate::commands::chat_commands::chat,
             ])
             .on_window_event(|window, event| {

@@ -1,8 +1,12 @@
 import { computed, inject, Injectable, signal, WritableSignal } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
+import { join } from '@tauri-apps/api/path';
 import { open } from '@tauri-apps/plugin-dialog';
 import { Subject } from 'rxjs';
+import { AgentRule } from '../models/agent.rule';
+import { IdGenerator } from '../models/id';
 import { EMPTY_PROJECT, Project } from '../models/project';
+import { ProjectExtensions } from '../models/project.extensions';
 import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
@@ -11,6 +15,7 @@ export class ProjectService {
     static readonly RECENT_PROJECT_PATHS_KEY = 'recentProjectPaths';
     static readonly LOADED_PROJECT_ID_KEY = 'loadedProjectId';
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
+    static readonly AGENT_FOLDER = '.codex';
 
     private readonly notificationService = inject(NotificationService);
 
@@ -60,9 +65,11 @@ export class ProjectService {
 
     async loadOrCreateProjectByPath(projectPath: string): Promise<Project | null> {
         try {
-            const project = await invoke<Project>('load_or_create_project_by_path', { projectPath });
+            const project = await this.loadProjectFromPath(projectPath);
             this.currentProject.set(project);
             this.setProjectPath(project.path);
+            await this.syncAgentsMd();
+
             this.recentProjects.update((projects) => {
                 const deduplicatedProjects = projects.filter((existingProject) => existingProject.id !== project.id);
                 return [project, ...deduplicatedProjects].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
@@ -150,6 +157,63 @@ export class ProjectService {
 
     async openFolder(path: string): Promise<void> {
         await invoke('open_folder', { path });
+    }
+
+    async fileExists(path: string): Promise<boolean> {
+        return await invoke<boolean>('path_exists', { path });
+    }
+
+    async readFile(path: string): Promise<string> {
+        return await invoke<string>('read_text_file', { path });
+    }
+
+    async hasAgentsMd(): Promise<boolean> {
+        const projectPath = this.currentProject()?.path?.trim();
+        if (!projectPath) {
+            return false;
+        }
+
+        const agentsMdPath = await join(projectPath, ProjectService.AGENT_FOLDER, 'AGENTS.md');
+        return await invoke<boolean>('path_exists', { path: agentsMdPath });
+    }
+
+    async syncAgentsMd(): Promise<void> {
+        const project = this.currentProject();
+        const projectPath = project?.path?.trim();
+
+        if (!projectPath) {
+            return;
+        }
+
+        const agentsMdPath = await join(projectPath, ProjectService.AGENT_FOLDER, 'AGENTS.md');
+        const exists = await this.fileExists(agentsMdPath);
+        if (!exists) {
+            return;
+        }
+
+        const alreadyInDb = (project.rules ?? []).some(
+            (rule) => rule.name.trim().toLowerCase() === 'agents.md'
+        );
+        if (alreadyInDb) {
+            return;
+        }
+
+        const content = await this.readFile(agentsMdPath);
+        const now = Date.now();
+        const rule: AgentRule = {
+            id: IdGenerator.generateId(),
+            name: 'AGENTS.md',
+            description: content,
+            createdAt: now,
+            updatedAt: now
+        };
+
+        ProjectExtensions.addRule(this.currentProject, rule);
+        await this.saveProject();
+    }
+
+    private async loadProjectFromPath(projectPath: string): Promise<Project> {
+        return await invoke<Project>('load_or_create_project_by_path', { projectPath })
     }
 
     private addRecentProjectPath(path: string): void {

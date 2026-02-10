@@ -36,7 +36,7 @@ export class TaskService {
 
         const normalizedProjectPath = project.path.replace(/[\\/]+$/, '');
         const safeTaskName = this.toSafeFileName(task.title || task.id);
-        const targetFilePath = `${normalizedProjectPath}/.vibeflow/${safeTaskName}.md`;
+        const targetFilePath = `${normalizedProjectPath}/.codex/${safeTaskName}.md`;
         const content = this.toTaskMarkdown(task);
 
         try {

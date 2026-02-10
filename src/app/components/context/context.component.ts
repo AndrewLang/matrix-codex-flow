@@ -32,6 +32,14 @@ export class ContextComponent implements OnDestroy {
     });
     readonly headerRightCommands = computed<CommandDescriptor[]>(() => [
         {
+            id: 'add-agents',
+            title: 'Add AGENTS',
+            description: 'AGENTS.md helps codex understand the context of your project.',
+            icon: 'plus',
+            isHidden: async () => await this.projectService.hasAgentsMd(),
+            action: () => this.addAgentRule()
+        },
+        {
             id: 'add-rule',
             title: 'Add Rule',
             icon: 'plus',
@@ -44,6 +52,7 @@ export class ContextComponent implements OnDestroy {
             action: () => this.downloadAgentRules()
         }
     ]);
+    readonly hasRules = computed(() => this.ruleViewModels().length > 0);
 
     ngOnDestroy(): void {
         this.savingSubscription.unsubscribe();
@@ -75,7 +84,7 @@ export class ContextComponent implements OnDestroy {
         try {
             for (const rule of project.rules) {
                 const safeFileName = this.toSafeFileName(rule.name || rule.id);
-                const targetFilePath = `${normalizedProjectPath}/.vibeflow/${safeFileName}.md`;
+                const targetFilePath = `${normalizedProjectPath}/.codex/${safeFileName}.md`;
                 await invoke('write_text_file', {
                     path: targetFilePath,
                     content: rule.description?.trim() ?? ''

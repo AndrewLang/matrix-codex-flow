@@ -9,6 +9,7 @@
             <div class="absolute bottom-0 left-2 top-0 w-px bg-slate-700/80"></div>
 
             <div class="space-y-5">
+                @if(hasRules()) {
                 @for (agentRule of ruleViewModels(); track agentRule.id) {
                 <article class="relative rounded-xl bg-slate-800/50 p-4">
                     <div class="absolute -left-[1.35rem] top-5 h-3 w-3 rounded-full bg-emerald-400"></div>
@@ -58,6 +59,18 @@
                     }
                     }
                 </article>
+                }
+                } @else {
+                <div class="gap-3">
+                    <h3 class="text-lg font-semibold text-slate-100">Context helps Codex make good
+                        decisions. </h3>
+                    <p class="text-sm text-slate-300 leading-relaxed">
+                        By providing
+                        information about the current codebase, conventions, and environment, Codex
+                        can work with intent instead of guessing — resulting in fewer errors, fewer
+                        iterations, and changes that better fit your project.
+                    </p>
+                </div>
                 }
             </div>
         </div>

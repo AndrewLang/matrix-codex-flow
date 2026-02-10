@@ -23,4 +23,8 @@ export class CommandStripComponent implements OnInit {
     hasSubCommands(command: CommandDescriptor): boolean {
         return (command.subCommands?.length ?? 0) > 0;
     }
+
+    isVisible(command: CommandDescriptor): boolean {
+        return !(command.isHidden?.() ?? false);
+    }
 }

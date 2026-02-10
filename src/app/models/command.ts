@@ -5,5 +5,6 @@ export interface CommandDescriptor {
     icon?: string;
     tag?: string;
     subCommands?: CommandDescriptor[];
+    isHidden?: (context?: any) => boolean | Promise<boolean>;
     action?: (context?: any) => void | Promise<void>;
 }

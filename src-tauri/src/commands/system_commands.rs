@@ -55,3 +55,13 @@ pub fn write_text_file(path: String, content: String) -> Result<(), String> {
     fs::write(file_path, content)
         .map_err(|error| format!("failed to write file '{}': {error}", file_path.display()))
 }
+
+#[tauri::command]
+pub fn path_exists(path: String) -> bool {
+    Path::new(&path).exists()
+}
+
+#[tauri::command]
+pub fn read_text_file(path: String) -> Result<String, String> {
+    fs::read_to_string(&path).map_err(|error| format!("failed to read file '{}': {error}", path))
+}
