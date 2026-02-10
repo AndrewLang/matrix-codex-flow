@@ -32,6 +32,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly isReceiving = computed(() => this.chatService.isReceiving());
     readonly showScrollToBottom = signal(false);
     readonly isRunningTask = signal(false);
+    private readonly autoScrollEnabled = signal(true);
 
     private readonly chatService = inject(ChatService);
     private readonly taskRuntimeService = inject(TaskExecuteService);
@@ -127,7 +128,9 @@ export class ChatComponent implements OnInit, OnDestroy {
             return;
         }
 
-        this.showScrollToBottom.set(!this.isAtBottom(transcriptElement));
+        const isAtBottom = this.isAtBottom(transcriptElement);
+        this.autoScrollEnabled.set(isAtBottom);
+        this.showScrollToBottom.set(!isAtBottom);
     }
 
     scrollToBottomFromButton(): void {
@@ -145,18 +148,22 @@ export class ChatComponent implements OnInit, OnDestroy {
     }
 
     private onMessagesUpdated(): void {
-        const transcriptElement = this.transcriptContainer()?.nativeElement;
+        const shouldAutoScroll = this.autoScrollEnabled();
 
-        if (!transcriptElement) {
-            return;
-        }
+        requestAnimationFrame(() => {
+            const transcriptElement = this.transcriptContainer()?.nativeElement;
+            if (!transcriptElement) {
+                return;
+            }
 
-        if (!this.showScrollToBottom()) {
-            this.scrollTranscriptToBottom();
-            return;
-        }
+            if (shouldAutoScroll) {
+                this.scrollTranscriptToBottom();
+                this.showScrollToBottom.set(false);
+                return;
+            }
 
-        this.showScrollToBottom.set(!this.isAtBottom(transcriptElement));
+            this.showScrollToBottom.set(!this.isAtBottom(transcriptElement));
+        });
     }
 
     private scrollTranscriptToBottom(): void {
