@@ -167,6 +167,10 @@ export class ProjectService {
         return await invoke<string>('read_text_file', { path });
     }
 
+    async writeFile(path: string, content: string): Promise<void> {
+        await invoke('write_text_file', { path, content });
+    }
+
     async hasAgentsMd(): Promise<boolean> {
         const projectPath = this.currentProject()?.path?.trim();
         if (!projectPath) {
@@ -210,6 +214,19 @@ export class ProjectService {
 
         ProjectExtensions.addRule(this.currentProject, rule);
         await this.saveProject();
+    }
+
+    async saveRuleToProjectFolder(rule: AgentRule): Promise<void> {
+        const project = this.currentProject();
+        if (!project?.path?.trim()) {
+            return;
+        }
+
+        const normalizedProjectPath = project.path.replace(/[\\/]+$/, '');
+        const fileName = this.toSafeFileName(rule.name || rule.id);
+        const targetFilePath = `${normalizedProjectPath}/.codex/${fileName}.md`;
+
+        await this.writeFile(targetFilePath, rule.description?.trim() ?? '');
     }
 
     private async loadProjectFromPath(projectPath: string): Promise<Project> {
@@ -262,5 +279,17 @@ export class ProjectService {
         }
 
         await this.loadRecentProjects();
+    }
+
+    private toSafeFileName(value: string): string {
+        const sanitized = value
+            .trim()
+            .toLowerCase()
+            .replace(/[<>:"/\\|?*\x00-\x1F]/g, ' ')
+            .replace(/\s+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        return sanitized || 'rule';
     }
 }

@@ -1,6 +1,5 @@
 import { DatePipe } from '@angular/common';
 import { Component, computed, inject, OnDestroy } from '@angular/core';
-import { invoke } from '@tauri-apps/api/core';
 
 import { AgentRule, AgentRuleViewModel } from '../../models/agent.rule';
 import { CommandDescriptor } from '../../models/command';
@@ -48,6 +47,7 @@ export class ContextComponent implements OnDestroy {
         {
             id: 'download-rules',
             title: 'Download',
+            description: `Download all rules as markdown files to the project folder/${ProjectService.AGENT_FOLDER}.`,
             icon: 'box-arrow-down',
             action: () => this.downloadAgentRules()
         }
@@ -79,16 +79,9 @@ export class ContextComponent implements OnDestroy {
             return;
         }
 
-        let normalizedProjectPath = project.path.replace(/[\\/]+$/, '');
-
         try {
             for (const rule of project.rules) {
-                const safeFileName = this.toSafeFileName(rule.name || rule.id);
-                const targetFilePath = `${normalizedProjectPath}/.codex/${safeFileName}.md`;
-                await invoke('write_text_file', {
-                    path: targetFilePath,
-                    content: rule.description?.trim() ?? ''
-                });
+                await this.projectService.saveRuleToProjectFolder(rule);
             }
         } catch (error) {
             console.error('Failed to export agent rules:', error);
@@ -107,12 +100,12 @@ export class ContextComponent implements OnDestroy {
         rule.isEditing.set(false);
     }
 
-    saveEdit(rule: AgentRule): void {
-        let existingRuleViewModel = this.ruleViewModels().find((r) => r.id === rule.id);
-        if (!existingRuleViewModel) {
+    async saveEdit(rule: AgentRule): Promise<void> {
+        let viewModel = this.ruleViewModels().find((r) => r.id === rule.id);
+        if (!viewModel) {
             return;
         }
-        let existingRule = existingRuleViewModel?.toAgentRule();
+        let existingRule = viewModel?.toAgentRule();
         let now = Date.now();
 
         existingRule = rule ? {
@@ -121,23 +114,13 @@ export class ContextComponent implements OnDestroy {
         } : existingRule;
 
         ProjectExtensions.updateRule(this.projectService.currentProject, existingRule!);
+        await this.projectService.saveRuleToProjectFolder(existingRule!);
+        await this.projectService.saveProject();
 
-        existingRuleViewModel?.isEditing.set(false);
+        viewModel?.isEditing.set(false);
     }
 
     deleteRule(ruleId: string): void {
         ProjectExtensions.deleteRule(this.projectService.currentProject, ruleId);
-    }
-
-    private toSafeFileName(value: string): string {
-        const sanitized = value
-            .trim()
-            .toLowerCase()
-            .replace(/[<>:"/\\|?*\x00-\x1F]/g, ' ')
-            .replace(/\s+/g, '-')
-            .replace(/-+/g, '-')
-            .replace(/^-|-$/g, '');
-
-        return sanitized || 'rule';
     }
 }
