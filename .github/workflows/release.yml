@@ -1,59 +1,31 @@
-name: Release Tauri App
+name: Release
 
 on:
   push:
-    tags:
-      - 'v*'
+    branches:
+      - main
+
+permissions:
+  contents: write
 
 jobs:
-  release:
-    strategy:
-      matrix:
-        platform: [ubuntu-latest, windows-latest, macos-latest]
-
-    runs-on: ${{ matrix.platform }}
-
+  build:
+    fail-fast: false
+    runs-on: ubuntu-22.04
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
         with:
-          submodules: recursive
+          cache: npm
+          node-version: '16'
 
-      # Setup Node
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Install frontend dependencies
-        run: npm install
-
-      - name: Build frontend
-        run: npm run build
-
-      # Setup Rust
-      - name: Setup Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Cache Cargo
-        uses: Swatinem/rust-cache@v2
-
-      # Linux system dependencies
-      - name: Install Linux dependencies
-        if: matrix.platform == 'ubuntu-latest'
-        run: |
-          sudo apt update
-          sudo apt install -y libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf
-
-      - name: Build and Publish
-        uses: tauri-apps/tauri-action@v0
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          releaseName: 'Matrix VibeFlow ${{ github.ref_name }}'
-          releaseBody: 'Automated release for version ${{ github.ref_name }}'
-          draft: false
-          prerelease: false
+      - name: Windows MSVC Step
+        runs-on: windows-latest
+        steps:
+          - name: Run MSVC
+            uses: ilammy/msvc-dev-cmd@v1
+            with:
+              projectPath: .  
