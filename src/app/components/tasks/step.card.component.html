@@ -1,0 +1,14 @@
+<div class="mt-3">
+    <mtx-md-renderer [markdown]="step().content"></mtx-md-renderer>
+</div>
+
+<div class="mt-3 flex items-center justify-end gap-2">
+    <div class="flex shrink-0 items-center gap-1.5">
+        @for(command of commands; track command.id) {
+        <button type="button" class="rounded  px-3 py-1.5 text-xs transition {{command.tag}}"
+            (click)="command.action?.()" title="{{command.description}}">
+            <mtx-icon [icon]="command.icon!"></mtx-icon>
+        </button>
+        }
+    </div>
+</div>

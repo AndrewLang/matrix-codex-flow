@@ -1,19 +1,19 @@
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
-import { timer } from 'rxjs';
 
 import { Router } from '@angular/router';
 import { EMPTY_TASK, StepViewModel, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { ChatService } from '../../services/chat.service';
 import { IconComponent } from '../icon/icon.component';
-import { MarkdownRendererComponent } from '../md-renderer/md.renderer.component';
+import { StepCardComponent } from './step.card.component';
 import { StepEditorComponent } from './step.edit.component';
 
 @Component({
     selector: 'mtx-step-list',
     templateUrl: 'step.list.component.html',
-    imports: [DatePipe, IconComponent, MarkdownRendererComponent, StepEditorComponent,
+    imports: [DatePipe, IconComponent,
+        StepEditorComponent, StepCardComponent,
         CdkDropList, CdkDrag, CdkDragHandle
     ]
 })
@@ -59,6 +59,14 @@ export class StepListComponent {
         step.isEditing.set(!step.isEditing());
     }
 
+    editStep(step: StepViewModel): void {
+        step.isEditing.set(true);
+    }
+
+    deleteStep(step: StepViewModel): void {
+        TaskExtensions.deleteStep(this.editableTask, step);
+    }
+
     isListCollapsed(): boolean {
         return this.steps().length === 0 || this.isCollapsed();
     }
@@ -79,28 +87,6 @@ export class StepListComponent {
         TaskExtensions.updateStep(this.editableTask, updatedStep);
 
         updatedStep.isEditing.set(false);
-    }
-
-    deleteStep(step: StepViewModel): void {
-        TaskExtensions.deleteStep(this.editableTask, step);
-    }
-
-    copyStepContent(step: StepViewModel): void {
-        const content = step.content.trim();
-        if (!content) {
-            return;
-        }
-
-        navigator.clipboard.writeText(step.content);
-        step.tag.set('Step content copied to clipboard');
-        setTimeout(() => step.tag.set(''), 3000);
-    }
-
-    runStep(step: StepViewModel): void {
-        this.router.navigate(['/workspace/chat']);
-        timer(100).subscribe(() => {
-            this.chatService.sendMessage(step.content);
-        });
     }
 
     dropStep(event: CdkDragDrop<StepViewModel[]>): void {
