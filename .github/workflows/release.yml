@@ -2,30 +2,49 @@ name: Release
 
 on:
   push:
-    branches:
-      - main
-
-permissions:
-  contents: write
+    tags:
+      - 'v*.*.*'
 
 jobs:
-  build:
-    fail-fast: false
-    runs-on: ubuntu-22.04
-    steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          cache: npm
-          node-version: '16'
+  release:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-22.04, windows-latest, macos-latest]
 
-      - name: Install dependencies
+    permissions:
+      contents: write
+
+    steps:
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install npm dependencies
         run: npm ci
 
-      - name: Windows MSVC Step
-        runs-on: windows-latest
-        steps:
-          - name: Run MSVC
-            uses: ilammy/msvc-dev-cmd@v1
-            with:
-              projectPath: .  
+      - name: Build
+        run: npm run build
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust
+        uses: Swatinem/rust-cache@v2
+
+      - name: Windows: MSVC development environment
+        if: ${{ matrix.os == 'windows-latest' }}
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Install dependencies on Ubuntu
+        if: ${{ matrix.os == 'ubuntu-22.04' }}
+        run: sudo apt install -y your-dependencies
+
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
+        with:
+          projectPath: .
+          releaseName: 'Your Release Name'
+          releaseBody: 'Your Release Body'
