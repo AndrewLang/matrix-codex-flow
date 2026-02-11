@@ -6,7 +6,6 @@ use tauri::Window;
 #[tauri::command]
 pub fn open_folder(path: String) -> Result<(), String> {
     let folder_path = Path::new(&path);
-
     if !folder_path.exists() {
         return Err(format!("path does not exist: {path}"));
     }
@@ -22,8 +21,7 @@ pub fn open_folder(path: String) -> Result<(), String> {
         cmd
     };
 
-    #[cfg(target_os = "macos")]
-    let mut command = {
+    #[cfg(target_os = "macos")]    let mut command = {
         let mut cmd = Command::new("open");
         cmd.arg(&path);
         cmd
@@ -159,6 +157,7 @@ pub fn init_git_repository(path: String) -> Result<(), String> {
 
 #[tauri::command]
 pub fn is_git_installed() -> bool {
+  log::info!("Checking if Git is installed...");
     Command::new("git")
         .arg("--version")
         .output()
@@ -168,6 +167,7 @@ pub fn is_git_installed() -> bool {
 
 #[tauri::command]
 pub fn git_info() -> Result<String, String> {
+  log::info!("Retrieving Git version information...");
     match Command::new("git").arg("--version").output() {
         Ok(out) if out.status.success() => {
             let raw = String::from_utf8_lossy(&out.stdout).trim().to_string();
@@ -182,23 +182,27 @@ pub fn git_info() -> Result<String, String> {
 
 #[tauri::command]
 pub fn is_codex_installed() -> bool {
+  log::info!("Checking if Codex CLI is installed...");
     #[cfg(target_os = "windows")]
     let output = Command::new("cmd").args(["/C", "codex --version"]).output();
 
     #[cfg(not(target_os = "windows"))]
     let output = Command::new("codex").arg("--version").output();
 
+    log::info!("Codex CLI check output: {:?}", output);
     output.map(|o| o.status.success()).unwrap_or(false)
 }
 
 #[tauri::command]
 pub fn codex_version() -> Result<String, String> {
+  log::info!("Retrieving Codex CLI version information...");
     #[cfg(target_os = "windows")]
     let output = Command::new("cmd").args(["/C", "codex --version"]).output();
 
     #[cfg(not(target_os = "windows"))]
     let output = Command::new("codex").arg("--version").output();
 
+    log::info!("Codex CLI version check output: {:?}", output);
     match output {
         Ok(out) if out.status.success() => {
             Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())

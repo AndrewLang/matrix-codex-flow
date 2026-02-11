@@ -1,6 +1,6 @@
 use env_logger::Env;
 use std::sync::{Mutex, Once};
-use tauri::{Builder, Error, Manager, WindowEvent, Wry};
+use tauri::{Builder, Error, Manager, menu::Menu, WindowEvent, Wry};
 
 use crate::services::app_service::AppService;
 use crate::services::codex_service::CodexService;
@@ -22,7 +22,7 @@ impl App {
     }
 
     fn build(&self) -> Builder<Wry> {
-        Builder::default()
+        let mut builder = Builder::default()
             .plugin(tauri_plugin_dialog::init())
             .invoke_handler(tauri::generate_handler![
                 crate::commands::command_commands::run_command,
@@ -64,8 +64,14 @@ impl App {
                     }
                     _ => {}
                 }
-            })
-            .setup(|app| {
+            });
+
+        #[cfg(target_os = "macos")]
+        {
+            builder = builder.menu(|app| Menu::new(app));
+        }
+
+        builder.setup(|app| {
                 let app_service = AppService::load(app.handle());
                 log::info!(
                     "app data directory: {}",
@@ -77,6 +83,14 @@ impl App {
                 };
 
                 if let Some(main_window) = app.get_webview_window("main") {
+                    #[cfg(target_os = "macos")]
+                    {
+                        let _ = main_window.set_title_bar_style(tauri::TitleBarStyle::Overlay);
+                    }
+                    #[cfg(not(target_os = "macos"))]
+                    {
+                        let _ = main_window.set_decorations(false);
+                    }
                     app_service.restore_main_window(&main_window);
                     let _ = main_window.show();
                 }

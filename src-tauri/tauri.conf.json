@@ -14,12 +14,18 @@
     "windows": [
       {
         "title": "Matrix VibeFlow",
-        "width": 600,
+        "width": 400,
         "height": 1000,
-        "visible": false,
+        "minWidth": 100,
+        "minHeight": 100,
         "resizable": true,
         "fullscreen": false,
-        "decorations": false
+        "decorations": true,
+        "titleBarStyle": "Overlay",
+        "hiddenTitle": true,
+        "transparent": false,
+        "maximizable": true,
+        "visible": false
       }
     ],
     "security": {

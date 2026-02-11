@@ -12,8 +12,8 @@ use crate::models::setting::{SettingModel, SettingValue, SettingValueType};
 const APP_FOLDER_NAME: &str = "vibeflow";
 const APP_CONFIG_FILE_NAME: &str = "app.config.json";
 const SETTINGS_FILE_NAME: &str = "settings.json";
-const DEFAULT_WINDOW_WIDTH: u32 = 800;
-const DEFAULT_WINDOW_HEIGHT: u32 = 1200;
+const DEFAULT_WINDOW_WIDTH: u32 = 400;
+const DEFAULT_WINDOW_HEIGHT: u32 = 1000;
 
 pub struct AppService {
     app_data_dir: PathBuf,
@@ -72,10 +72,15 @@ impl AppService {
             return;
         };
 
-        let (width, height) = if main_window.width < DEFAULT_WINDOW_WIDTH || main_window.height < DEFAULT_WINDOW_HEIGHT {
-            (DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT)
+        let width = if main_window.width == 0 {
+            DEFAULT_WINDOW_WIDTH
         } else {
-            (main_window.width, main_window.height)
+            main_window.width
+        };
+        let height = if main_window.height == 0 {
+            DEFAULT_WINDOW_HEIGHT
+        } else {
+            main_window.height
         };
 
         let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
@@ -95,8 +100,8 @@ impl AppService {
         } else {
             match window.primary_monitor() {
                 Ok(Some(monitor)) => Self::clamp_position_to_primary_monitor(
-                    monitor.position().x,
-                    monitor.position().y,
+                    main_window.x,
+                    main_window.y,
                     width,
                     height,
                     *monitor.position(),

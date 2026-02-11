@@ -43,6 +43,7 @@ impl DataService {
             return Ok(Vec::new());
         }
 
+        log::debug!("Loading recent projects, count: {count}");
         let connection = self.open_connection()?;
         let mut statement =
             connection.prepare("SELECT id FROM projects ORDER BY updated_at DESC LIMIT ?1")?;
@@ -56,6 +57,8 @@ impl DataService {
                 projects.push(project);
             }
         }
+
+        log::debug!("Loaded recent projects: {}", projects.len());
 
         Ok(projects)
     }

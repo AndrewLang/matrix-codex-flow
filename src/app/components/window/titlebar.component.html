@@ -1,11 +1,4 @@
 <div class="title-bar">
-    @if(isMac) {
-    <div class="mac-controls">
-        <div class="traffic-light close" (click)="close()"></div>
-        <div class="traffic-light minimize" (click)="minimize()"></div>
-        <div class="traffic-light maximize" (click)="toggleMaximize()"></div>
-    </div>}
-
     <div class="title" [class.mac-title]="isMac" data-tauri-drag-region>
         <img src="images/VibeFlow.png" class="window-icon" alt="" />
         <span class="app-name">{{ appName() }}</span>
