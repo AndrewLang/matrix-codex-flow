@@ -29,6 +29,7 @@
               "public/css/markdown.css",
               "public/css/loader.css",
               "public/css/titlebar.css",
+              "public/css/drag.css",
               "bootstrap-icons/font/bootstrap-icons.css",
               "highlight.js/styles/github-dark.css"
             ]

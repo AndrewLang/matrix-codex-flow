@@ -1,3 +1,4 @@
+import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
 import { Component, computed, effect, inject, input, signal } from '@angular/core';
 import { timer } from 'rxjs';
@@ -12,7 +13,9 @@ import { StepEditorComponent } from './step.edit.component';
 @Component({
     selector: 'mtx-step-list',
     templateUrl: 'step.list.component.html',
-    imports: [DatePipe, IconComponent, MarkdownRendererComponent, StepEditorComponent]
+    imports: [DatePipe, IconComponent, MarkdownRendererComponent, StepEditorComponent,
+        CdkDropList, CdkDrag, CdkDragHandle
+    ]
 })
 export class StepListComponent {
     readonly chatService = inject(ChatService);
@@ -60,7 +63,7 @@ export class StepListComponent {
         return this.steps().length === 0 || this.isCollapsed();
     }
 
-    toggleListCollapse(): void {
+    toggleCollapse(): void {
         if (this.steps().length === 0) {
             return;
         }
@@ -98,5 +101,12 @@ export class StepListComponent {
         timer(100).subscribe(() => {
             this.chatService.sendMessage(step.content);
         });
+    }
+
+    dropStep(event: CdkDragDrop<StepViewModel[]>): void {
+        moveItemInArray(this.steps(), event.previousIndex, event.currentIndex);
+
+        let stepType = this.steps()[0].type;
+        TaskExtensions.reorderSteps(this.editableTask, this.steps(), stepType);
     }
 }
