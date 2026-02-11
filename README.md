@@ -90,7 +90,21 @@ Please follow existing architecture patterns when contributing.
 
 It focuses on deterministic execution, explicit context, and safe automation.
 
+## ☕ Support VibeFlow
 
+If VibeFlow saves you time, improves your workflow, or helps you ship faster — consider supporting the project.
+
+Your support helps:
+
+🚀 Accelerate new features
+🧠 Improve AI workflow intelligence
+🛠 Maintain Codex integrations
+📚 Expand documentation & examples
+
+Buy Me a Coffee
+You can support development here:
+
+👉 GitHub Sponsors: https://github.com/sponsors/AndrewLang
 
 ## Screenshots
 
