@@ -34,6 +34,7 @@ impl App {
                 crate::commands::settings_commands::load_settings,
                 crate::commands::settings_commands::save_settings,
                 crate::commands::system_commands::open_folder,
+                crate::commands::system_commands::open_url,
                 crate::commands::system_commands::write_text_file,
                 crate::commands::system_commands::path_exists,
                 crate::commands::system_commands::read_text_file,

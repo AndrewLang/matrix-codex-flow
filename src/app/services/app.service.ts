@@ -23,6 +23,15 @@ export class AppService {
                     command.icon = 'pin';
                 }
             }
+        },
+        {
+            id: 'sponsor-github',
+            title: '',
+            description: 'Sponsor on GitHub',
+            icon: 'github',
+            action: async () => {
+                await invoke<boolean>('open_url', { url: 'https://github.com/sponsors/AndrewLang' });
+            }
         }
     ];
 }

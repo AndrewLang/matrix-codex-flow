@@ -43,6 +43,41 @@ pub fn open_folder(path: String) -> Result<(), String> {
 }
 
 #[tauri::command]
+pub fn open_url(url: String) -> Result<(), String> {
+    let trimmed = url.trim();
+
+    if trimmed.is_empty() {
+        return Err("url cannot be empty".to_string());
+    }
+
+    #[cfg(target_os = "windows")]
+    let mut command = {
+        let mut cmd = Command::new("cmd");
+        cmd.args(["/C", "start", "", trimmed]);
+        cmd
+    };
+
+    #[cfg(target_os = "macos")]
+    let mut command = {
+        let mut cmd = Command::new("open");
+        cmd.arg(trimmed);
+        cmd
+    };
+
+    #[cfg(all(unix, not(target_os = "macos")))]
+    let mut command = {
+        let mut cmd = Command::new("xdg-open");
+        cmd.arg(trimmed);
+        cmd
+    };
+
+    command
+        .spawn()
+        .map(|_| ())
+        .map_err(|error| format!("failed to open url: {error}"))
+}
+
+#[tauri::command]
 pub fn write_text_file(path: String, content: String) -> Result<(), String> {
     let file_path = Path::new(&path);
 

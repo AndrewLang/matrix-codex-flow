@@ -83,7 +83,6 @@ Please follow existing architecture patterns when contributing.
 5. Submit a pull request with clear intent and explanation
 
 
-
 ## 💬 Philosophy
 
 > VibeFlow treats AI as a reliable teammate — not a chat toy.
@@ -97,8 +96,11 @@ If VibeFlow saves you time, improves your workflow, or helps you ship faster —
 Your support helps:
 
 🚀 Accelerate new features
+
 🧠 Improve AI workflow intelligence
+
 🛠 Maintain Codex integrations
+
 📚 Expand documentation & examples
 
 Buy Me a Coffee
