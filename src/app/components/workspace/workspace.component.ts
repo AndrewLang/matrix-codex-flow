@@ -3,7 +3,6 @@ import { RouterOutlet } from '@angular/router';
 import { NavItem } from '../../models/nav.model';
 import { NotificationService } from '../../services/notification.service';
 import { ProjectService } from '../../services/project.service';
-import { TaskService } from '../../services/task.service';
 import { HeaderComponent } from '../header/header.component';
 import { NotificationComponent } from '../notification/notification.component';
 import { SidebarComponent } from '../sidebar/sidebar.component';
@@ -15,20 +14,19 @@ import { SidebarComponent } from '../sidebar/sidebar.component';
 })
 export class WorkspaceComponent {
     private readonly projectService = inject(ProjectService);
-    private readonly taskService = inject(TaskService);
     private readonly notificationService = inject(NotificationService);
     private isSaving = signal(false);
-    protected readonly notification = this.notificationService.notification;
+    readonly notification = this.notificationService.notification;
 
-    protected readonly navItems: NavItem[] = [
-        { label: 'Home', icon: 'house text-xl', route: '/' },
+    readonly navItems: NavItem[] = [
+        { label: 'Home', icon: 'house text-xl', route: '/home' },
         { label: 'Chat', icon: 'chat text-xl', route: '/workspace/chat' },
         { label: 'Context', icon: 'briefcase text-xl', route: '/workspace/context' },
         { label: 'Tasks', icon: 'list-task text-xl', route: '/workspace/tasks' },
     ];
 
     @HostListener('window:keydown', ['$event'])
-    protected onWindowKeyDown(event: KeyboardEvent): void {
+    onWindowKeyDown(event: KeyboardEvent): void {
         const key = (event.key ?? '').toLowerCase();
         if ((event.ctrlKey || event.metaKey) && key === 's') {
             event.preventDefault();

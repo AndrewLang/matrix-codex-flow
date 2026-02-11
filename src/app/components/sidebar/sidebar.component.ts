@@ -10,22 +10,20 @@ import { IconComponent } from '../icon/icon.component';
     imports: [RouterLink, RouterLinkActive, IconComponent, CommonModule],
 })
 export class SidebarComponent {
-
     items = input<NavItem[]>();
     settingRoute = input<string>('/workspace/settings');
 
+    readonly isCollapsed = signal(true);
 
-    protected readonly isCollapsed = signal(true);
-
-    protected toggleCollapse(): void {
+    toggleCollapse(): void {
         this.isCollapsed.update((value) => !value);
     }
 
-    protected isLeaf(item: NavItem): boolean {
+    isLeaf(item: NavItem): boolean {
         return !item.children || item.children.length === 0;
     }
 
-    protected iconLabel(icon?: string): string {
+    iconLabel(icon?: string): string {
         return (icon ?? '?').slice(0, 1).toUpperCase();
     }
 }
