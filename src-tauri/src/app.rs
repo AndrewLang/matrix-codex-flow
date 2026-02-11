@@ -38,6 +38,7 @@ impl App {
                 crate::commands::system_commands::write_text_file,
                 crate::commands::system_commands::path_exists,
                 crate::commands::system_commands::folder_has_git,
+                crate::commands::system_commands::init_git_repository,
                 crate::commands::system_commands::read_text_file,
                 crate::commands::system_commands::toggle_main_window_always_on_top,
                 crate::commands::system_commands::is_git_installed,

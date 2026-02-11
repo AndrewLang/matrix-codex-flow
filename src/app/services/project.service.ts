@@ -63,6 +63,11 @@ export class ProjectService {
         return segments[segments.length - 1] ?? path;
     }
 
+    async initProject(path: string): Promise<void> {
+        await invoke('init_git_repository', { path });
+
+    }
+
     setProjectPath(path: string): void {
         this.projectPath.set(path);
         localStorage.setItem(ProjectService.PROJECT_PATH_KEY, path);

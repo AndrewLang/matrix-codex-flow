@@ -42,8 +42,12 @@
                     </mtx-warn>
                 </div>
 
+                <div class="mt-4 flex flex-wrap gap-2">
+                    <a class="rounded-lg bg-blue-400 border border-blue-600 px-4 py-2 text-sm font-medium text-slate-950  hover:bg-blue-300 hover:shadow-md shadow-blue-200 transition-shadow duration-200 cursor-pointer"
+                        (click)="newProject()" title="Start a new project with an empty folder">
+                        New Project
+                    </a>
 
-                <div class="mt-8 flex flex-wrap gap-3">
                     <a class="rounded-lg bg-emerald-400 border border-emerald-600 px-4 py-2 text-sm font-medium text-slate-950  hover:bg-emerald-300 hover:shadow-md shadow-emerald-200 transition-shadow duration-200 cursor-pointer"
                         (click)="openProject()" title="Open a project folder">
                         Open Project

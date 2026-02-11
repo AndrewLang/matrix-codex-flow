@@ -128,6 +128,36 @@ pub fn folder_has_git(path: String) -> Result<bool, String> {
 }
 
 #[tauri::command]
+pub fn init_git_repository(path: String) -> Result<(), String> {
+    let folder_path = Path::new(&path);
+
+    if !folder_path.exists() {
+        return Err(format!("path does not exist: {path}"));
+    }
+
+    if !folder_path.is_dir() {
+        return Err(format!("path is not a directory: {path}"));
+    }
+
+    let output = Command::new("git")
+        .arg("init")
+        .current_dir(folder_path)
+        .output()
+        .map_err(|error| format!("failed to execute git init: {error}"))?;
+
+    if output.status.success() {
+        Ok(())
+    } else {
+        let error = String::from_utf8_lossy(&output.stderr).trim().to_string();
+        if error.is_empty() {
+            Err("failed to initialize git repository".to_string())
+        } else {
+            Err(error)
+        }
+    }
+}
+
+#[tauri::command]
 pub fn is_git_installed() -> bool {
     Command::new("git")
         .arg("--version")

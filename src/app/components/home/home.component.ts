@@ -27,9 +27,17 @@ export class HomeComponent {
 
     }
 
+    async newProject(): Promise<void> {
+        const selectedProjectPath = await this.projectService.chooseFolder();
+        if (!selectedProjectPath) {
+            return;
+        }
+        await this.projectService.initProject(selectedProjectPath);
+        await this.router.navigate(['/workspace']);
+    }
+
     async openProject(): Promise<void> {
         const selectedProjectPath = await this.projectService.chooseFolder();
-
         if (!selectedProjectPath) {
             return;
         }
