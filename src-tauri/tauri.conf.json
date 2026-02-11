@@ -1,19 +1,19 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "Matrix VibleFlow",
+  "productName": "Matrix VibeFlow",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.matrix.vibeflow",
   "build": {
     "frontendDist": "../dist/matrix-codex-flow/browser",
     "devUrl": "http://localhost:8990",
     "beforeDevCommand": "npm start",
-    "beforeBuildCommand": "npm run build"
+    "beforeBuildCommand": "npm run frontend:build"
   },
   "app": {
     "withGlobalTauri": true,
     "windows": [
       {
-        "title": "Matrix VibleFlow",
+        "title": "Matrix VibeFlow",
         "width": 600,
         "height": 1000,
         "visible": false,
