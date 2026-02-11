@@ -6,23 +6,25 @@ It tightly integrates with **Codex CLI** to safely modify your project, understa
 Think of VibeFlow as an **AI project executor**, not just a chat assistant.
 
 
-
-
 ## 🧭 How to Use VibeFlow
 
-1. **Load Project Context**
+1. **Prerequisites**
+   Codex CLI is required, it can be installed with `npm i -g @openai/codex` or go to [Codex CLI](https://developers.openai.com/codex/cli/).
+   To work on your project, git is required. To get git go to [Git website](https://git-scm.com)
+
+2. **Load Project Context**
    VibeFlow scans and manages relevant project files and supplies accurate context to Codex.
 
-2. **Define a Goal**
+3. **Define a Goal**
    Example: *Refactor authentication to support JWT + refresh tokens*
 
-3. **Task Planning**
+4. **Task Planning**
    The planner breaks the goal into executable steps.
 
-4. **Automated Execution**
+5. **Automated Execution**
    Steps are executed via Codex CLI and applied directly to your project.
 
-5. **Iteration & Completion**
+6. **Iteration & Completion**
    Post-steps verify results before moving forward.
 
 
