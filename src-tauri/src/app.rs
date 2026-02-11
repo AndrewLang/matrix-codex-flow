@@ -1,6 +1,6 @@
 use env_logger::Env;
 use std::sync::{Mutex, Once};
-use tauri::{Builder, Error, Manager, menu::Menu, WindowEvent, Wry};
+use tauri::{menu::Menu, Builder, Error, Manager, WindowEvent, Wry};
 
 use crate::services::app_service::AppService;
 use crate::services::codex_service::CodexService;
@@ -22,8 +22,9 @@ impl App {
     }
 
     fn build(&self) -> Builder<Wry> {
-        let mut builder = Builder::default()
+        let builder = Builder::default()
             .plugin(tauri_plugin_dialog::init())
+            .menu(|app| Menu::new(app))
             .invoke_handler(tauri::generate_handler![
                 crate::commands::command_commands::run_command,
                 crate::commands::project_commands::load_recent_projects,
@@ -66,44 +67,39 @@ impl App {
                 }
             });
 
-        #[cfg(target_os = "macos")]
-        {
-            builder = builder.menu(|app| Menu::new(app));
-        }
-
         builder.setup(|app| {
-                let app_service = AppService::load(app.handle());
-                log::info!(
-                    "app data directory: {}",
-                    app_service.app_data_dir().display()
-                );
-                let data_service = match DataService::new(app_service.app_data_dir().clone()) {
-                    Ok(service) => service,
-                    Err(error) => return Err(error.into()),
-                };
+            let app_service = AppService::load(app.handle());
+            log::info!(
+                "app data directory: {}",
+                app_service.app_data_dir().display()
+            );
+            let data_service = match DataService::new(app_service.app_data_dir().clone()) {
+                Ok(service) => service,
+                Err(error) => return Err(error.into()),
+            };
 
-                if let Some(main_window) = app.get_webview_window("main") {
-                    #[cfg(target_os = "macos")]
-                    {
-                        let _ = main_window.set_title_bar_style(tauri::TitleBarStyle::Overlay);
-                    }
-                    #[cfg(not(target_os = "macos"))]
-                    {
-                        let _ = main_window.set_decorations(false);
-                    }
-                    app_service.restore_main_window(&main_window);
-                    let _ = main_window.show();
+            if let Some(main_window) = app.get_webview_window("main") {
+                #[cfg(target_os = "macos")]
+                {
+                    let _ = main_window.set_title_bar_style(tauri::TitleBarStyle::Overlay);
                 }
+                #[cfg(not(target_os = "macos"))]
+                {
+                    let _ = main_window.set_decorations(false);
+                }
+                app_service.restore_main_window(&main_window);
+                let _ = main_window.show();
+            }
 
-                app.manage(Mutex::new(app_service));
-                app.manage(Mutex::new(data_service));
-                app.manage(CodexService::new());
-                app.manage(CommandService::new());
-                log::info!("backend logging initialized");
-                log::info!("app name: {}", app.package_info().name);
+            app.manage(Mutex::new(app_service));
+            app.manage(Mutex::new(data_service));
+            app.manage(CodexService::new());
+            app.manage(CommandService::new());
+            log::info!("backend logging initialized");
+            log::info!("app name: {}", app.package_info().name);
 
-                Ok(())
-            })
+            Ok(())
+        })
     }
 
     fn initialize_logging() {

@@ -1,3 +1,4 @@
+use std::env;
 use std::fs;
 use std::path::PathBuf;
 
@@ -27,7 +28,11 @@ impl AppService {
     pub fn load<R: Runtime>(app_handle: &AppHandle<R>) -> Self {
         let app_data_dir = Self::resolve_app_data_dir(app_handle);
         if let Err(error) = fs::create_dir_all(&app_data_dir) {
-            log::error!("failed to create app data dir {:?}: {}", app_data_dir, error);
+            log::error!(
+                "failed to create app data dir {:?}: {}",
+                app_data_dir,
+                error
+            );
         }
 
         let app_config_path = app_data_dir.join(APP_CONFIG_FILE_NAME);
@@ -86,9 +91,14 @@ impl AppService {
         let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
 
         let saved_location_is_visible = match window.available_monitors() {
-            Ok(monitors) => monitors
-                .iter()
-                .any(|monitor| Self::is_point_inside_monitor(main_window.x, main_window.y, *monitor.position(), *monitor.size())),
+            Ok(monitors) => monitors.iter().any(|monitor| {
+                Self::is_point_inside_monitor(
+                    main_window.x,
+                    main_window.y,
+                    *monitor.position(),
+                    *monitor.size(),
+                )
+            }),
             Err(error) => {
                 log::error!("failed reading available monitors: {}", error);
                 true
@@ -189,12 +199,14 @@ impl AppService {
     }
 
     fn save_app_config(&self) -> Result<(), std::io::Error> {
-        let content = serde_json::to_string_pretty(&self.app_config).unwrap_or_else(|_| "{}".to_string());
+        let content =
+            serde_json::to_string_pretty(&self.app_config).unwrap_or_else(|_| "{}".to_string());
         fs::write(&self.app_config_path, content)
     }
 
     fn save_settings(&self) -> Result<(), std::io::Error> {
-        let content = serde_json::to_string_pretty(&self.settings).unwrap_or_else(|_| "[]".to_string());
+        let content =
+            serde_json::to_string_pretty(&self.settings).unwrap_or_else(|_| "[]".to_string());
         fs::write(&self.settings_path, content)
     }
 
