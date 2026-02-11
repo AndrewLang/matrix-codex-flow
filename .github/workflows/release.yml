@@ -16,17 +16,22 @@ jobs:
       contents: write
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install npm dependencies
-        run: npm ci
+      - name: Install frontend dependencies
+        run: npm install
 
-      - name: Build
-        run: npm run build
+      - name: Build frontend
+        run: npm run frontend:build
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
@@ -38,13 +43,20 @@ jobs:
         if: ${{ matrix.os == 'windows-latest' }}
         uses: ilammy/msvc-dev-cmd@v1
 
-      - name: Install dependencies on Ubuntu
-        if: ${{ matrix.os == 'ubuntu-22.04' }}
-        run: sudo apt install -y your-dependencies
+      - name: Install Linux dependencies
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt update
+          sudo apt install -y libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
-      - name: Build Tauri app
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri App
+        run: npm run tauri:build
+
+
+      - name: Upload installers to GitHub Release
+        uses: softprops/action-gh-release@v2
         with:
-          projectPath: .
-          releaseName: 'Your Release Name'
-          releaseBody: 'Your Release Body'
+          files: src-tauri/target/release/bundle/**/*
