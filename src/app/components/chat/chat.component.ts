@@ -94,7 +94,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     sendMessage(): void {
         const messageContent = this.composerText();
-        this.chatService.sendMessage(messageContent);
+        this.chatService.chat(messageContent);
 
         this.composerText.set('');
         this.resetComposerHeight();

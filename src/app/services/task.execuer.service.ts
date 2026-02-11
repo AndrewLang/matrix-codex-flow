@@ -72,7 +72,7 @@ export class TaskExecuteService {
         this.updateStepStatus(step, TaskStatus.InProgress);
 
         let prompt = step.content;
-        await this.chatService.sendMessage(prompt);
+        await this.chatService.chat(prompt);
 
         this.updateStepStatus(step, TaskStatus.Completed);
     }

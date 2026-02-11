@@ -88,7 +88,7 @@ export class StepCardComponent implements OnInit {
     runStep(): void {
         this.router.navigate(['/workspace/chat']);
         timer(100).subscribe(() => {
-            this.chatService.sendMessage(this.step().content);
+            this.chatService.chat(this.step().content);
         });
     }
 

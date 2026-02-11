@@ -3,7 +3,6 @@ import { invoke } from '@tauri-apps/api/core';
 import { listen } from '@tauri-apps/api/event';
 
 import { ChatMessage, ChatRole } from '../models/chat.message';
-import { CommandService } from './command.service';
 import { OpenaiService } from './openai.service';
 import { ProjectService } from './project.service';
 
@@ -24,7 +23,6 @@ type ChatResponsePayload =
 })
 export class ChatService {
     private readonly openaiService = inject(OpenaiService);
-    private readonly commandService = inject(CommandService);
     private readonly projectService = inject(ProjectService);
 
     private readonly chatMessagesState = signal<ChatMessage[]>([]);
@@ -32,38 +30,68 @@ export class ChatService {
     readonly messages = this.chatMessagesState.asReadonly();
     readonly isReceiving = signal(false);
 
-    async sendMessage(text: string): Promise<void> {
+    async chat(text: string): Promise<void> {
         const prompt = text.trim();
 
         if (!prompt) {
             return;
         }
-        const message = this.createMessage(USER_ROLE, prompt);
+        const message = this.toMessage(prompt);
         this.chatMessagesState.update((messages) => [...messages, message]);
 
-        await this.sendToLocalAgent(message);
+        await this.sendToAgent(message, this.handleChatResponse.bind(this));
     }
 
-    private sendToLocalAgent(message: ChatMessage): Promise<void> {
+    async ask(question: string): Promise<string> {
+        const prompt = question.trim();
+
+        if (!prompt) {
+            return '';
+        }
+
+        let answer: string[] = [];
+        const message = this.toMessage(prompt);
+        await this.sendToAgent(message, (payload: ChatResponsePayload) => {
+            if (payload.type === 'message') {
+                answer.push(payload.data.content);
+            }
+        });
+
+        return answer.join('');
+    }
+
+    async optimizePrompt(rawPrompt: string): Promise<string> {
+        const prompt = `
+        Improve and rewrite the following prompt to make it more effective, clearer, and more structured for an AI model:
+        """${rawPrompt}"""
+        Only provide the improved prompt text.
+        Be more specific about intent, include constraints, desired format, and clarify any ambiguous wording.
+        Make it optimized for clarity and maximum performance.
+        `;
+
+        let optimized = await this.ask(prompt);
+        return optimized;
+    }
+
+    private sendToAgent(message: ChatMessage, responseHandler?: (payload: ChatResponsePayload) => void): Promise<void> {
         return new Promise(async (resolve, reject) => {
             const unlistenItem = await listen('codex:message', (e) => {
                 const payload = e.payload as ChatResponsePayload;
                 console.log('Received codex:message:', payload);
                 if (payload.type !== 'token') {
-                    this.handleChatResponse(payload);
+                    responseHandler?.(payload);
                 }
             });
 
             const unlistenThreadStarted = await listen('codex:thread-started', (e) => {
                 const payload = e.payload as { thread_id: string };
                 console.log('Received codex:thread-started:', payload);
-
             });
 
             const unlistenDone = await listen('codex:done', (e) => {
                 const payload = e.payload as ChatResponsePayload;
                 console.log('Received codex:done:', payload);
-                this.handleChatResponse(payload);
+                responseHandler?.(payload);
                 unlistenItem();
                 unlistenDone();
                 unlistenThreadStarted();
@@ -92,8 +120,8 @@ export class ChatService {
     }
 
     private async sendToCloud(prompt: string): Promise<void> {
-        const userMessage = this.createMessage(USER_ROLE, prompt);
-        const agentMessage = this.createMessage(AGENT_ROLE, '');
+        const userMessage = this.toMessage(prompt);
+        const agentMessage = this.toMessage('', AGENT_ROLE);
         this.chatMessagesState.update((messages) => [...messages, userMessage]);
         this.chatMessagesState.update((messages) => [...messages, agentMessage]);
 
@@ -105,7 +133,7 @@ export class ChatService {
         });
     }
 
-    private createMessage(role: ChatRole, content: string): ChatMessage {
+    private toMessage(content: string, role: ChatRole = USER_ROLE): ChatMessage {
         return {
             id: this.createIdentifier(),
             role,
@@ -138,7 +166,7 @@ export class ChatService {
         if (payload.type === 'message') {
             this.chatMessagesState.update((messages) => [
                 ...messages,
-                this.createMessage(AGENT_ROLE, payload.data.content)
+                this.toMessage(payload.data.content, AGENT_ROLE)
             ]);
             return;
         }
@@ -147,7 +175,7 @@ export class ChatService {
             this.chatMessagesState.update((messages) => {
                 const lastMessage = messages[messages.length - 1];
                 if (!lastMessage || lastMessage.role === USER_ROLE) {
-                    return [...messages, this.createMessage(AGENT_ROLE, payload.data.text)];
+                    return [...messages, this.toMessage(payload.data.text, AGENT_ROLE)];
                 }
 
                 return [
@@ -161,7 +189,7 @@ export class ChatService {
         if (payload.type === 'error') {
             this.chatMessagesState.update((messages) => [
                 ...messages,
-                this.createMessage(AGENT_ROLE, `Error: ${payload.data.message}`)
+                this.toMessage(`Error: ${payload.data.message}`, AGENT_ROLE)
             ]);
         }
     }
