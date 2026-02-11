@@ -1,59 +1,103 @@
-# MatrixCodexFlow
+# 🚀 Matrix VibeFlow
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.3.
+**VibeFlow** is an AI-driven developer workflow engine that helps you plan, execute, and evolve complex coding tasks **end-to-end** — with minimal manual intervention.
+It tightly integrates with **Codex CLI** to safely modify your project, understand context, and complete large tasks step by step.
 
-## Development server
+Think of VibeFlow as an **AI project executor**, not just a chat assistant.
 
-To start a local development server, run:
+---
 
-```bash
-ng serve
-```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+## 🧭 How to Use VibeFlow
 
-## Code scaffolding
+1. **Load Project Context**
+   VibeFlow scans and manages relevant project files and supplies accurate context to Codex.
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+2. **Define a Goal**
+   Example: *Refactor authentication to support JWT + refresh tokens*
 
-```bash
-ng generate component component-name
-```
+3. **Task Planning**
+   The planner breaks the goal into executable steps.
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+4. **Automated Execution**
+   Steps are executed via Codex CLI and applied directly to your project.
 
-```bash
-ng generate --help
-```
+5. **Iteration & Completion**
+   Post-steps verify results before moving forward.
 
-## Building
+---
 
-To build the project run:
+## 🧠 Core Features
 
-```bash
-ng build
-```
+### 1. Interactive Codex CLI Integration
+- Executes Codex CLI commands directly
+- Applies changes inside your repository
+- Supports sandboxing and approval policies
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### 2. Project Context Management
+- Selective file loading
+- Reduced token usage
+- Consistent architecture and style
 
-## Running unit tests
+### 3. Task Planner (Autonomous Execution)
+- Pre-step / Main-step / Post-step workflow
+- Minimal human intervention
+- Ideal for refactors and migrations
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+### 4. AI Assistant Prompt Generation
+- Optimized prompts with intent, constraints, and output rules
+- Repeatable and high-quality instructions
 
-```bash
-ng test
-```
+---
 
-## Running end-to-end tests
+## 🗺️ Feature Plan
 
-For end-to-end (e2e) testing, run:
+**Near Term**
+- Prompt history
+- Support more AI agent CLI
 
-```bash
-ng e2e
-```
+---
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+## 🤝 How to Contribute
 
-## Additional Resources
+I welcome developers who care about building reliable AI-driven engineering tools.
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+### Coding Style Preference
+
+VibeFlow codebase **prefers Object-Oriented Programming (OOP)** principles:
+
+- Clear class responsibilities (Single Responsibility Principle)
+- Encapsulation of behavior and state
+- Interface-based abstractions
+- Dependency injection over tight coupling
+- Clean separation of planning, execution, and context layers
+
+Please follow existing architecture patterns when contributing.
+
+### Contribution Steps
+
+1. Fork the repository
+2. Create a feature branch
+3. Follow existing OOP structure and naming conventions
+4. Keep changes scoped and well-documented
+5. Submit a pull request with clear intent and explanation
+
+---
+
+## 💬 Philosophy
+
+> VibeFlow treats AI as a reliable teammate — not a chat toy.
+
+It focuses on deterministic execution, explicit context, and safe automation.
+
+---
+
+## Screenshots
+
+![Welcome](doc/images/1-welcome.png)
+![Chat Empty](doc/images/2-chat-empty.png)
+![Chat Message](doc/images/3-chat-message.png)
+![Context Manage](doc/images/context-4-manage.png)
+![Task Editor](doc/images/5-task-editor.png)
+![Task Manage](doc/images/5-task-manage.png)
+![Task Running](doc/images/6-task-running.png)
