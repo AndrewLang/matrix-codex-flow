@@ -110,6 +110,14 @@ You can support development here:
 
 👉 GitHub Sponsors: https://github.com/sponsors/AndrewLang
 
+## 📦 Download
+
+Download the latest version of **VibeFlow** here:
+
+👉 [Download Latest Release](https://github.com/AndrewLang/matrix-codex-flow/releases/latest)
+
+
+
 ## Screenshots
 
 ![Welcome](doc/images/1-welcome.png)
