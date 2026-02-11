@@ -98,6 +98,94 @@ pub fn path_exists(path: String) -> bool {
 }
 
 #[tauri::command]
+pub fn folder_has_git(path: String) -> Result<bool, String> {
+    let folder_path = Path::new(&path);
+
+    if !folder_path.exists() {
+        return Err(format!("path does not exist: {path}"));
+    }
+
+    if !folder_path.is_dir() {
+        return Err(format!("path is not a directory: {path}"));
+    }
+
+    let output = Command::new("git")
+        .args(["rev-parse", "--is-inside-work-tree"])
+        .current_dir(folder_path)
+        .output();
+
+    match output {
+        Ok(out) => {
+            if out.status.success() {
+                let result = String::from_utf8_lossy(&out.stdout);
+                Ok(result.trim() == "true")
+            } else {
+                Ok(false)
+            }
+        }
+        Err(_) => Ok(false),
+    }
+}
+
+#[tauri::command]
+pub fn is_git_installed() -> bool {
+    Command::new("git")
+        .arg("--version")
+        .output()
+        .map(|o| o.status.success())
+        .unwrap_or(false)
+}
+
+#[tauri::command]
+pub fn git_info() -> Result<String, String> {
+    match Command::new("git").arg("--version").output() {
+        Ok(out) if out.status.success() => {
+            let raw = String::from_utf8_lossy(&out.stdout).trim().to_string();
+
+            let version = raw.strip_prefix("git version ").unwrap_or(&raw).to_string();
+
+            Ok(version)
+        }
+        _ => Err("git is not installed or not in PATH".into()),
+    }
+}
+
+#[tauri::command]
+pub fn is_codex_installed() -> bool {
+    #[cfg(target_os = "windows")]
+    let output = Command::new("cmd").args(["/C", "codex --version"]).output();
+
+    #[cfg(not(target_os = "windows"))]
+    let output = Command::new("codex").arg("--version").output();
+
+    output.map(|o| o.status.success()).unwrap_or(false)
+}
+
+#[tauri::command]
+pub fn codex_version() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    let output = Command::new("cmd").args(["/C", "codex --version"]).output();
+
+    #[cfg(not(target_os = "windows"))]
+    let output = Command::new("codex").arg("--version").output();
+
+    match output {
+        Ok(out) if out.status.success() => {
+            Ok(String::from_utf8_lossy(&out.stdout).trim().to_string())
+        }
+        Ok(out) => {
+            let err = String::from_utf8_lossy(&out.stderr).trim().to_string();
+            if !err.is_empty() {
+                Ok(err)
+            } else {
+                Err("Failed to read Codex version".into())
+            }
+        }
+        Err(_) => Err("Codex CLI not found or not in PATH".into()),
+    }
+}
+
+#[tauri::command]
 pub fn read_text_file(path: String) -> Result<String, String> {
     fs::read_to_string(&path).map_err(|error| format!("failed to read file '{}': {error}", path))
 }

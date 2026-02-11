@@ -34,4 +34,20 @@ export class AppService {
             }
         }
     ];
+
+    async isGitInstalled(): Promise<boolean> {
+        return invoke<boolean>('is_git_installed');
+    }
+
+    async gitInfo(): Promise<string> {
+        return invoke<string>('git_info');
+    }
+
+    async isCodexInstalled(): Promise<boolean> {
+        return invoke<boolean>('is_codex_installed');
+    }
+
+    async codexVersion(): Promise<string> {
+        return invoke<string>('codex_version');
+    }
 }

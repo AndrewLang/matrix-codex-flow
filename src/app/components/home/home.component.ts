@@ -1,21 +1,31 @@
+import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { AppService } from '../../services/app.service';
 import { ProjectService } from '../../services/project.service';
 import { IconComponent } from "../icon/icon.component";
+import { WarnComponent } from '../warn/warn.component';
 
 @Component({
     selector: 'mtx-home',
-    imports: [RouterModule, IconComponent],
+    imports: [RouterModule, CommonModule, IconComponent, WarnComponent],
     templateUrl: 'home.component.html'
 })
 export class HomeComponent {
     private readonly appService = inject(AppService);
-    readonly projectService = inject(ProjectService);
+    private readonly projectService = inject(ProjectService);
     readonly router = inject(Router);
 
     readonly title = computed(() => this.appService.splashName);
     readonly recentProjectPaths = computed(() => this.projectService.recentProjectPaths());
+    readonly gitInstalled = computed(() => this.appService.isGitInstalled());
+    readonly codexInstalled = computed(() => this.appService.isCodexInstalled());
+    readonly gitVersion = computed(() => this.appService.gitInfo());
+    readonly codexVersion = computed(() => this.appService.codexVersion());
+
+    constructor() {
+
+    }
 
     async openProject(): Promise<void> {
         const selectedProjectPath = await this.projectService.chooseFolder();
@@ -38,8 +48,6 @@ export class HomeComponent {
     }
 
     displayProjectName(path: string): string {
-        const normalizedPath = path.replaceAll('\\', '/');
-        const segments = normalizedPath.split('/').filter((segment) => segment.length > 0);
-        return segments[segments.length - 1] ?? path;
+        return this.projectService.getPathName(path);
     }
 }

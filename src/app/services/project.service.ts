@@ -57,6 +57,12 @@ export class ProjectService {
         }
     }
 
+    getPathName(path: string): string {
+        const normalizedPath = path.replaceAll('\\', '/');
+        const segments = normalizedPath.split('/').filter((segment) => segment.length > 0);
+        return segments[segments.length - 1] ?? path;
+    }
+
     setProjectPath(path: string): void {
         this.projectPath.set(path);
         localStorage.setItem(ProjectService.PROJECT_PATH_KEY, path);

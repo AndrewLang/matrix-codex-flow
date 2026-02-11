@@ -37,8 +37,13 @@ impl App {
                 crate::commands::system_commands::open_url,
                 crate::commands::system_commands::write_text_file,
                 crate::commands::system_commands::path_exists,
+                crate::commands::system_commands::folder_has_git,
                 crate::commands::system_commands::read_text_file,
                 crate::commands::system_commands::toggle_main_window_always_on_top,
+                crate::commands::system_commands::is_git_installed,
+                crate::commands::system_commands::git_info,
+                crate::commands::system_commands::is_codex_installed,
+                crate::commands::system_commands::codex_version,
                 crate::commands::chat_commands::chat,
             ])
             .on_window_event(|window, event| {
