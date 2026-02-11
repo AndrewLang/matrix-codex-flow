@@ -1,13 +1,15 @@
 {
-  "name": "matrix vibeflow",
+  "name": "matrix-vibeflow",
   "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
     "start:app": "cls && cargo tauri dev",
-    "build": "ng build",
-    "dev": "ng build --watch --configuration development",
-    "watch": "ng build --watch --configuration development",
+    "frontend:build": "ng build",
+    "frontend:dev": "ng build --watch --configuration development",
+    "tauri:dev": "tauri dev",
+    "tauri:build": "tauri build",
+    "build": "npm run frontend:build && npm run tauri:build",
     "test": "ng test"
   },
   "prettier": {
@@ -44,7 +46,7 @@
     "bootstrap-icons": "^1.13.1",
     "highlight.js": "^11.11.1",
     "marked": "^17.0.1",
-    "openai": "^6.18.0",
+    "openai": "^6.21.0",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },
