@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, effect, ElementRef, input, OnDestroy, output, ViewChild } from '@angular/core';
 import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
-import { EditorState } from '@codemirror/state';
+import { Compartment, EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
 import { EditorView, keymap } from '@codemirror/view';
 
@@ -14,6 +14,8 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     readonly value = input<string>('');
     readonly placeholder = input<string>('Write markdown content');
     readonly background = input<string>('#0f172a');
+    readonly enabled = input<boolean>(true);
+
     readonly valueChange = output<string>();
     readonly ctrlEnter = output<void>();
     readonly shiftEnter = output<void>();
@@ -22,6 +24,8 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     private readonly editorRef!: ElementRef<HTMLDivElement>;
 
     private editorView: EditorView | null = null;
+    private readonly editableCompartment = new Compartment();
+    private readonly readOnlyCompartment = new Compartment();
 
     constructor() {
         effect(() => {
@@ -42,6 +46,21 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                     to: view.state.doc.length,
                     insert: nextValue
                 }
+            });
+        });
+
+        effect(() => {
+            const isEnabled = this.enabled();
+            const view = this.editorView;
+            if (!view) {
+                return;
+            }
+
+            view.dispatch({
+                effects: [
+                    this.readOnlyCompartment.reconfigure(EditorState.readOnly.of(!isEnabled)),
+                    this.editableCompartment.reconfigure(EditorView.editable.of(isEnabled))
+                ]
             });
         });
     }
@@ -78,7 +97,8 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                             this.valueChange.emit(text);
                         }
                     }),
-                    EditorState.readOnly.of(false),
+                    this.readOnlyCompartment.of(EditorState.readOnly.of(!this.enabled())),
+                    this.editableCompartment.of(EditorView.editable.of(this.enabled())),
                     EditorView.theme({
                         '&': {
                             fontSize: '14px',

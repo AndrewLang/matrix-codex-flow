@@ -1,1 +1,2 @@
-<div #editor class="bg-transparent mtx-prose"></div>
+<div #editor class="bg-transparent mtx-prose" [class.mtx-md-editor-disabled]="!enabled()"
+    [attr.aria-disabled]="!enabled()"></div>

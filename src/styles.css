@@ -55,3 +55,26 @@ button,
         rgba(100, 116, 139, 0.85)
     );
 }
+
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.icon-spin {
+  display: inline-block;
+  animation: icon-spin 0.9s linear infinite;
+}
+
+.mtx-md-editor-disabled .cm-editor {
+  opacity: 0.7;
+}
+
+.mtx-md-editor-disabled .cm-scroller {
+  background: rgba(51, 65, 85, 0.45) !important;
+}
+
+.mtx-md-editor-disabled .cm-content {
+  cursor: default !important;
+}
+

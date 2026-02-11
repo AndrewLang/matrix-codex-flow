@@ -39,7 +39,7 @@ export class StepCardComponent implements OnInit {
             title: '',
             icon: 'play',
             description: 'Run this step',
-            tag: 'text-slate-200 bg-slate-700 hover:bg-slate-600',
+            tag: 'text-green-200 bg-slate-700 hover:bg-slate-600',
             action: () => { this.runStep(); }
         },
         {

@@ -1,16 +1,19 @@
 import { Component, effect, input, output, signal } from '@angular/core';
+import { timer } from 'rxjs';
 import { StepViewModel } from '../../models/task';
+import { IconComponent } from "../icon/icon.component";
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
 
 @Component({
     selector: 'mtx-step-editor',
     templateUrl: 'step.edit.component.html',
-    imports: [MarkdownEditorComponent]
+    imports: [MarkdownEditorComponent, IconComponent]
 })
 export class StepEditorComponent {
     readonly step = input.required<StepViewModel>();
     readonly title = signal<string>('');
     readonly content = signal<string>('');
+    readonly isGenerating = signal(false);
 
     readonly cancel = output<StepViewModel>();
     readonly save = output<StepViewModel>();
@@ -23,11 +26,11 @@ export class StepEditorComponent {
         });
     }
 
-    protected onCancel(): void {
+    onCancel(): void {
         this.cancel.emit(this.step());
     }
 
-    protected onSave(): void {
+    onSave(): void {
         this.step().title = this.title();
         this.step().content = this.content();
 
@@ -38,5 +41,13 @@ export class StepEditorComponent {
         };
 
         this.save.emit(updatedStep);
+    }
+
+    async optimizePrompt(): Promise<void> {
+        this.isGenerating.set(true);
+        timer(5000).subscribe(() => {
+            // this.chatService.sendMessage(this.step().content);
+            this.isGenerating.set(false);
+        });
     }
 }
