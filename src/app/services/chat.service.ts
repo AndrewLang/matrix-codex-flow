@@ -24,8 +24,9 @@ type ChatResponsePayload =
 export class ChatService {
     private readonly openaiService = inject(OpenaiService);
     private readonly projectService = inject(ProjectService);
-
     private readonly chatMessagesState = signal<ChatMessage[]>([]);
+
+    private threadId: string | null = null;
 
     readonly messages = this.chatMessagesState.asReadonly();
     readonly isReceiving = signal(false);
@@ -86,6 +87,7 @@ export class ChatService {
             const unlistenThreadStarted = await listen('codex:thread-started', (e) => {
                 const payload = e.payload as { thread_id: string };
                 console.log('Received codex:thread-started:', payload);
+                this.threadId = payload.thread_id;
             });
 
             const unlistenDone = await listen('codex:done', (e) => {
@@ -104,6 +106,7 @@ export class ChatService {
                 let payload = {
                     content: message.content,
                     model: message.model,
+                    threadId: this.threadId,
                     workingDirectory: workingDirectory,
                 };
                 console.log('Invoking chat command with payload:', payload);
