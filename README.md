@@ -5,7 +5,7 @@ It tightly integrates with **Codex CLI** to safely modify your project, understa
 
 Think of VibeFlow as an **AI project executor**, not just a chat assistant.
 
----
+
 
 
 ## 🧭 How to Use VibeFlow
@@ -25,7 +25,7 @@ Think of VibeFlow as an **AI project executor**, not just a chat assistant.
 5. **Iteration & Completion**
    Post-steps verify results before moving forward.
 
----
+
 
 ## 🧠 Core Features
 
@@ -48,7 +48,7 @@ Think of VibeFlow as an **AI project executor**, not just a chat assistant.
 - Optimized prompts with intent, constraints, and output rules
 - Repeatable and high-quality instructions
 
----
+
 
 ## 🗺️ Feature Plan
 
@@ -56,7 +56,7 @@ Think of VibeFlow as an **AI project executor**, not just a chat assistant.
 - Prompt history
 - Support more AI agent CLI
 
----
+
 
 ## 🤝 How to Contribute
 
@@ -82,7 +82,7 @@ Please follow existing architecture patterns when contributing.
 4. Keep changes scoped and well-documented
 5. Submit a pull request with clear intent and explanation
 
----
+
 
 ## 💬 Philosophy
 
@@ -90,7 +90,7 @@ Please follow existing architecture patterns when contributing.
 
 It focuses on deterministic execution, explicit context, and safe automation.
 
----
+
 
 ## Screenshots
 
