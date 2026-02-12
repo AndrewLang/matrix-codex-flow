@@ -99,6 +99,11 @@ jobs:
 
       - name: Build and Publish
         uses: tauri-apps/tauri-action@v0
+        with:
+          tagName: ${{ github.ref_name }}
+          releaseName: "VibeFlow ${{ github.ref_name }}"
+          releaseDraft: false
+          prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
