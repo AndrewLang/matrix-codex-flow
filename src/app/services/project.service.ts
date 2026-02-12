@@ -7,6 +7,7 @@ import { AgentRule } from '../models/agent.rule';
 import { IdGenerator } from '../models/id';
 import { EMPTY_PROJECT, Project } from '../models/project';
 import { ProjectExtensions } from '../models/project.extensions';
+import { CommandService } from './command.service';
 import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
@@ -18,6 +19,7 @@ export class ProjectService {
     static readonly AGENT_FOLDER = '.codex';
 
     private readonly notificationService = inject(NotificationService);
+    private readonly commandService = inject(CommandService);
 
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
@@ -238,6 +240,10 @@ export class ProjectService {
         const targetFilePath = `${normalizedProjectPath}/.codex/${fileName}.md`;
 
         await this.writeFile(targetFilePath, rule.description?.trim() ?? '');
+    }
+
+    openInCode(project: Project): void {
+        this.commandService.runCommand('code', [project.path]);
     }
 
     private async loadProjectFromPath(projectPath: string): Promise<Project> {

@@ -28,7 +28,14 @@ impl CommandService {
         );
         log::info!("Stdin: {:?}", stdin);
 
-        let mut child = Command::new(trimmed_command)
+        let mut command_builder = if cfg!(target_os = "windows") {
+            let mut cmd = Command::new("cmd");
+            cmd.args(["/C", trimmed_command]);
+            cmd
+        } else {
+            Command::new(trimmed_command)
+        };
+        let mut child = command_builder
             .args(args)
             .current_dir(working_dir)
             .stdin(Stdio::piped())

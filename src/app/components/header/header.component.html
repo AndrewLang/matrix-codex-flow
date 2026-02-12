@@ -1,12 +1,19 @@
 <header class="flex h-16 items-center justify-between border-b border-slate-800 px-6">
     <div>
         <h1 class="text-lg font-semibold text-slate-100">VibeFlow </h1>
-        <p class="text-xs text-slate-400">
-            <span class="font-bold mr-1">Working on:</span>
-            <a class="cursor-pointer hover:underline" (click)="openFolder()">{{currentProjectPath()}}</a>
-        </p>
+        <div class="flex items-center text-xs gap-1 text-slate-400 overflow-hidden text-ellipsis whitespace-nowrap">
+            <span class="font-bold">Working on:</span>
+
+            <a class="cursor-pointer hover:underline" title="Reveal folder"
+                (click)="openFolder()">{{currentProjectPath()}}</a>
+        </div>
     </div>
-    <div class="flex items-end">
+    <div class="flex items-end gap-1">
+        <button type="button" class="grid h-9 w-9 place-items-center justify-center rounded-full bg-slate-800/75
+            text-slate-300 shadow-none transition hover:bg-slate-700/80 hover:text-white" aria-label="Settings"
+            (click)="openInCode()" title="Open in VS Code">
+            <mtx-svg icon="vscode"></mtx-svg>
+        </button>
         <button type="button"
             class="grid h-9 w-9 place-items-center rounded-full bg-slate-800/75 text-slate-300 shadow-none transition hover:bg-slate-700/80 hover:text-white"
             aria-label="Settings" (click)="saveProject()" title="Save project">
