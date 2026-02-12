@@ -1,4 +1,3 @@
-use std::env;
 use std::fs;
 use std::path::PathBuf;
 
@@ -295,6 +294,7 @@ impl AppService {
     fn resolve_app_data_dir<R: Runtime>(app_handle: &AppHandle<R>) -> PathBuf {
         #[cfg(target_os = "windows")]
         {
+            use std::env;
             if let Ok(local_app_data) = env::var("LOCALAPPDATA") {
                 return PathBuf::from(local_app_data).join(APP_FOLDER_NAME);
             }
