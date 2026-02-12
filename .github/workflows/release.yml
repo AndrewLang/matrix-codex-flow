@@ -28,7 +28,7 @@ jobs:
           cache: 'npm'
 
       - name: Install frontend dependencies
-        run: npm install
+        run: npm ci
 
       - name: Build frontend
         run: npm run frontend:build
@@ -52,7 +52,25 @@ jobs:
             librsvg2-dev \
             patchelf
 
+      - name: MacOS
+        if: ${{ matrix.os == 'macos-latest' }}
+        run: |
+          echo "$MACOS_CERTIFICATE" | base64 --decode > certificate.p12
+          security create-keychain -p "" build.keychain
+          security import certificate.p12 -k build.keychain -P "$MACOS_CERTIFICATE_PASSWORD" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "" build.keychain
+          security default-keychain -d user -s build.keychain
+          security list-keychains -d user -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+
       - name: Build and Publish
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
