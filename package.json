@@ -9,6 +9,7 @@
     "frontend:dev": "ng build --watch --configuration development",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
+    "tauri": "tauri",
     "build": "npm run frontend:build && npm run tauri:build",
     "test": "ng test"
   },
