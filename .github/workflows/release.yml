@@ -96,7 +96,17 @@ jobs:
       - name: Verify signing identities
         run: |
           security find-identity -v -p codesigning
-          security find-identity -v -p codesigning | grep -F "Developer ID Application: YuXin Lang (357W7C575X)"
+
+      - name: Configure Tauri signing identity for CI
+        run: |
+          APPLE_SIGNING_IDENTITY="$(security find-identity -v -p codesigning | sed -n 's/.*"\(Developer ID Application:.*\)"/\1/p' | head -n 1)"
+          if [ -z "$APPLE_SIGNING_IDENTITY" ]; then
+            echo "No Developer ID Application identity found in keychain"
+            exit 1
+          fi
+          echo "Using signing identity: $APPLE_SIGNING_IDENTITY"
+          export APPLE_SIGNING_IDENTITY
+          node -e 'const fs=require("fs");const p="src-tauri/tauri.conf.json";const c=JSON.parse(fs.readFileSync(p,"utf8"));c.bundle=c.bundle||{};c.bundle.macOS=c.bundle.macOS||{};c.bundle.macOS.signingIdentity=process.env.APPLE_SIGNING_IDENTITY;fs.writeFileSync(p,JSON.stringify(c,null,2)+"\n");'
 
       - name: Build and Publish
         uses: tauri-apps/tauri-action@v0
