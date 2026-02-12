@@ -1,0 +1,63 @@
+import { Observable } from "rxjs";
+
+export interface AgentRequest {
+    prompt: string;
+    system?: string;
+    temperature?: number;
+    maxTokens?: number;
+    stream?: boolean;
+    jsonMode?: boolean;
+    workingDirectory?: string;
+    timeoutMs?: number;
+    extra?: Record<string, any>;
+}
+
+export interface AgentResponse {
+    text: string;
+    raw?: any;
+    durationMs: number;
+    extra?: Record<string, any>;
+    usage?: {
+        inputTokens: number
+        outputTokens: number
+        totalTokens: number
+        cost?: number
+    }
+}
+
+export interface AgentCapabilities {
+    supportsStreaming: boolean;
+    supportsJsonMode: boolean;
+    supportsTools: boolean;
+    canModifyFiles?: boolean;
+    canExecuteShell?: boolean;
+}
+
+
+export interface AgentProvider {
+    readonly id: string;
+    readonly name: string;
+    readonly model: string;
+    readonly capabilities: AgentCapabilities;
+
+    run(request: AgentRequest): Promise<AgentResponse>;
+
+    runStream?(request: AgentRequest, onChunk: (chunk: string) => void): Observable<string>;
+}
+
+export interface AgentConfig {
+    id: string;
+    name: string;
+    type: 'openai' | 'codex-cli' | 'gemini' | 'ollama' | 'kara';
+    model: string;
+    apiKey?: string;
+    baseUrl?: string;
+    enabled: boolean;
+    extra?: Record<string, any>;
+}
+
+export const EMPTY_AGENT_RESULT: AgentResponse = {
+    text: '',
+    raw: null,
+    durationMs: 0,
+};

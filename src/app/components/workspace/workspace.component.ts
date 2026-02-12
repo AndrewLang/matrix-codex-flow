@@ -20,7 +20,7 @@ export class WorkspaceComponent {
 
     readonly navItems: NavItem[] = [
         { label: 'Home', icon: 'house text-xl', route: '/home' },
-        { label: 'Chat', icon: 'chat text-xl', route: '/workspace/chat' },
+        { label: 'Chat', icon: 'chat-dots text-xl', route: '/workspace/chat' },
         { label: 'Context', icon: 'briefcase text-xl', route: '/workspace/context' },
         { label: 'Tasks', icon: 'list-task text-xl', route: '/workspace/tasks' },
     ];
