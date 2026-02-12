@@ -102,6 +102,18 @@ jobs:
       - name: Verify signing identities
         run: security find-identity -v -p codesigning
 
+      - name: Debug Apple vars
+        run: |
+          echo "APPLE_ID length: ${#APPLE_ID}"
+          echo "APPLE_PASSWORD length: ${#APPLE_PASSWORD}"
+          echo "APPLE_TEAM_ID length: ${#APPLE_TEAM_ID}"
+          echo "APPLE_APP_SPECIFIC_PASSWORD length: ${#APPLE_APP_SPECIFIC_PASSWORD}"
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+
       - name: Build and Publish
         uses: tauri-apps/tauri-action@v0
         with:
@@ -113,4 +125,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           APPLE_ID: ${{ secrets.APPLE_ID }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          APPLE_PASSWORD: ${{ secrets.APPLE_PASSWORD }}
           APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
