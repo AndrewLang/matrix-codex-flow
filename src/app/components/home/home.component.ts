@@ -55,6 +55,14 @@ export class HomeComponent {
         await this.router.navigate(['/workspace']);
     }
 
+    async removeProject(path: string, event: Event): Promise<void> {
+        event.stopPropagation();
+        let project = this.projectService.recentProjects().find(p => p.path === path);
+        if (project) {
+            await this.projectService.deleteProject(project.id);
+        }
+    }
+
     displayProjectName(path: string): string {
         return this.projectService.getPathName(path);
     }

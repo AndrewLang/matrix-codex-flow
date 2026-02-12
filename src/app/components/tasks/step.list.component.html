@@ -21,10 +21,12 @@
         <div class="absolute bottom-0 left-4 top-0 w-px bg-slate-700/80"></div>
 
         <div class="space-y-3 steps-drop-list" cdkDropList [cdkDropListData]="steps()"
+            [cdkDropListDisabled]="!allowReorder()"
             (cdkDropListDropped)="dropStep($event)">
             @for (step of steps(); track step.id; let stepIndex = $index) {
-            <article class="relative rounded-lg bg-slate-800/50 py-2 pr-3 pl-5 step-card" cdkDrag cdkDragLockAxis="y">
-                @if(!step.isExpanded()) {
+            <article class="relative rounded-lg bg-slate-800/50 py-2 pr-3 pl-5 step-card" cdkDrag cdkDragLockAxis="y"
+                [cdkDragDisabled]="!allowReorder()">
+                @if(allowReorder() && !step.isExpanded()) {
                 <button type="button" class="drag-handle" cdkDragHandle aria-label="Drag step to reorder"
                     title="Drag step to reorder">
                 </button>

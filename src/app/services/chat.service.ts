@@ -62,12 +62,21 @@ export class ChatService {
     }
 
     async optimizePrompt(rawPrompt: string): Promise<string> {
+        // const prompt = `
+        // Improve and rewrite the following prompt to make it more accurate, effective, clearer, and more structured for an AI model:
+        // """${rawPrompt}"""
+        // Only provide the improved prompt text, short and clear, without any additional explanations or commentary.
+        // Be more specific about intent, include constraints, desired format, and clarify any ambiguous wording.
+        // Make it optimized for clarity and maximum performance.
+        // `;
         const prompt = `
-        Improve and rewrite the following prompt to make it more effective, clearer, and more structured for an AI model:
+        Rewrite the following prompt to be clearer, more precise, and better structured for an AI model:
+
         """${rawPrompt}"""
-        Only provide the improved prompt text.
-        Be more specific about intent, include constraints, desired format, and clarify any ambiguous wording.
-        Make it optimized for clarity and maximum performance.
+
+        Return only the improved prompt.
+        Keep it concise.
+        Clarify intent, constraints, and expected output.
         `;
 
         let optimized = await this.ask(prompt);

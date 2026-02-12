@@ -25,6 +25,10 @@ export class CommandStripComponent implements OnInit {
     }
 
     isVisible(command: CommandDescriptor): boolean {
-        return !(command.isHidden?.() ?? false);
+        if (command.isHidden !== undefined) {
+            let result = command.isHidden();
+            return !result;
+        }
+        return true;
     }
 }

@@ -35,8 +35,15 @@ export class ContextComponent implements OnDestroy {
             title: 'Add AGENTS',
             description: 'AGENTS.md helps codex understand the context of your project.',
             icon: 'plus',
-            isHidden: async () => await this.projectService.hasAgentsMd(),
-            action: () => this.addAgentRule()
+            isHidden: () => {
+                if (!this.hasRules()) {
+                    return false;
+                }
+
+                let rule = this.projectService.currentProject().rules.find(r => r.name === 'AGENTS.md') !== undefined;
+                return rule;
+            },
+            action: () => this.addAgentRule('AGENTS')
         },
         {
             id: 'add-rule',
@@ -58,13 +65,13 @@ export class ContextComponent implements OnDestroy {
         this.savingSubscription.unsubscribe();
     }
 
-    addAgentRule(): void {
+    addAgentRule(name: string | undefined = undefined): void {
         let now = Date.now();
         let nextIndex = this.ruleViewModels().length + 1;
 
         const newRule: AgentRule = {
             id: IdGenerator.generateId(),
-            name: `rule-${nextIndex}`,
+            name: name || `rule-${nextIndex}`,
             description: `Project rule ${nextIndex}. Update this with specific context guidance.`,
             createdAt: now,
             updatedAt: now

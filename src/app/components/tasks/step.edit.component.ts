@@ -47,7 +47,8 @@ export class StepEditorComponent {
 
     async optimizePrompt(): Promise<void> {
         this.isGenerating.set(true);
-        let optimizedContent = await this.chatService.optimizePrompt(this.step().content);
+        let content = this.content();
+        let optimizedContent = await this.chatService.optimizePrompt(content);
         this.content.set(optimizedContent);
         this.isGenerating.set(false);
     }

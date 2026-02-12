@@ -37,6 +37,7 @@ export class TaskEditComponent implements OnDestroy {
         { initialValue: '' }
     );
 
+    readonly enableReorder = signal(false);
     readonly task = computed(() => {
         let tasks = this.projectService.currentProject()?.tasks ?? [];
         return tasks.find((task) => task.id === this.taskId()) || EMPTY_TASK;
@@ -56,6 +57,7 @@ export class TaskEditComponent implements OnDestroy {
             {
                 id: 'add-step',
                 title: 'Add Step',
+                description: 'Add a new main step to this task',
                 icon: 'plus-lg',
                 subCommands: [
                     { id: 'add-pre-step', title: 'Add PreStep', action: () => { this.addStepByType('pre') } },
@@ -64,10 +66,27 @@ export class TaskEditComponent implements OnDestroy {
                 action: () => { this.addStepByType('normal') }
             },
             {
+                id: 'run-task',
+                title: '',
+                icon: 'play',
+                tag: 'text-green-500',
+                description: 'Run this task',
+                action: () => this.export()
+            },
+            {
                 id: 'export-task',
-                title: 'Export',
+                title: '',
+                description: 'Export this task to a markdown file',
                 icon: 'box-arrow-down',
                 action: () => this.export()
+            },
+            {
+                id: 'enable-reorder',
+                title: '',
+                icon: 'arrow-down-up',
+                tag: this.enableReorder() ? 'text-emerald-500' : 'text-slate-400',
+                description: 'Enable reorder steps by drag and drop',
+                action: () => { this.enableReorder.update((value) => !value); }
             }
         ];
     });
@@ -128,8 +147,8 @@ export class TaskEditComponent implements OnDestroy {
         if (!taskId) {
             return;
         }
-        const defaultStepContent = this.settingService.promptTemplate();
+        const template = this.settingService.promptTemplate();
 
-        TaskExtensions.addStep(this.editableTask, this.editableTask().steps.length + 1, defaultStepContent, stepType);
+        TaskExtensions.addStep(this.editableTask, this.editableTask().steps.length + 1, template, stepType);
     }
 }
