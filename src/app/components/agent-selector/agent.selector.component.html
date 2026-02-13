@@ -1,0 +1,31 @@
+<div class="relative">
+    <details #dropdownDetails class="relative" (toggle)="onDropdownToggle()">
+        <summary
+            class="flex w-40 h-8 cursor-pointer list-none items-center justify-between rounded hover:border hover:border-slate-700  px-2 text-xs text-slate-200">
+            {{selectAgent()?.name}}
+            <span>
+                <mtx-svg icon="chevron-down" size="h-3.5 w-3.5"></mtx-svg>
+            </span>
+        </summary>
+
+        <div #dropdownPanel
+            class="absolute left-0 z-20 w-64 rounded border border-slate-700 bg-slate-900/95 p-2 shadow-xl"
+            [class.top-10]="!openUpward()" [class.bottom-10]="openUpward()">
+
+            <p class="px-2 py-1 text-[11px] uppercase tracking-wide text-slate-400">Agents</p>
+
+            <ul class="mt-1 space-y-1 text-xs text-slate-200">
+                @for( agent of agents(); track agent.name) {
+                <li>
+                    <button type="button"
+                        class="flex w-full items-center justify-between rounded-md bg-slate-800/80 px-2 py-2 text-left"
+                        (click)="closeDropdown()">
+                        <span>{{ agent.name }}</span>
+                        <span class="text-[9px]"> {{agent.model}}</span>
+                    </button>
+                </li>
+                }
+            </ul>
+        </div>
+    </details>
+</div>

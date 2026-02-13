@@ -5,6 +5,7 @@ import { TaskStatus } from '../../models/task';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
 import { ChatService } from '../../services/chat.service';
 import { TaskExecuteService } from '../../services/task.execuer.service';
+import { AgentSelectorComponent } from '../agent-selector/agent.selector.component.';
 import { IconComponent } from "../icon/icon.component";
 import { LoaderComponent } from '../loader/loader.component';
 import { MarkdownEditorComponent } from '../md-editor/md.editor.component';
@@ -20,7 +21,7 @@ const SCROLL_BOTTOM_THRESHOLD_PIXELS = 24;
     templateUrl: 'chat.component.html',
     imports: [CommonModule, FormatTimestampPipe, IconComponent,
         MarkdownRendererComponent, MarkdownEditorComponent,
-        TaskRuntimeComponent, LoaderComponent
+        TaskRuntimeComponent, LoaderComponent, AgentSelectorComponent
     ]
 })
 export class ChatComponent implements OnInit, OnDestroy {
