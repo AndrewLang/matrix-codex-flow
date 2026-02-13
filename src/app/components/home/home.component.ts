@@ -33,7 +33,7 @@ export class HomeComponent {
             return;
         }
         await this.projectService.initProject(selectedProjectPath);
-        await this.router.navigate(['/workspace']);
+        await this.goToWorkspace();
     }
 
     async openProject(): Promise<void> {
@@ -42,7 +42,7 @@ export class HomeComponent {
             return;
         }
 
-        await this.router.navigate(['/workspace']);
+        await this.goToWorkspace();
     }
 
     async openRecentProject(path: string): Promise<void> {
@@ -52,7 +52,7 @@ export class HomeComponent {
             return;
         }
 
-        await this.router.navigate(['/workspace']);
+        await this.goToWorkspace();
     }
 
     async removeProject(path: string, event: Event): Promise<void> {
@@ -65,5 +65,9 @@ export class HomeComponent {
 
     displayProjectName(path: string): string {
         return this.projectService.getPathName(path);
+    }
+
+    private async goToWorkspace(): Promise<void> {
+        await this.router.navigate(['/app/workspace']);
     }
 }

@@ -1,18 +1,7 @@
-<div class="h-full overflow-hidden">
+<section class="flex h-full w-full min-h-0 flex-1 flex-col border border-slate-800 bg-slate-900/60">
+    <mtx-header></mtx-header>
 
-    @if (notification(); as notification) {
-    <mtx-notification [notification]="notification"></mtx-notification>
-    }
-
-    <main class="flex h-full overflow-hidden">
-        <mtx-sidebar class="h-full shrink-0" [items]="navItems"></mtx-sidebar>
-
-        <section class="flex h-full w-100 min-h-0 flex-1 flex-col border border-slate-800 bg-slate-900/60">
-            <mtx-header></mtx-header>
-
-            <div id="main" class="h-full min-h-0 flex-1 overflow-y-auto">
-                <router-outlet />
-            </div>
-        </section>
-    </main>
-</div>
+    <div id="main" class="h-full min-h-0 flex-1 overflow-y-auto">
+        <router-outlet />
+    </div>
+</section>

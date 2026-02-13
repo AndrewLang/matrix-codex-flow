@@ -11,6 +11,7 @@ import { IconComponent } from '../icon/icon.component';
 })
 export class SidebarComponent {
     items = input<NavItem[]>();
+    bottomItems = input<NavItem[]>();
     settingRoute = input<string>('/workspace/settings');
 
     readonly isCollapsed = signal(true);

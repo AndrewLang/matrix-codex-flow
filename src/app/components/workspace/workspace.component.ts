@@ -1,38 +1,35 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { NavItem } from '../../models/nav.model';
+import { NavService } from '../../services/nav.service';
 import { NotificationService } from '../../services/notification.service';
 import { ProjectService } from '../../services/project.service';
+import { ShortcutService } from '../../services/shortcut.service';
 import { HeaderComponent } from '../header/header.component';
-import { NotificationComponent } from '../notification/notification.component';
-import { SidebarComponent } from '../sidebar/sidebar.component';
 
 @Component({
     selector: 'mtx-workspace',
     templateUrl: 'workspace.component.html',
-    imports: [SidebarComponent, RouterOutlet, HeaderComponent, NotificationComponent]
+    imports: [RouterOutlet, HeaderComponent,]
 })
-export class WorkspaceComponent {
+export class WorkspaceComponent implements OnInit, OnDestroy {
     private readonly projectService = inject(ProjectService);
     private readonly notificationService = inject(NotificationService);
+    private readonly navService = inject(NavService);
+    private readonly shortcutService = inject(ShortcutService);
+
     private isSaving = signal(false);
     readonly notification = this.notificationService.notification;
 
-    readonly navItems: NavItem[] = [
-        { label: 'Home', icon: 'house text-xl', route: '/home' },
-        { label: 'Chat', icon: 'chat-dots text-xl', route: '/workspace/chat' },
-        { label: 'Context', icon: 'briefcase text-xl', route: '/workspace/context' },
-        { label: 'Tasks', icon: 'list-task text-xl', route: '/workspace/tasks' },
-    ];
+    readonly navItems = computed(() => this.navService.navItems);
+    readonly bottomNavItems = computed(() => this.navService.bottomNavItems);
 
-    // @HostListener('window:keydown', ['$event'])
-    // onWindowKeyDown(event: KeyboardEvent): void {
-    //     const key = (event.key ?? '').toLowerCase();
-    //     if ((event.ctrlKey || event.metaKey) && key === 's') {
-    //         event.preventDefault();
-    //         void this.saveProject();
-    //     }
-    // }
+    ngOnInit() {
+        this.shortcutService.register('ctrl+s', () => this.saveProject());
+    }
+
+    ngOnDestroy() {
+        this.shortcutService.unregister('ctrl+s');
+    }
 
     private async saveProject(): Promise<void> {
         if (this.isSaving()) {

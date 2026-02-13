@@ -20,10 +20,10 @@ export class SettingsComponent implements OnInit, OnDestroy {
   private readonly shortcutService = inject(ShortcutService);
 
   protected readonly headerRightCommands = computed<CommandDescriptor[]>(() => [
-    // {
-    //   id: 'save-settings', title: '',
-    //   description: 'Save Settings', icon: 'floppy', action: () => this.saveSettings()
-    // },
+    {
+      id: 'save-settings', title: '',
+      description: 'Save Settings', icon: 'floppy', action: () => this.saveSettings()
+    },
   ]);
   appSetting = signal<AppSetting>(new AppSetting([]));
   isLoading = signal(false);
