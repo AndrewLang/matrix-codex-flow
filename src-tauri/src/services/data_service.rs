@@ -4,6 +4,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use rusqlite::{params, Connection, OptionalExtension, Transaction};
 
 use crate::models::agent_rule::AgentRule;
+use crate::models::chat::{ChatMessage, ChatThread};
 use crate::models::project::Project;
 use crate::models::task::{Task, TaskStatus, TaskStep, TaskStepType};
 
@@ -138,6 +139,95 @@ impl DataService {
         Ok(())
     }
 
+    pub fn save_chat_thread(&self, thread: &ChatThread) -> Result<(), rusqlite::Error> {
+        let connection = self.open_connection()?;
+        connection.execute(
+            "INSERT INTO chat_threads (id, project_id, title)
+             VALUES (?1, ?2, ?3)
+             ON CONFLICT(id) DO UPDATE SET
+               project_id = excluded.project_id,
+               title = excluded.title",
+            params![thread.id, thread.project_id, thread.title],
+        )?;
+        Ok(())
+    }
+
+    pub fn save_chat_message(&self, message: &ChatMessage) -> Result<(), rusqlite::Error> {
+        let connection = self.open_connection()?;
+        connection.execute(
+            "INSERT INTO chat_messages (id, thread_id, role, content, model, created_at)
+             VALUES (?1, ?2, ?3, ?4, ?5, ?6)
+             ON CONFLICT(id) DO UPDATE SET
+               thread_id = excluded.thread_id,
+               role = excluded.role,
+               content = excluded.content,
+               model = excluded.model,
+               created_at = excluded.created_at",
+            params![
+                message.id,
+                message.thread_id,
+                message.role,
+                message.content,
+                message.model,
+                message.created_at
+            ],
+        )?;
+        Ok(())
+    }
+
+    pub fn load_chat_threads_by_project(
+        &self,
+        project_id: &str,
+    ) -> Result<Vec<ChatThread>, rusqlite::Error> {
+        let connection = self.open_connection()?;
+        let mut statement = connection.prepare(
+            "SELECT id, project_id, title
+             FROM chat_threads
+             WHERE project_id = ?1
+             ORDER BY rowid DESC",
+        )?;
+
+        let threads = statement
+            .query_map(params![project_id], |row| {
+                Ok(ChatThread {
+                    id: row.get(0)?,
+                    project_id: row.get(1)?,
+                    title: row.get(2)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(threads)
+    }
+
+    pub fn load_chat_messages_by_thread(
+        &self,
+        thread_id: &str,
+    ) -> Result<Vec<ChatMessage>, rusqlite::Error> {
+        let connection = self.open_connection()?;
+        let mut statement = connection.prepare(
+            "SELECT id, thread_id, role, content, model, created_at
+             FROM chat_messages
+             WHERE thread_id = ?1
+             ORDER BY created_at ASC",
+        )?;
+
+        let messages = statement
+            .query_map(params![thread_id], |row| {
+                Ok(ChatMessage {
+                    id: row.get(0)?,
+                    thread_id: row.get(1)?,
+                    role: row.get(2)?,
+                    content: row.get(3)?,
+                    model: row.get(4)?,
+                    created_at: row.get(5)?,
+                })
+            })?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        Ok(messages)
+    }
+
     pub fn db_path(&self) -> &PathBuf {
         &self.db_path
     }
@@ -195,10 +285,30 @@ impl DataService {
                 FOREIGN KEY(task_id) REFERENCES tasks(id) ON DELETE CASCADE
             );
 
+            CREATE TABLE IF NOT EXISTS chat_threads (
+                id TEXT PRIMARY KEY,
+                project_id TEXT NOT NULL,
+                title TEXT NOT NULL,
+                FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
+            );
+
+            CREATE TABLE IF NOT EXISTS chat_messages (
+                id TEXT PRIMARY KEY,
+                thread_id TEXT NOT NULL,
+                role TEXT NOT NULL,
+                content TEXT NOT NULL,
+                model TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                FOREIGN KEY(thread_id) REFERENCES chat_threads(id) ON DELETE CASCADE
+            );
+
             CREATE INDEX IF NOT EXISTS idx_agent_rules_project_id ON agent_rules(project_id);
             CREATE INDEX IF NOT EXISTS idx_tasks_project_id ON tasks(project_id);
             CREATE INDEX IF NOT EXISTS idx_task_steps_task_id ON task_steps(task_id);
             CREATE INDEX IF NOT EXISTS idx_projects_path ON projects(path);
+            CREATE INDEX IF NOT EXISTS idx_chat_threads_project_id ON chat_threads(project_id);
+            CREATE INDEX IF NOT EXISTS idx_chat_messages_thread_id ON chat_messages(thread_id);
+            CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
             ",
         )?;
         Ok(())

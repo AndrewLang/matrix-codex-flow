@@ -47,6 +47,10 @@ impl App {
                 crate::commands::system_commands::is_codex_installed,
                 crate::commands::system_commands::codex_version,
                 crate::commands::chat_commands::chat,
+                crate::commands::chat_commands::save_chat_thread,
+                crate::commands::chat_commands::save_chat_message,
+                crate::commands::chat_commands::load_chat_threads,
+                crate::commands::chat_commands::load_chat_messages,
             ])
             .on_window_event(|window, event| {
                 if window.label() != "main" {
