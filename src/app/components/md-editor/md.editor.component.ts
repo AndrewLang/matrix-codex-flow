@@ -3,7 +3,7 @@ import { defaultKeymap } from '@codemirror/commands';
 import { markdown } from '@codemirror/lang-markdown';
 import { Compartment, EditorState } from '@codemirror/state';
 import { oneDark } from '@codemirror/theme-one-dark';
-import { EditorView, keymap } from '@codemirror/view';
+import { EditorView, keymap, placeholder } from '@codemirror/view';
 
 
 @Component({
@@ -66,12 +66,14 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
+        console.log('Placeholder:', this.placeholder());
         this.editorView = new EditorView({
             parent: this.editorRef.nativeElement,
             state: EditorState.create({
                 doc: this.value(),
                 extensions: [
                     markdown(),
+                    placeholder(this.placeholder()),
                     oneDark,
                     keymap.of([
                         {
@@ -131,8 +133,6 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                 ]
             })
         });
-
-
     }
 
     ngOnDestroy(): void {
