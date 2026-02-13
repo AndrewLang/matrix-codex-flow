@@ -6,8 +6,8 @@ import { SettingService } from './setting.service';
 @Injectable({ providedIn: 'root' })
 export class OpenaiService {
     private readonly settingService = inject(SettingService);
-    private readonly apiKey = computed(() => this.settingService.codexApiKey().trim());
-    private readonly model = computed(() => this.settingService.agentModel().trim() || 'gpt-5-codex');
+    private readonly apiKey = computed(() => '');
+    private readonly model = computed(() => 'gpt-5-codex');
     private client: OpenAI | null = null;
     private clientApiKey = '';
 

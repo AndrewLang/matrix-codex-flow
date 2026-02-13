@@ -7,7 +7,8 @@
     @if(appCommands().length > 0) {
     <div class="windows-controls">
         @for (command of appCommands(); track command.id) {
-        <button class="control-btn" title="{{command.description}}" (click)="invokeCommand(command)" tabindex="-1">
+        <button class="control-btn {{command.tag}}" title="{{command.description}}" (click)="invokeCommand(command)"
+            tabindex="-1">
             <mtx-icon [icon]="command.icon!"></mtx-icon>
         </button>
         }

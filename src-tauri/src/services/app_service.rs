@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::PathBuf;
+use uuid::Uuid;
 
 use tauri::{
     AppHandle, Manager, PhysicalPosition, PhysicalSize, Position, Runtime, Size, WebviewWindow,
@@ -7,7 +8,7 @@ use tauri::{
 };
 
 use crate::models::app_config::{AppConfig, MainWindowConfig};
-use crate::models::setting::{SettingModel, SettingValue, SettingValueType};
+use crate::models::setting::{AgentConfig, SettingModel, SettingValue, SettingValueType};
 
 const APP_FOLDER_NAME: &str = "vibeflow";
 const APP_CONFIG_FILE_NAME: &str = "app.config.json";
@@ -212,25 +213,13 @@ impl AppService {
     fn default_settings() -> Vec<SettingModel> {
         vec![
             SettingModel {
-                id: "setting-agent-provider".to_string(),
-                key: "agent.provider".to_string(),
-                value: SettingValue::String("codex".to_string()),
+                id: "setting-configured-agents".to_string(),
+                key: "configured.agents".to_string(),
+                value: SettingValue::String(Self::default_agents()),
                 value_type: SettingValueType::String,
             },
             SettingModel {
-                id: "setting-agent-codex-api-key".to_string(),
-                key: "agent.codex.apiKey".to_string(),
-                value: SettingValue::String(String::new()),
-                value_type: SettingValueType::String,
-            },
-            SettingModel {
-                id: "setting-agent-model".to_string(),
-                key: "agent.model".to_string(),
-                value: SettingValue::String("gpt-5-codex".to_string()),
-                value_type: SettingValueType::String,
-            },
-            SettingModel {
-                id: "setting-prompt-template".to_string(),
+                id: "setting-default-prompt-template".to_string(),
                 key: "prompt.template".to_string(),
                 value: SettingValue::String(
                     "You are Codex working inside VibeFlow.\nFollow project context and rules, keep outputs concise, and produce actionable steps."
@@ -245,6 +234,21 @@ impl AppService {
                 value_type: SettingValueType::Boolean,
             },
         ]
+    }
+
+    fn default_agents() -> String {
+        let agents = vec![AgentConfig {
+            id: Uuid::new_v4().to_string(),
+            name: "Codex CLI Agent".to_string(),
+            agent_type: "codex-cli".to_string(),
+            model: "gpt-5-codex".to_string(),
+            api_key: "".to_string(),
+            base_url: "".to_string(),
+            enabled: true,
+            is_default: true,
+        }];
+
+        serde_json::to_string(&agents).expect("Failed to serialize agent configs")
     }
 
     fn clamp_position_to_primary_monitor(

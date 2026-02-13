@@ -26,7 +26,8 @@ serde = { version = "1.0", features = ["derive"] }
 log = "0.4"
 tauri = { version = "2.10.0", features = [] }
 tauri-plugin-dialog = "2.6"
-env_logger = "0.11"
+env_logger = "0.11.9"
 rusqlite = { version = "0.38", features = ["bundled"] }
 futures = "0.3"
 codex-sdk = { path = "crates/codex-sdk-rs" }
+uuid = { version = "1.3", features = ["v4"] }

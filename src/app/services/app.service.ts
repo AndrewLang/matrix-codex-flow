@@ -15,6 +15,7 @@ export class AppService {
             title: '',
             description: 'Pin to top',
             icon: 'pin-angle',
+            tag: 'lg',
             action: async (command) => {
                 const pin = await invoke<boolean>('toggle_main_window_always_on_top');
                 if (pin === true) {
@@ -29,6 +30,7 @@ export class AppService {
             title: '',
             description: 'Sponsor on GitHub',
             icon: 'github',
+            tag: 'lg',
             action: async () => {
                 await invoke<boolean>('open_url', { url: 'https://github.com/sponsors/AndrewLang' });
             }

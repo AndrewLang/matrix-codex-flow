@@ -5,6 +5,7 @@ import { map } from 'rxjs';
 
 import { CommandDescriptor } from '../../models/command';
 import { ProjectExtensions } from '../../models/project.extensions';
+import { SettingKeys } from '../../models/setting.model';
 import { EMPTY_TASK, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { ProjectService } from '../../services/project.service';
 import { SettingService } from '../../services/setting.service';
@@ -147,7 +148,8 @@ export class TaskEditComponent implements OnDestroy {
         if (!taskId) {
             return;
         }
-        const template = this.settingService.promptTemplate();
+        let appSetting = this.settingService.appSetting();
+        const template = appSetting.getSetting<string>(SettingKeys.PROMPT_TEMPLATE_SETTING) ?? '';
 
         TaskExtensions.addStep(this.editableTask, this.editableTask().steps.length + 1, template, stepType);
     }

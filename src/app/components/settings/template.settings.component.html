@@ -1,0 +1,20 @@
+<article class="rounded-2xl bg-slate-900/60 p-5 backdrop-blur">
+  <h2 class="text-base font-semibold text-slate-100">Prompt Template</h2>
+  <div class="flex items-center justify-between">
+    <p class="mt-1 text-sm text-slate-400">
+      Define the base instruction template injected into agent prompts.
+    </p>
+
+    <button type="button" class="rounded-full bg-slate-600 px-1.5 py-0.5 text-sm text-white transition hover:bg-sky-500"
+      (click)="toggleExpanded()">
+      <mtx-icon icon="chevron-down text-sm"></mtx-icon>
+    </button>
+  </div>
+
+  @if(isExpanded()) {
+  <div class="mt-4 rounded-2xl bg-slate-800/50">
+    <mtx-md-editor [value]="promptTemplate()" placeholder="Enter prompt template" background="#020617"
+      (valueChange)="setPromptTemplate($event)"></mtx-md-editor>
+  </div>
+  }
+</article>

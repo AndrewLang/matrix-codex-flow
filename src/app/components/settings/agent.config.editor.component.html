@@ -1,0 +1,70 @@
+<div class="mt-2 border-t border-slate-700/70 bg-slate-800/40 p-3">
+    <div class="flex items-center justify-between gap-2">
+        <p class="text-sm font-medium text-slate-200">Configuration</p>
+        @if(canDelete()) {
+        <button type="button"
+            class="rounded-md bg-slate-700 px-2 py-1 text-xs font-medium text-slate-200 transition hover:bg-slate-600"
+            (click)="deleteConfig()" title="Delete agent config">
+            <mtx-icon icon="trash text-xs"></mtx-icon>
+        </button>
+        }
+    </div>
+
+    <label class="mt-3 block text-sm text-slate-300" for="agent-config-name">Name</label>
+    <input #agentNameInput id="agent-config-name" type="text" autocomplete="off"
+        class="mt-2 w-full rounded-lg bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 "
+        [value]="config().name" (input)="config().name = agentNameInput.value" />
+
+    <label class="mt-3 block text-sm text-slate-300" for="agent-config-model">Model</label>
+    <input #agentModelInput id="agent-config-model" type="text" autocomplete="off"
+        class="mt-2 w-full rounded-lg bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 "
+        [value]="config().model" (input)="config().model = agentModelInput.value" />
+
+    <label class="mt-3 block text-sm text-slate-300" for="agent-config-api-key">API Key</label>
+    <input #agentApiKeyInput id="agent-config-api-key" type="password" autocomplete="off"
+        class="mt-2 w-full rounded-lg bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 "
+        [value]="config().apiKey " (input)="config().apiKey = agentApiKeyInput.value" />
+
+    <label class="mt-3 block text-sm text-slate-300" for="agent-config-base-url">Base URL</label>
+    <input #agentBaseUrlInput id="agent-config-base-url" type="text" autocomplete="off"
+        class="mt-2 w-full rounded-lg bg-slate-800/80 px-3 py-2 text-sm text-slate-100 outline-none ring-0 "
+        [value]="config().baseUrl " (input)="config().baseUrl = agentBaseUrlInput.value" />
+
+    <label class="mt-3 flex items-center justify-between gap-3 rounded-lg bg-slate-800/60 px-3 py-2">
+        <span class="text-sm text-slate-200">Enabled</span>
+
+        <button type="button" role="switch" [attr.aria-checked]="config().enabled"
+            class="relative h-5 w-9 rounded-full transition-colors duration-200"
+            [class.bg-emerald-500]="config().enabled" [class.bg-slate-600]="!config().enabled"
+            (click)="config().enabled = !config().enabled">
+            <span
+                class="absolute left-0.5 top-0.5 h-4 w-4 rounded-full bg-white shadow transition-transform duration-200"
+                [class.translate-x-4]="config().enabled" [class.translate-x-0]="!config().enabled"></span>
+        </button>
+    </label>
+
+
+    <div class="flex items-center justify-between mt-3">
+        <div></div>
+
+        <div class="flex items-center gap-2">
+            @if(!config().isDefault) {
+            <button type="button"
+                class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
+                (click)="setAsDefault()">
+                Set as default
+            </button>
+            }
+            <button type="button"
+                class="rounded bg-slate-700 px-3 py-1.5 text-xs text-slate-200 transition hover:bg-slate-600"
+                (click)="cancel()">
+                Cancel
+            </button>
+            <button type="button"
+                class="rounded bg-emerald-600 px-3 py-1.5 text-xs text-white transition hover:bg-emerald-500"
+                (click)="save()">
+                Save
+            </button>
+        </div>
+    </div>
+</div>

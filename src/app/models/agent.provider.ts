@@ -48,11 +48,12 @@ export interface AgentProvider {
 export interface AgentConfig {
     id: string;
     name: string;
-    type: 'openai' | 'codex-cli' | 'gemini' | 'ollama' | 'kara';
+    agentType: string;
     model: string;
     apiKey?: string;
     baseUrl?: string;
     enabled: boolean;
+    isDefault: boolean;
     extra?: Record<string, any>;
 }
 

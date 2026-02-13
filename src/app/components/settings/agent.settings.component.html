@@ -1,0 +1,62 @@
+<article class="rounded-2xl bg-slate-900/60 p-5 backdrop-blur">
+  <h2 class="text-base font-semibold text-slate-100">Agent Setting</h2>
+  <p class="mt-1 text-sm text-slate-400">
+    Configure available agents, manage defaults, and remove unused entries.
+  </p>
+
+  <label class="mt-4 block text-sm text-slate-300" for="available-agent-provider">Supported agents</label>
+  <div class="mt-2 flex gap-2">
+    <div class="relative min-w-0 flex-1">
+      <select #availableAgentProviderInput id="available-agent-provider"
+        class="w-full appearance-none rounded-lg bg-slate-800/80 px-3 py-2 pr-12 text-sm text-slate-100 outline-none ring-0"
+        [value]="selectedAgentType()" (change)="setSelectedAgentType(availableAgentProviderInput.value)">
+        @for (agent of availableAgents(); track agent.id) {
+        <option [value]="agent.type">{{ agent.name }}</option>
+        }
+      </select>
+      <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-400">
+        &#9662;
+      </span>
+    </div>
+    <button type="button" class="rounded-lg bg-blue-600 px-2.5 py-1 text-xs text-white transition hover:bg-sky-500"
+      (click)="addAgentConfig()">
+      Add
+    </button>
+  </div>
+
+  <p class="mt-4 text-sm text-slate-300">Configured agents</p>
+  @if (configuredAgents().length === 0) {
+  <p class="mt-2 rounded-lg bg-slate-800/50 px-3 py-2 text-xs text-slate-400">
+    No configured agents yet.
+  </p>
+  } @else {
+  <div class="mt-2 grid gap-2">
+    @for (config of configuredAgents(); track config.id) {
+    <div class="flex flex-col rounded-lg  transition border border-slate-700/70 bg-slate-800/40 hover:bg-slate-800/60">
+      <div class="flex items-center gap-1 px-3 py-2">
+        <div class="min-w-0 flex-1 flex flex-col text-left">
+          <p class="truncate text" [class.text-emerald-500]="config.isDefault"
+            [class.text-slate-500]="!config.isDefault">
+            {{ config.name }}</p>
+          <p class="flex truncate text-xs items-center text-slate-400 gap-1 font">
+            <span>{{ config.agentType }}</span> | <span>{{ config.model }}</span>
+          </p>
+        </div>
+
+        <button type="button"
+          class="rounded-full bg-slate-700 px-2 py-1.5 text-xs font-medium text-rose-100 transition hover:bg-sky-600"
+          (click)="toggleExpanded(config)" title="Show details">
+          <mtx-icon icon="chevron-down text-xs"></mtx-icon>
+        </button>
+      </div>
+
+      @if(config.isExpanded){
+      <mtx-agent-config-editor [config]="config" [(appSetting)]="appSetting"
+        [(configuredAgents)]="configuredAgents"></mtx-agent-config-editor>
+      }
+    </div>
+    }
+  </div>
+  }
+
+</article>

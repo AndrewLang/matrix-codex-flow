@@ -1,4 +1,4 @@
-import { Component, HostListener, inject, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { NavItem } from '../../models/nav.model';
 import { NotificationService } from '../../services/notification.service';
@@ -25,14 +25,14 @@ export class WorkspaceComponent {
         { label: 'Tasks', icon: 'list-task text-xl', route: '/workspace/tasks' },
     ];
 
-    @HostListener('window:keydown', ['$event'])
-    onWindowKeyDown(event: KeyboardEvent): void {
-        const key = (event.key ?? '').toLowerCase();
-        if ((event.ctrlKey || event.metaKey) && key === 's') {
-            event.preventDefault();
-            void this.saveProject();
-        }
-    }
+    // @HostListener('window:keydown', ['$event'])
+    // onWindowKeyDown(event: KeyboardEvent): void {
+    //     const key = (event.key ?? '').toLowerCase();
+    //     if ((event.ctrlKey || event.metaKey) && key === 's') {
+    //         event.preventDefault();
+    //         void this.saveProject();
+    //     }
+    // }
 
     private async saveProject(): Promise<void> {
         if (this.isSaving()) {
