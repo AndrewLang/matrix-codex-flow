@@ -9,14 +9,15 @@ export interface ChatMessage {
 
 export interface ChatThread {
     id: string;
+    projectId: string;
     title: string;
 }
 
 export const EMPYT_THREAD: ChatThread = {
     id: '',
+    projectId: '',
     title: ''
 };
-
 
 export type ChatRole = 'user' | 'agent';
 

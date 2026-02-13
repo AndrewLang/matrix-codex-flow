@@ -30,17 +30,16 @@ export class CodexCliProvider implements AgentProvider {
     }
 
     async run(request: AgentRequest): Promise<AgentResponse> {
-        const start = Date.now();
+        let response = EMPTY_AGENT_RESULT;
 
-        const args = ['exec', '--model', this.model, request.prompt];
-
-        const result = await this.runProcess('codex', args);
-
-        return {
-            text: result.text,
-            raw: result,
-            durationMs: Date.now() - start,
-        };
+        await this.runStream(request, (chunk) => {
+            response = {
+                ...response,
+                text: (response as any).text ? (response as any).text + chunk.text : chunk.text,
+                raw: chunk.raw,
+            };
+        });
+        return response as AgentResponse;
     }
 
     async runStream(request: AgentRequest, onChunk: (chunk: AgentResponse) => void): Promise<void> {
