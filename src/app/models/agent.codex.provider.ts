@@ -16,12 +16,12 @@ export class CodexCliProvider implements AgentProvider {
     readonly id = AgentProviderNames.ID_CODEX_CLI;
     readonly name = AgentProviderNames.CODEX_CLI;
     readonly capabilities: AgentCapabilities = {
-        supportsStreaming: false,
+        supportsStreaming: true,
         supportsJsonMode: true,
         supportsTools: true,
     };
     threadId: string | null = null;
-    isReceiving = signal(false);
+    isStreaming = signal(false);
 
     constructor(private config: AgentConfig) { }
 
@@ -76,7 +76,7 @@ export class CodexCliProvider implements AgentProvider {
             });
 
             try {
-                this.isReceiving.set(true);
+                this.isStreaming.set(true);
                 let payload = {
                     content: request.prompt,
                     model: this.config.model,
@@ -89,7 +89,7 @@ export class CodexCliProvider implements AgentProvider {
                 unlistenAll();
                 reject(err);
             } finally {
-                this.isReceiving.set(false);
+                this.isStreaming.set(false);
             }
         });
     }

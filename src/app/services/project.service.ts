@@ -21,6 +21,7 @@ export class ProjectService {
     private readonly notificationService = inject(NotificationService);
     private readonly commandService = inject(CommandService);
 
+
     projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
     recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
@@ -242,8 +243,8 @@ export class ProjectService {
         await this.writeFile(targetFilePath, rule.description?.trim() ?? '');
     }
 
-    openInCode(project: Project): void {
-        this.commandService.runCommand('code', [project.path]);
+    async openInCode(project: Project): Promise<void> {
+        await this.commandService.runCommand('code', [project.path]);
     }
 
     private async loadProjectFromPath(projectPath: string): Promise<Project> {

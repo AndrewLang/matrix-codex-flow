@@ -5,6 +5,7 @@ import { ChatMessage } from '../../models/chat.message';
 import { TaskStatus } from '../../models/task';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
 import { ChatService } from '../../services/chat.service';
+import { MessageStoreService } from '../../services/message.store.service';
 import { TaskExecuteService } from '../../services/task.execuer.service';
 import { AgentSelectorComponent } from '../agent-selector/agent.selector.component.';
 import { IconComponent } from "../icon/icon.component";
@@ -30,9 +31,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly maxComposerHeightPixels = MAX_COMPOSER_HEIGHT_PIXELS;
     readonly composerText = signal('');
     readonly copiedMessageId = signal<string | null>(null);
-    readonly messages = computed(() => this.chatService.messages());
-    readonly hasMessages = computed(() => this.messages().length > 0);
-    readonly isReceiving = computed(() => this.chatService.isReceiving());
+
     readonly showScrollToBottom = signal(false);
     readonly isRunningTask = signal(false);
     readonly selectedAgent = signal<AgentConfig | null>(null);
@@ -40,6 +39,12 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     private readonly chatService = inject(ChatService);
     private readonly taskRuntimeService = inject(TaskExecuteService);
+    private readonly messageStoreService = inject(MessageStoreService);
+
+    readonly messages = computed(() => this.messageStoreService.messages());
+    readonly hasMessages = computed(() => this.messages().length > 0);
+    readonly isStreaming = computed(() => this.messageStoreService.isStreaming());
+
     private readonly runningTaskSubscription = this.taskRuntimeService.onRunTask.subscribe(data => {
         console.log('[Chat] Task started:', data);
         let isRunning = data.status === TaskStatus.InProgress;

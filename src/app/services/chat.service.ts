@@ -1,8 +1,9 @@
-import { inject, Injectable, signal } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
 import { AgentConfig, AgentProvider, AgentResponse } from '../models/agent.provider';
 import { AgentProviderRegistry } from '../models/agents';
-import { ChatMessage, ChatResponsePayload, ChatRole } from '../models/chat.message';
+import { ChatMessage, ChatRole } from '../models/chat.message';
+import { MessageStoreService } from './message.store.service';
 import { ProjectService } from './project.service';
 import { SettingService } from './setting.service';
 
@@ -11,6 +12,7 @@ const AGENT_ROLE: ChatRole = 'agent';
 const IDENTIFIER_RANDOM_RADIX = 36;
 const IDENTIFIER_START_INDEX = 2;
 const IDENTIFIER_END_INDEX = 10;
+const TIMEOUT_MS = 60000;
 
 
 @Injectable({
@@ -19,9 +21,7 @@ const IDENTIFIER_END_INDEX = 10;
 export class ChatService {
     private readonly settingService = inject(SettingService);
     private readonly projectService = inject(ProjectService);
-    private readonly chatMessagesStore = signal<ChatMessage[]>([]);
-    readonly messages = this.chatMessagesStore.asReadonly();
-    readonly isReceiving = signal(false);
+    private readonly messageStoreService = inject(MessageStoreService);
 
     async chat(content: string, agentConfig?: AgentConfig,
         messageSentHandler?: (message: ChatMessage) => void
@@ -35,15 +35,7 @@ export class ChatService {
             agentConfig = await this.settingService.getActiveAgentConfig();
         }
 
-        const message = this.toMessage(prompt);
-        this.chatMessagesStore.update((messages) => [...messages, message]);
-        if (messageSentHandler) {
-            messageSentHandler(message);
-        }
-
-        await this.agentStreaming(prompt, agentConfig, (message) => {
-            this.chatMessagesStore.update((messages) => [...messages, message]);
-        });
+        await this.agentStreaming(prompt, agentConfig, messageSentHandler);
     }
 
     async ask(question: string, agentConfig?: AgentConfig): Promise<string> {
@@ -86,25 +78,23 @@ export class ChatService {
         return optimized;
     }
 
-    async agent(text: string, agentConfig: AgentConfig): Promise<void> {
+    private async agentWait(text: string, agentConfig: AgentConfig): Promise<void> {
         const provider = this.resolveAgent(agentConfig);
 
         const request = {
             prompt: text,
             model: agentConfig.model,
-            timeoutMs: 60000,
+            timeoutMs: TIMEOUT_MS,
         }
         let response = await provider.run(request);
 
-        this.chatMessagesStore.update((messages) => [
-            ...messages,
-            this.toMessage(response.text, AGENT_ROLE)
-        ]);
+        this.messageStoreService.add(this.toMessage(response.text, AGENT_ROLE));
     }
 
-    async agentStreaming(text: string, agentConfig: AgentConfig, messageSentHandler?: (message: ChatMessage) => void): Promise<void> {
+    private async agentStreaming(text: string, agentConfig: AgentConfig,
+        messageSentHandler?: (message: ChatMessage) => void): Promise<void> {
         const message = this.toMessage(text);
-        this.chatMessagesStore.update((messages) => [...messages, message]);
+        this.messageStoreService.add(message);
         if (messageSentHandler) {
             messageSentHandler(message);
         }
@@ -113,27 +103,22 @@ export class ChatService {
         const request = {
             prompt: text,
             model: agentConfig.model,
-            timeoutMs: 60000,
+            timeoutMs: TIMEOUT_MS,
             stream: true,
             workingDirectory: this.projectService.currentProject()?.path || undefined,
         }
+
         const onChunk = (chunk: AgentResponse) => {
             console.log('Received chunk from agent:', chunk);
-            this.chatMessagesStore.update((messages) => {
-                const lastMessage = messages[messages.length - 1];
-                if (!lastMessage || lastMessage.role === USER_ROLE) {
-                    return [...messages, this.toMessage(chunk.text, AGENT_ROLE)];
-                }
-
-                return [
-                    ...messages.slice(0, messages.length - 1),
-                    { ...lastMessage, content: `${lastMessage.content}${chunk.text}` }
-                ];
-            });
+            if (chunk.text !== undefined && chunk.text !== '') {
+                let agentMessage = this.toMessage(chunk.text, AGENT_ROLE);
+                this.messageStoreService.add(agentMessage);
+            }
         };
-        this.isReceiving.set(true);
+
+        this.messageStoreService.isStreaming.set(true);
         await provider.runStream?.(request, onChunk);
-        this.isReceiving.set(false);
+        this.messageStoreService.isStreaming.set(false);
     }
 
     private resolveAgent(agentConfig: AgentConfig): AgentProvider {
@@ -143,6 +128,7 @@ export class ChatService {
     private toMessage(content: string, role: ChatRole = USER_ROLE): ChatMessage {
         return {
             id: this.createIdentifier(),
+            threadId: '',
             role,
             content,
             model: 'gpt-5.3-codex',
@@ -156,48 +142,5 @@ export class ChatService {
         }
 
         return `${Date.now()}-${Math.random().toString(IDENTIFIER_RANDOM_RADIX).slice(IDENTIFIER_START_INDEX, IDENTIFIER_END_INDEX)}`;
-    }
-
-    private appendToMessage(messageId: string, chunk: string): void {
-        console.log(`Appending chunk to message ${messageId}:`, chunk);
-        this.chatMessagesStore.update((messages) =>
-            messages.map((message) =>
-                message.id === messageId
-                    ? { ...message, content: `${message.content}${chunk}` }
-                    : message
-            )
-        );
-    }
-
-    private handleChatResponse(payload: ChatResponsePayload): void {
-        if (payload.type === 'message') {
-            this.chatMessagesStore.update((messages) => [
-                ...messages,
-                this.toMessage(payload.data.content, AGENT_ROLE)
-            ]);
-            return;
-        }
-
-        if (payload.type === 'token') {
-            this.chatMessagesStore.update((messages) => {
-                const lastMessage = messages[messages.length - 1];
-                if (!lastMessage || lastMessage.role === USER_ROLE) {
-                    return [...messages, this.toMessage(payload.data.text, AGENT_ROLE)];
-                }
-
-                return [
-                    ...messages.slice(0, messages.length - 1),
-                    { ...lastMessage, content: `${lastMessage.content}${payload.data.text}` }
-                ];
-            });
-            return;
-        }
-
-        if (payload.type === 'error') {
-            this.chatMessagesStore.update((messages) => [
-                ...messages,
-                this.toMessage(`Error: ${payload.data.message}`, AGENT_ROLE)
-            ]);
-        }
     }
 }

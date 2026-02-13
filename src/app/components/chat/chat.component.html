@@ -33,7 +33,7 @@
                         question or giving a command.</p>
                 </div>
                 }
-                @if (isReceiving()) {
+                @if (isStreaming()) {
                 <mtx-loader label="Thinking..."></mtx-loader>
                 }
             </div>
@@ -54,7 +54,7 @@
             }
             @else {
             <mtx-md-editor [value]="composerText()" (valueChange)="composerText.set($event)" background="0f172a99"
-                [enabled]="!isReceiving()" placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()"></mtx-md-editor>
+                [enabled]="!isStreaming()" placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()"></mtx-md-editor>
 
             <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
                 <div>
