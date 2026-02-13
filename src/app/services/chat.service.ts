@@ -1,10 +1,10 @@
 import { inject, Injectable, signal } from '@angular/core';
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
 
-import { ChatMessage, ChatRole } from '../models/chat.message';
-import { OpenaiService } from './openai.service';
+import { AgentConfig, AgentProvider, AgentResponse } from '../models/agent.provider';
+import { AgentProviderRegistry } from '../models/agents';
+import { ChatMessage, ChatResponsePayload, ChatRole } from '../models/chat.message';
 import { ProjectService } from './project.service';
+import { SettingService } from './setting.service';
 
 const USER_ROLE: ChatRole = 'user';
 const AGENT_ROLE: ChatRole = 'agent';
@@ -12,50 +12,53 @@ const IDENTIFIER_RANDOM_RADIX = 36;
 const IDENTIFIER_START_INDEX = 2;
 const IDENTIFIER_END_INDEX = 10;
 
-type ChatResponsePayload =
-    | { type: 'token'; data: { text: string } }
-    | { type: 'message'; data: { role: string; content: string } }
-    | { type: 'done'; data: { totalTokens: number } }
-    | { type: 'error'; data: { message: string } };
 
 @Injectable({
     providedIn: 'root'
 })
 export class ChatService {
-    private readonly openaiService = inject(OpenaiService);
+    private readonly settingService = inject(SettingService);
     private readonly projectService = inject(ProjectService);
-    private readonly chatMessagesState = signal<ChatMessage[]>([]);
-
-    private threadId: string | null = null;
-
-    readonly messages = this.chatMessagesState.asReadonly();
+    private readonly chatMessagesStore = signal<ChatMessage[]>([]);
+    readonly messages = this.chatMessagesStore.asReadonly();
     readonly isReceiving = signal(false);
 
-    async chat(text: string): Promise<void> {
-        const prompt = text.trim();
-
+    async chat(content: string, agentConfig?: AgentConfig,
+        messageSentHandler?: (message: ChatMessage) => void
+    ): Promise<void> {
+        const prompt = content.trim();
         if (!prompt) {
             return;
         }
-        const message = this.toMessage(prompt);
-        this.chatMessagesState.update((messages) => [...messages, message]);
 
-        await this.sendToAgent(message, this.handleChatResponse.bind(this));
+        if (agentConfig === undefined) {
+            agentConfig = await this.settingService.getActiveAgentConfig();
+        }
+
+        const message = this.toMessage(prompt);
+        this.chatMessagesStore.update((messages) => [...messages, message]);
+        if (messageSentHandler) {
+            messageSentHandler(message);
+        }
+
+        await this.agentStreaming(prompt, agentConfig, (message) => {
+            this.chatMessagesStore.update((messages) => [...messages, message]);
+        });
     }
 
-    async ask(question: string): Promise<string> {
+    async ask(question: string, agentConfig?: AgentConfig): Promise<string> {
         const prompt = question.trim();
-
         if (!prompt) {
             return '';
         }
 
+        if (agentConfig === undefined) {
+            agentConfig = await this.settingService.getActiveAgentConfig();
+        }
+
         let answer: string[] = [];
-        const message = this.toMessage(prompt);
-        await this.sendToAgent(message, (payload: ChatResponsePayload) => {
-            if (payload.type === 'message') {
-                answer.push(payload.data.content);
-            }
+        await this.agentStreaming(prompt, agentConfig, (message) => {
+            answer.push(message.content);
         });
 
         return answer.join('');
@@ -83,66 +86,58 @@ export class ChatService {
         return optimized;
     }
 
-    private sendToAgent(message: ChatMessage, responseHandler?: (payload: ChatResponsePayload) => void): Promise<void> {
-        return new Promise(async (resolve, reject) => {
-            const unlistenItem = await listen('codex:message', (e) => {
-                const payload = e.payload as ChatResponsePayload;
-                console.log('Received codex:message:', payload);
-                if (payload.type !== 'token') {
-                    responseHandler?.(payload);
-                }
-            });
+    async agent(text: string, agentConfig: AgentConfig): Promise<void> {
+        const provider = this.resolveAgent(agentConfig);
 
-            const unlistenThreadStarted = await listen('codex:thread-started', (e) => {
-                const payload = e.payload as { thread_id: string };
-                console.log('Received codex:thread-started:', payload);
-                this.threadId = payload.thread_id;
-            });
+        const request = {
+            prompt: text,
+            model: agentConfig.model,
+            timeoutMs: 60000,
+        }
+        let response = await provider.run(request);
 
-            const unlistenDone = await listen('codex:done', (e) => {
-                const payload = e.payload as ChatResponsePayload;
-                console.log('Received codex:done:', payload);
-                responseHandler?.(payload);
-                unlistenItem();
-                unlistenDone();
-                unlistenThreadStarted();
-                resolve();
-            });
-
-            try {
-                this.isReceiving.set(true);
-                let workingDirectory = this.projectService.currentProject()?.path || undefined;
-                let payload = {
-                    content: message.content,
-                    model: message.model,
-                    threadId: this.threadId,
-                    workingDirectory: workingDirectory,
-                };
-                console.log('Invoking chat command with payload:', payload);
-                await invoke('chat', { payload });
-            } catch (err) {
-                unlistenItem();
-                unlistenDone();
-                unlistenThreadStarted();
-                reject(err);
-            } finally {
-                this.isReceiving.set(false);
-            }
-        });
+        this.chatMessagesStore.update((messages) => [
+            ...messages,
+            this.toMessage(response.text, AGENT_ROLE)
+        ]);
     }
 
-    private async sendToCloud(prompt: string): Promise<void> {
-        const userMessage = this.toMessage(prompt);
-        const agentMessage = this.toMessage('', AGENT_ROLE);
-        this.chatMessagesState.update((messages) => [...messages, userMessage]);
-        this.chatMessagesState.update((messages) => [...messages, agentMessage]);
+    async agentStreaming(text: string, agentConfig: AgentConfig, messageSentHandler?: (message: ChatMessage) => void): Promise<void> {
+        const message = this.toMessage(text);
+        this.chatMessagesStore.update((messages) => [...messages, message]);
+        if (messageSentHandler) {
+            messageSentHandler(message);
+        }
 
-        this.openaiService.runStreaming(prompt, (chunk) => {
-            this.appendToMessage(agentMessage.id, chunk);
-        }).catch((error) => {
-            const errorMessage = error instanceof Error ? error.message : 'Failed to get response from agent.';
-            this.appendToMessage(agentMessage.id, `\n${errorMessage}`);
-        });
+        const provider = this.resolveAgent(agentConfig);
+        const request = {
+            prompt: text,
+            model: agentConfig.model,
+            timeoutMs: 60000,
+            stream: true,
+            workingDirectory: this.projectService.currentProject()?.path || undefined,
+        }
+        const onChunk = (chunk: AgentResponse) => {
+            console.log('Received chunk from agent:', chunk);
+            this.chatMessagesStore.update((messages) => {
+                const lastMessage = messages[messages.length - 1];
+                if (!lastMessage || lastMessage.role === USER_ROLE) {
+                    return [...messages, this.toMessage(chunk.text, AGENT_ROLE)];
+                }
+
+                return [
+                    ...messages.slice(0, messages.length - 1),
+                    { ...lastMessage, content: `${lastMessage.content}${chunk.text}` }
+                ];
+            });
+        };
+        this.isReceiving.set(true);
+        await provider.runStream?.(request, onChunk);
+        this.isReceiving.set(false);
+    }
+
+    private resolveAgent(agentConfig: AgentConfig): AgentProvider {
+        return AgentProviderRegistry.create(agentConfig);
     }
 
     private toMessage(content: string, role: ChatRole = USER_ROLE): ChatMessage {
@@ -165,7 +160,7 @@ export class ChatService {
 
     private appendToMessage(messageId: string, chunk: string): void {
         console.log(`Appending chunk to message ${messageId}:`, chunk);
-        this.chatMessagesState.update((messages) =>
+        this.chatMessagesStore.update((messages) =>
             messages.map((message) =>
                 message.id === messageId
                     ? { ...message, content: `${message.content}${chunk}` }
@@ -176,7 +171,7 @@ export class ChatService {
 
     private handleChatResponse(payload: ChatResponsePayload): void {
         if (payload.type === 'message') {
-            this.chatMessagesState.update((messages) => [
+            this.chatMessagesStore.update((messages) => [
                 ...messages,
                 this.toMessage(payload.data.content, AGENT_ROLE)
             ]);
@@ -184,7 +179,7 @@ export class ChatService {
         }
 
         if (payload.type === 'token') {
-            this.chatMessagesState.update((messages) => {
+            this.chatMessagesStore.update((messages) => {
                 const lastMessage = messages[messages.length - 1];
                 if (!lastMessage || lastMessage.role === USER_ROLE) {
                     return [...messages, this.toMessage(payload.data.text, AGENT_ROLE)];
@@ -199,7 +194,7 @@ export class ChatService {
         }
 
         if (payload.type === 'error') {
-            this.chatMessagesState.update((messages) => [
+            this.chatMessagesStore.update((messages) => [
                 ...messages,
                 this.toMessage(`Error: ${payload.data.message}`, AGENT_ROLE)
             ]);

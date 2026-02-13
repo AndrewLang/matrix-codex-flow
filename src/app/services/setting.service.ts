@@ -1,6 +1,7 @@
 import { Injectable, signal } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
-import { AppSetting, SettingModel } from '../models/setting.model';
+import { AgentConfig } from '../models/agent.provider';
+import { AppSetting, SettingKeys, SettingModel } from '../models/setting.model';
 
 @Injectable({ providedIn: 'root' })
 export class SettingService {
@@ -37,5 +38,14 @@ export class SettingService {
     finally {
       this.isLoaded.set(true);
     }
+  }
+
+  async getActiveAgentConfig() {
+    if (!this.isLoaded()) {
+      await this.load();
+    }
+
+    const agentConfigs = this._appSetting().getSettingValue<AgentConfig[]>(SettingKeys.AGENT_CONFIGS_SETTING) ?? [];
+    return agentConfigs.find(agent => agent.isDefault) ?? agentConfigs[0] ?? null;
   }
 }

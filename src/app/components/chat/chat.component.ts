@@ -1,5 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
+import { AgentConfig } from '../../models/agent.provider';
 import { ChatMessage } from '../../models/chat.message';
 import { TaskStatus } from '../../models/task';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
@@ -34,6 +35,7 @@ export class ChatComponent implements OnInit, OnDestroy {
     readonly isReceiving = computed(() => this.chatService.isReceiving());
     readonly showScrollToBottom = signal(false);
     readonly isRunningTask = signal(false);
+    readonly selectedAgent = signal<AgentConfig | null>(null);
     private readonly autoScrollEnabled = signal(true);
 
     private readonly chatService = inject(ChatService);
@@ -93,12 +95,14 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
     }
 
-    sendMessage(): void {
-        const messageContent = this.composerText();
-        this.chatService.chat(messageContent);
+    async sendMessage(): Promise<void> {
+        const prompt = this.composerText();
 
-        this.composerText.set('');
-        this.resetComposerHeight();
+        await this.chatService.chat(prompt,
+            this.selectedAgent()!, (message) => {
+                this.composerText.set('');
+                this.resetComposerHeight();
+            });
     }
 
     async copyMessage(message: ChatMessage): Promise<void> {

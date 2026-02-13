@@ -2,7 +2,7 @@
     <details #dropdownDetails class="relative" (toggle)="onDropdownToggle()">
         <summary
             class="flex w-40 h-8 cursor-pointer list-none items-center justify-between rounded hover:border hover:border-slate-700  px-2 text-xs text-slate-200">
-            {{selectAgent()?.name}}
+            {{selectedAgent()?.name}}
             <span>
                 <mtx-svg icon="chevron-down" size="h-3.5 w-3.5"></mtx-svg>
             </span>
@@ -18,8 +18,8 @@
                 @for( agent of agents(); track agent.name) {
                 <li>
                     <button type="button"
-                        class="flex w-full items-center justify-between rounded-md bg-slate-800/80 px-2 py-2 text-left"
-                        (click)="closeDropdown()">
+                        class="flex w-full items-center justify-between rounded-md px-2 py-2 text-left"
+                        [class.bg-slate-800/80]="agent.isSelected" (click)="selectAgent(agent)">
                         <span>{{ agent.name }}</span>
                         <span class="text-[9px]"> {{agent.model}}</span>
                     </button>

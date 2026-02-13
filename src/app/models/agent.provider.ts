@@ -1,4 +1,3 @@
-import { Observable } from "rxjs";
 
 export interface AgentRequest {
     prompt: string;
@@ -33,7 +32,6 @@ export interface AgentCapabilities {
     canExecuteShell?: boolean;
 }
 
-
 export interface AgentProvider {
     readonly id: string;
     readonly name: string;
@@ -42,7 +40,7 @@ export interface AgentProvider {
 
     run(request: AgentRequest): Promise<AgentResponse>;
 
-    runStream?(request: AgentRequest, onChunk: (chunk: string) => void): Observable<string>;
+    runStream?(request: AgentRequest, onChunk: (chunk: AgentResponse) => void): Promise<void>;
 }
 
 export interface AgentConfig {

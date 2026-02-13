@@ -1,3 +1,4 @@
+import { CodexCliProvider } from './agent.codex.provider';
 import {
     AgentCapabilities,
     AgentConfig,
@@ -17,6 +18,7 @@ export interface AgentProviderViewModel {
 
 export interface AgentConfigViewModel extends AgentConfig {
     isExpanded?: boolean;
+    isSelected?: boolean;
 }
 
 export class AgentProviderNames {
@@ -130,39 +132,6 @@ export class OpenAIProvider implements AgentProvider {
     }
 }
 
-export class CodexCliProvider implements AgentProvider {
-    readonly id = AgentProviderNames.ID_CODEX_CLI;
-    readonly name = AgentProviderNames.CODEX_CLI;
-    readonly capabilities: AgentCapabilities = {
-        supportsStreaming: false,
-        supportsJsonMode: true,
-        supportsTools: true,
-    };
-
-    constructor(private config: AgentConfig) { }
-
-    get model() {
-        return this.config.model;
-    }
-
-    async run(request: AgentRequest): Promise<AgentResponse> {
-        const start = Date.now();
-
-        const args = ['exec', '--model', this.model, request.prompt];
-
-        const result = await this.runProcess('codex', args);
-
-        return {
-            text: result.text,
-            raw: result,
-            durationMs: Date.now() - start,
-        };
-    }
-
-    private async runProcess(cmd: string, args: string[]): Promise<AgentResponse> {
-        return EMPTY_AGENT_RESULT;
-    }
-}
 
 export class GeminiProvider implements AgentProvider {
     readonly id = AgentProviderNames.ID_GEMINI;
@@ -214,20 +183,31 @@ export class KaraProvider implements AgentProvider {
     }
 
     async run(request: AgentRequest): Promise<AgentResponse> {
+        await new Promise(r => setTimeout(r, 1000));
+
         const start = Date.now();
 
-        const args = ['exec', '--model', this.model, request.prompt];
-
-        const result = await this.runProcess('codex', args);
+        console.log('KaraProvider received request:', request);
 
         return {
-            text: result.text,
-            raw: result,
+            text: `Echo from Kara: ${request.prompt}`,
+            raw: null,
             durationMs: Date.now() - start,
         };
     }
 
-    private async runProcess(cmd: string, args: string[]): Promise<AgentResponse> {
-        return EMPTY_AGENT_RESULT;
+    async runStream?(request: AgentRequest, onChunk: (chunk: AgentResponse) => void): Promise<void> {
+        for (let i = 0; i < 10; i++) {
+            await new Promise(r => setTimeout(r, 1000));
+
+            const chunk: AgentResponse = {
+                text: `Chunk ${i + 1} from Kara: ${request.prompt}`,
+                raw: null,
+                durationMs: 1000,
+            };
+
+            console.log('KaraProvider sending chunk:', chunk);
+            onChunk(chunk);
+        }
     }
 }

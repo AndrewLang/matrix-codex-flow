@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, inject, model, OnInit, signal, viewChild } from '@angular/core';
 import { AgentConfig } from '../../models/agent.provider';
+import { AgentConfigViewModel } from '../../models/agents';
 import { SettingKeys } from '../../models/setting.model';
 import { SettingService } from '../../services/setting.service';
 import { SvgComponent } from '../icon/svg.component';
@@ -15,8 +16,8 @@ export class AgentSelectorComponent implements OnInit {
     private readonly dropdownPanel = viewChild<ElementRef<HTMLDivElement>>('dropdownPanel');
     readonly openUpward = signal(false);
 
-    agents = signal<AgentConfig[]>([]);
-    selectAgent = model<AgentConfig | null>(null);
+    agents = signal<AgentConfigViewModel[]>([]);
+    selectedAgent = model<AgentConfigViewModel | null>(null);
 
     constructor() { }
 
@@ -24,11 +25,21 @@ export class AgentSelectorComponent implements OnInit {
         await this.settingService.load();
         let appSetting = this.settingService.appSetting();
         let agents = appSetting.getSettingValue<AgentConfig[]>(SettingKeys.AGENT_CONFIGS_SETTING);
-        this.agents.set(agents ?? []);
+        this.agents.set(agents?.map(agent => ({ ...agent })) ?? []);
 
-        const defaultAgent = agents?.find(agent => agent.isDefault) ?? agents?.[0] ?? null;
-        this.selectAgent.set(defaultAgent);
-        console.log('Loaded agents in selector:', this.agents(), this.selectAgent());
+        let defaultAgent = this.agents()?.find(agent => agent.isDefault) ?? this.agents()?.[0] ?? null;
+        if (defaultAgent) {
+            defaultAgent.isSelected = true;
+        }
+        this.selectedAgent.set(defaultAgent);
+        console.log('Loaded agents in selector:', this.agents(), this.selectedAgent());
+    }
+
+    selectAgent(agent: AgentConfigViewModel): void {
+        this.agents().forEach(a => a.isSelected = false);
+        agent.isSelected = true;
+        this.selectedAgent.set(agent);
+        this.closeDropdown();
     }
 
     onDropdownToggle(): void {

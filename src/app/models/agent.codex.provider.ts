@@ -1,0 +1,100 @@
+import { signal } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+import {
+    AgentCapabilities,
+    AgentConfig,
+    AgentProvider,
+    AgentRequest,
+    AgentResponse,
+    EMPTY_AGENT_RESULT,
+} from './agent.provider';
+import { AgentProviderNames } from './agents';
+import { ChatResponsePayload } from './chat.message';
+
+export class CodexCliProvider implements AgentProvider {
+    readonly id = AgentProviderNames.ID_CODEX_CLI;
+    readonly name = AgentProviderNames.CODEX_CLI;
+    readonly capabilities: AgentCapabilities = {
+        supportsStreaming: false,
+        supportsJsonMode: true,
+        supportsTools: true,
+    };
+    threadId: string | null = null;
+    isReceiving = signal(false);
+
+    constructor(private config: AgentConfig) { }
+
+    get model() {
+        return this.config.model;
+    }
+
+    async run(request: AgentRequest): Promise<AgentResponse> {
+        const start = Date.now();
+
+        const args = ['exec', '--model', this.model, request.prompt];
+
+        const result = await this.runProcess('codex', args);
+
+        return {
+            text: result.text,
+            raw: result,
+            durationMs: Date.now() - start,
+        };
+    }
+
+    async runStream(request: AgentRequest, onChunk: (chunk: AgentResponse) => void): Promise<void> {
+        return new Promise(async (resolve, reject) => {
+            const unlistenItem = await listen('codex:message', (e) => {
+                const payload = e.payload as ChatResponsePayload;
+                console.log('Received codex:message:', payload);
+                if (payload.type === 'message') {
+                    onChunk({ text: payload.data.content, raw: payload, durationMs: 0 });
+                }
+            });
+
+            const unlistenThreadStarted = await listen('codex:thread-started', (e) => {
+                const payload = e.payload as { thread_id: string };
+                console.log('Received codex:thread-started:', payload);
+                this.threadId = payload.thread_id;
+            });
+
+            const unlistenAll = () => {
+                unlistenItem();
+                unlistenThreadStarted();
+                unlistenDone();
+            };
+
+            const unlistenDone = await listen('codex:done', (e) => {
+                const payload = e.payload as ChatResponsePayload;
+                console.log('Received codex:done:', payload);
+                if (payload.type === 'done') {
+                    onChunk({ text: payload.data.content, raw: payload, durationMs: 0 });
+                }
+                unlistenAll();
+                resolve();
+            });
+
+            try {
+                this.isReceiving.set(true);
+                let payload = {
+                    content: request.prompt,
+                    model: this.config.model,
+                    threadId: this.threadId,
+                    workingDirectory: request.workingDirectory,
+                };
+                console.log('Invoking chat command with payload:', payload);
+                await invoke('chat', { payload });
+            } catch (err) {
+                unlistenAll();
+                reject(err);
+            } finally {
+                this.isReceiving.set(false);
+            }
+        });
+    }
+
+    private async runProcess(cmd: string, args: string[]): Promise<AgentResponse> {
+        return EMPTY_AGENT_RESULT;
+    }
+}

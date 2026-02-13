@@ -54,12 +54,12 @@
             }
             @else {
             <mtx-md-editor [value]="composerText()" (valueChange)="composerText.set($event)" background="0f172a99"
-                placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()"></mtx-md-editor>
+                [enabled]="!isReceiving()" placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()"></mtx-md-editor>
 
             <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
                 <div>
-                    <!-- <span class="text-xs text-slate-500/90">GPT-5.3-Codex</span> -->
-                    <mtx-agent-selector></mtx-agent-selector>
+                    <mtx-agent-selector [selectedAgent]="selectedAgent()"
+                        (selectedAgentChange)="selectedAgent.set($event)"></mtx-agent-selector>
                 </div>
                 <button type="button"
                     class="h-9 w-9 place-items-center rounded-full bg-slate-800 text-slate-100 shadow-none transition hover:bg-slate-700"
