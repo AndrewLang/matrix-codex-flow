@@ -40,7 +40,11 @@ export class ProjectService {
 
         const localProject = this.localService.getItem<Project>(ProjectService.LOCAL_PROJECT);
         if (localProject) {
-            this.currentProject.set(localProject);
+            let project = await this.loadOrCreateProjectByPath(localProject.path);
+            if (project) {
+                this.currentProject.set(project);
+            }
+
         }
     }
 
@@ -233,8 +237,6 @@ export class ProjectService {
         const nextPaths = [normalizedPath, ...deduplicatedPaths].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
 
     }
-
-
 
     private toSafeFileName(value: string): string {
         const sanitized = (value ?? '')

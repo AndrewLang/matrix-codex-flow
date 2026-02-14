@@ -17,7 +17,7 @@
         "width": 400,
         "height": 1000,
         "minWidth": 100,
-        "minHeight": 100,
+        "minHeight": 400,
         "resizable": true,
         "fullscreen": false,
         "decorations": true,
@@ -43,9 +43,9 @@
       "icons/icon.ico"
     ],
     "macOS": {
-        "signingIdentity": "Developer ID Application: YuXin Lang (357W7C575X)",
-        "hardenedRuntime": true,
-        "entitlements": "entitlements.plist"
-      }
+      "signingIdentity": "Developer ID Application: YuXin Lang (357W7C575X)",
+      "hardenedRuntime": true,
+      "entitlements": "entitlements.plist"
+    }
   }
 }

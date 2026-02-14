@@ -26,7 +26,8 @@ export class ChatService {
     currentThread = computed(() => this.messageStoreService.currentThread());
 
     async chat(content: string, agentConfig?: AgentConfig,
-        messageSentHandler?: (message: ChatMessage) => void
+        messageSentHandler?: (message: ChatMessage) => void,
+        chunkHandler: (chunk: AgentResponse, agentConfig: AgentConfig) => void = this.handleChunk.bind(this)
     ): Promise<void> {
         const prompt = content.trim();
         if (!prompt) {
@@ -41,7 +42,7 @@ export class ChatService {
             agentConfig = await this.settingService.getActiveAgentConfig();
         }
 
-        await this.agentStreaming(prompt, agentConfig, messageSentHandler);
+        await this.agentStreaming(prompt, agentConfig, messageSentHandler, chunkHandler);
     }
 
     async ask(question: string, agentConfig?: AgentConfig): Promise<string> {
@@ -59,9 +60,11 @@ export class ChatService {
         }
 
         let answer: string[] = [];
-        await this.agentStreaming(prompt, agentConfig, (message) => {
-            answer.push(message.content);
-        });
+        await this.agentStreaming(prompt, agentConfig,
+            (message) => { },
+            (chunk, agentConfig) => {
+                answer.push(chunk.text || '');
+            });
 
         return answer.join('');
     }
@@ -72,9 +75,7 @@ export class ChatService {
 
         """${rawPrompt}"""
 
-        Return only the improved prompt.
-        Keep it concise.
-        Clarify intent, constraints, and expected output.
+        Return only the improved prompt, keep it concise, clarify intent, constraints, and expected output.
         `;
 
         let optimized = await this.ask(prompt);
@@ -94,8 +95,18 @@ export class ChatService {
         this.messageStoreService.add(this.toMessage(response.text, agentConfig.agentType, agentConfig.model, AGENT_ROLE));
     }
 
-    private async agentStreaming(text: string, agentConfig: AgentConfig,
-        messageSentHandler?: (message: ChatMessage) => void): Promise<void> {
+    private handleChunk(chunk: AgentResponse, agentConfig: AgentConfig): void {
+        if (chunk.text !== undefined && chunk.text !== '') {
+            let agentMessage = this.toMessage(chunk.text, agentConfig.agentType, agentConfig.model, AGENT_ROLE);
+            this.messageStoreService.add(agentMessage);
+        }
+    }
+
+    private async agentStreaming(text: string,
+        agentConfig: AgentConfig,
+        messageSentHandler?: (message: ChatMessage) => void,
+        chunkHandler?: (chunk: AgentResponse, agentConfig: AgentConfig) => void
+    ): Promise<void> {
         const message = this.toMessage(text, agentConfig.agentType, agentConfig.model);
         this.messageStoreService.add(message);
         if (messageSentHandler) {
@@ -112,10 +123,7 @@ export class ChatService {
         }
 
         const onChunk = (chunk: AgentResponse) => {
-            if (chunk.text !== undefined && chunk.text !== '') {
-                let agentMessage = this.toMessage(chunk.text, agentConfig.agentType, agentConfig.model, AGENT_ROLE);
-                this.messageStoreService.add(agentMessage);
-            }
+            chunkHandler?.(chunk, agentConfig);
         };
 
         this.messageStoreService.isStreaming.set(true);
