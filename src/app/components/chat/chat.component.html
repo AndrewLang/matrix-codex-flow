@@ -1,6 +1,5 @@
 <div class="flex h-full min-h-0 flex-col gap-4 text-slate-200 p-3">
     <div class="relative flex-1 min-h-0">
-
         <section #transcriptContainer (scroll)="onTranscriptScroll()"
             class="h-full overflow-y-auto rounded-xl pr-2 py-8 backdrop-blur-xl "
             [ngClass]="{ 'bg-slate-900/60 border border-slate-800/80': !hasMessages(), 'bg-slate-900/30': hasMessages() }">
@@ -48,18 +47,50 @@
     </div>
 
     <div class="rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 backdrop-blur-xl shadow-xl">
+        @if(hasThreads()) {
+        <div class="border-b border-slate-800/80 py-2 mb-2">
+            <div class="flex items-center justify-between" [class.mb-2]="showThreads()">
+                <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400">Threads history</h3>
+                <button type="button"
+                    class="h-6 px-1.5 rounded-full bg-slate-800 text-slate-100 shadow-none transition hover:bg-slate-700"
+                    title="Toggle threads history" (click)="toggleThreads()">
+                    <mtx-icon [icon]="showThreads() ? 'chevron-up text-sm' : 'chevron-down text-sm'"></mtx-icon>
+                </button>
+            </div>
+
+            @if(showThreads()){
+            <div class="space-y-1.5">
+                @if (threads().length > 0) {
+                @for (thread of threads(); track thread.id) {
+                <button type="button"
+                    class="flex items-center justify-between w-full rounded border border-slate-700/70 bg-slate-800/50 px-3 py-2 text-left text-sm text-slate-200 transition hover:bg-slate-700/50"
+                    (click)="switchThread(thread)">
+                    <div class="truncate text-xs">{{ thread.title || 'Untitled Thread' }}</div>
+                    <div class="truncate text-[10px] text-slate-400">{{ thread.createdAt | formatTimestamp }}</div>
+                </button>
+                }
+                } @else {
+                <p class="text-sm text-slate-500">No thread history loaded.</p>
+                }
+            </div>
+            }
+        </div>
+        }
+
         <div class="flex flex-col gap-2">
             @if(isRunningTask()){
             <mtx-task-runtime></mtx-task-runtime>
             }
             @else {
             <mtx-md-editor [value]="composerText()" (valueChange)="composerText.set($event)" background="0f172a99"
-                [enabled]="!isStreaming()" placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()"></mtx-md-editor>
+                [enabled]="!isStreaming()" placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()">
+            </mtx-md-editor>
 
             <div class="flex items-center justify-between border-t border-slate-800/80 pt-3">
                 <div>
                     <mtx-agent-selector [selectedAgent]="selectedAgent()"
-                        (selectedAgentChange)="selectedAgent.set($event)"></mtx-agent-selector>
+                        (selectedAgentChange)="selectedAgent.set($event)">
+                    </mtx-agent-selector>
                 </div>
                 <button type="button"
                     class="h-9 w-9 place-items-center rounded-full bg-slate-800 text-slate-100 shadow-none transition hover:bg-slate-700"

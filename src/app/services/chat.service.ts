@@ -32,6 +32,10 @@ export class ChatService {
         if (!prompt) {
             return;
         }
+        const threadReady = await this.messageStoreService.startThreadIfEmpty();
+        if (!threadReady) {
+            return;
+        }
 
         if (agentConfig === undefined) {
             agentConfig = await this.settingService.getActiveAgentConfig();
@@ -43,6 +47,10 @@ export class ChatService {
     async ask(question: string, agentConfig?: AgentConfig): Promise<string> {
         const prompt = question.trim();
         if (!prompt) {
+            return '';
+        }
+        const threadReady = await this.messageStoreService.startThreadIfEmpty();
+        if (!threadReady) {
             return '';
         }
 

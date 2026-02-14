@@ -24,7 +24,8 @@ impl DataService {
 
     pub fn load_projects(&self) -> Result<Vec<Project>, rusqlite::Error> {
         let connection = self.open_connection()?;
-        let mut statement = connection.prepare("SELECT id FROM projects ORDER BY updated_at DESC")?;
+        let mut statement =
+            connection.prepare("SELECT id FROM projects ORDER BY updated_at DESC")?;
         let project_ids = statement
             .query_map([], |row| row.get::<usize, String>(0))?
             .collect::<Result<Vec<_>, _>>()?;
@@ -69,7 +70,10 @@ impl DataService {
         self.load_project_with_connection(&connection, project_id)
     }
 
-    pub fn load_project_by_path(&self, project_path: &str) -> Result<Option<Project>, rusqlite::Error> {
+    pub fn load_project_by_path(
+        &self,
+        project_path: &str,
+    ) -> Result<Option<Project>, rusqlite::Error> {
         let connection = self.open_connection()?;
         let project_id: Option<String> = connection
             .query_row(
@@ -86,7 +90,10 @@ impl DataService {
         self.load_project_with_connection(&connection, &project_id)
     }
 
-    pub fn load_or_create_project_by_path(&self, project_path: &str) -> Result<Project, rusqlite::Error> {
+    pub fn load_or_create_project_by_path(
+        &self,
+        project_path: &str,
+    ) -> Result<Project, rusqlite::Error> {
         if let Some(existing_project) = self.load_project_by_path(project_path)? {
             return Ok(existing_project);
         }
@@ -142,12 +149,19 @@ impl DataService {
     pub fn save_chat_thread(&self, thread: &ChatThread) -> Result<(), rusqlite::Error> {
         let connection = self.open_connection()?;
         connection.execute(
-            "INSERT INTO chat_threads (id, project_id, title)
-             VALUES (?1, ?2, ?3)
+            "INSERT INTO chat_threads (id, project_id, title, created_at, updated_at)
+             VALUES (?1, ?2, ?3, ?4, ?5)
              ON CONFLICT(id) DO UPDATE SET
                project_id = excluded.project_id,
-               title = excluded.title",
-            params![thread.id, thread.project_id, thread.title],
+               title = excluded.title,
+               updated_at = excluded.updated_at",
+            params![
+                thread.id,
+                thread.project_id,
+                thread.title,
+                thread.created_at,
+                thread.updated_at
+            ],
         )?;
         Ok(())
     }
@@ -172,27 +186,49 @@ impl DataService {
                 message.created_at
             ],
         )?;
+
+        connection.execute(
+            "UPDATE chat_threads
+             SET updated_at = CASE
+               WHEN updated_at > ?2 THEN updated_at
+               ELSE ?2
+             END
+             WHERE id = ?1",
+            params![message.thread_id, message.created_at],
+        )?;
+
         Ok(())
     }
 
     pub fn load_chat_threads_by_project(
         &self,
         project_id: &str,
+        count: usize,
     ) -> Result<Vec<ChatThread>, rusqlite::Error> {
         let connection = self.open_connection()?;
         let mut statement = connection.prepare(
-            "SELECT id, project_id, title
-             FROM chat_threads
-             WHERE project_id = ?1
-             ORDER BY rowid DESC",
+            "SELECT t.id, t.project_id, t.title, t.created_at, t.updated_at
+             FROM chat_threads t
+             WHERE t.project_id = ?1
+               AND EXISTS (
+                 SELECT 1
+                 FROM chat_messages m
+                 WHERE m.thread_id = t.id
+               )
+             ORDER BY t.updated_at DESC
+             LIMIT ?2",
         )?;
 
+        log::info!("Loading  threads: {}, count: {}", project_id, count);
+
         let threads = statement
-            .query_map(params![project_id], |row| {
+            .query_map(params![project_id, count as i64], |row| {
                 Ok(ChatThread {
                     id: row.get(0)?,
                     project_id: row.get(1)?,
                     title: row.get(2)?,
+                    created_at: row.get(3)?,
+                    updated_at: row.get(4)?,
                 })
             })?
             .collect::<Result<Vec<_>, _>>()?;
@@ -289,6 +325,8 @@ impl DataService {
                 id TEXT PRIMARY KEY,
                 project_id TEXT NOT NULL,
                 title TEXT NOT NULL,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL,
                 FOREIGN KEY(project_id) REFERENCES projects(id) ON DELETE CASCADE
             );
 
@@ -307,10 +345,51 @@ impl DataService {
             CREATE INDEX IF NOT EXISTS idx_task_steps_task_id ON task_steps(task_id);
             CREATE INDEX IF NOT EXISTS idx_projects_path ON projects(path);
             CREATE INDEX IF NOT EXISTS idx_chat_threads_project_id ON chat_threads(project_id);
+            CREATE INDEX IF NOT EXISTS idx_chat_threads_updated_at ON chat_threads(updated_at);
             CREATE INDEX IF NOT EXISTS idx_chat_messages_thread_id ON chat_messages(thread_id);
             CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages(created_at);
             ",
         )?;
+
+        self.ensure_chat_thread_columns(&connection)?;
+
+        Ok(())
+    }
+
+    fn ensure_chat_thread_columns(&self, connection: &Connection) -> Result<(), rusqlite::Error> {
+        let mut statement = connection.prepare("PRAGMA table_info(chat_threads)")?;
+        let columns = statement
+            .query_map([], |row| row.get::<usize, String>(1))?
+            .collect::<Result<Vec<_>, _>>()?;
+
+        if !columns.iter().any(|c| c == "created_at") {
+            connection.execute(
+                "ALTER TABLE chat_threads ADD COLUMN created_at INTEGER NOT NULL DEFAULT 0",
+                [],
+            )?;
+        }
+
+        if !columns.iter().any(|c| c == "updated_at") {
+            connection.execute(
+                "ALTER TABLE chat_threads ADD COLUMN updated_at INTEGER NOT NULL DEFAULT 0",
+                [],
+            )?;
+        }
+
+        connection.execute(
+            "UPDATE chat_threads
+             SET created_at = (CAST(strftime('%s','now') AS INTEGER) * 1000)
+             WHERE created_at = 0",
+            [],
+        )?;
+
+        connection.execute(
+            "UPDATE chat_threads
+             SET updated_at = created_at
+             WHERE updated_at = 0",
+            [],
+        )?;
+
         Ok(())
     }
 
@@ -380,7 +459,11 @@ impl DataService {
         Ok(rules)
     }
 
-    fn load_tasks(&self, connection: &Connection, project_id: &str) -> Result<Vec<Task>, rusqlite::Error> {
+    fn load_tasks(
+        &self,
+        connection: &Connection,
+        project_id: &str,
+    ) -> Result<Vec<Task>, rusqlite::Error> {
         let mut statement = connection.prepare(
             "SELECT id, title, description, status, created_at, updated_at
              FROM tasks
@@ -452,7 +535,8 @@ impl DataService {
         let mut steps = Vec::new();
         let mut poststeps = Vec::new();
 
-        for (id, title, content, status, created_at, updated_at, step_type, step_kind) in step_rows {
+        for (id, title, content, status, created_at, updated_at, step_type, step_kind) in step_rows
+        {
             let mapped_step = TaskStep {
                 id,
                 title,
@@ -506,7 +590,10 @@ impl DataService {
         transaction: &Transaction<'_>,
         project: &Project,
     ) -> Result<(), rusqlite::Error> {
-        transaction.execute("DELETE FROM tasks WHERE project_id = ?1", params![project.id])?;
+        transaction.execute(
+            "DELETE FROM tasks WHERE project_id = ?1",
+            params![project.id],
+        )?;
 
         for task in &project.tasks {
             transaction.execute(
@@ -603,7 +690,9 @@ impl DataService {
 
     fn project_name_from_path(path: &str) -> String {
         let normalized_path = path.replace('\\', "/");
-        let segments = normalized_path.split('/').filter(|segment| !segment.is_empty());
+        let segments = normalized_path
+            .split('/')
+            .filter(|segment| !segment.is_empty());
         let last_segment = segments.last().unwrap_or(path);
 
         if last_segment.is_empty() {

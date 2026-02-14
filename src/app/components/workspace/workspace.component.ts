@@ -23,7 +23,7 @@ export class WorkspaceComponent implements OnInit, OnDestroy {
     readonly navItems = computed(() => this.navService.navItems);
     readonly bottomNavItems = computed(() => this.navService.bottomNavItems);
 
-    ngOnInit() {
+    async ngOnInit() {
         this.shortcutService.register('ctrl+s', () => this.saveProject());
     }
 

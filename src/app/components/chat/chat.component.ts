@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, effect, ElementRef, inject, OnDestroy, OnInit, signal, viewChild } from '@angular/core';
 import { AgentConfig } from '../../models/agent.provider';
-import { ChatMessage } from '../../models/chat.message';
+import { ChatMessage, ChatThread } from '../../models/chat.message';
 import { TaskStatus } from '../../models/task';
 import { FormatTimestampPipe } from '../../pipes/format.timestamp.pipe';
 import { ChatService } from '../../services/chat.service';
 import { MessageStoreService } from '../../services/message.store.service';
+import { ProjectService } from '../../services/project.service';
 import { TaskExecuteService } from '../../services/task.execuer.service';
 import { AgentSelectorComponent } from '../agent-selector/agent.selector.component.';
 import { IconComponent } from "../icon/icon.component";
@@ -40,10 +41,15 @@ export class ChatComponent implements OnInit, OnDestroy {
     private readonly chatService = inject(ChatService);
     private readonly taskRuntimeService = inject(TaskExecuteService);
     private readonly messageService = inject(MessageStoreService);
+    private readonly projectService = inject(ProjectService);
 
     readonly messages = computed(() => this.messageService.messages());
     readonly hasMessages = computed(() => this.messages().length > 0);
     readonly isStreaming = computed(() => this.messageService.isStreaming());
+    readonly threads = signal<ChatThread[]>([]);
+    readonly currentThread = computed(() => this.messageService.currentThread());
+    readonly hasThreads = computed(() => this.threads().length > 0);
+    readonly showThreads = signal(false);
 
     private readonly runningTaskSubscription = this.taskRuntimeService.onRunTask.subscribe(data => {
         let isRunning = data.status === TaskStatus.InProgress;
@@ -60,8 +66,13 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnInit() {
-        this.messageService.startThreadIfEmpty();
+    async ngOnInit() {
+        await this.projectService.initialize();
+        await this.messageService.startThreadIfEmpty();
+
+        let threads = await this.messageService.loadThreads();
+        this.threads.set(threads);
+        console.log('Loaded threads:', this.threads());
     }
 
     ngOnDestroy() {
@@ -130,9 +141,6 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
     }
 
-    openFolder(): void {
-    }
-
     onTranscriptScroll(): void {
         const transcriptElement = this.transcriptContainer()?.nativeElement;
 
@@ -157,6 +165,14 @@ export class ChatComponent implements OnInit, OnDestroy {
             behavior: 'smooth'
         });
         this.showScrollToBottom.set(false);
+    }
+
+    switchThread(thread: ChatThread): void {
+        this.messageService.switchToThread(thread);
+    }
+
+    toggleThreads() {
+        this.showThreads.update(value => !value);
     }
 
     private onMessagesUpdated(): void {

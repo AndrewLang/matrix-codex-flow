@@ -12,12 +12,16 @@ export interface ChatThread {
     id: string;
     projectId: string;
     title: string;
+    createdAt: number;
+    updatedAt: number;
 }
 
 export const EMPYT_THREAD: ChatThread = {
     id: '',
     projectId: '',
-    title: ''
+    title: '',
+    createdAt: 0,
+    updatedAt: 0
 };
 
 export type ChatRole = 'user' | 'agent';

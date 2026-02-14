@@ -21,9 +21,25 @@ pub fn save_chat_thread(
     thread: ChatThread,
     data_service: State<'_, Mutex<DataService>>,
 ) -> Result<(), String> {
+    if thread.project_id.trim().is_empty() {
+        return Err("failed to save chat thread: projectId is required".to_string());
+    }
+
     let service = data_service
         .lock()
         .map_err(|error| format!("failed to lock data service: {error}"))?;
+
+    let project_exists = service
+        .load_project(&thread.project_id)
+        .map_err(|error| format!("failed to validate project for chat thread: {error}"))?
+        .is_some();
+
+    if !project_exists {
+        return Err(format!(
+            "failed to save chat thread: project not found: {}",
+            thread.project_id
+        ));
+    }
 
     service
         .save_chat_thread(&thread)
@@ -47,6 +63,7 @@ pub fn save_chat_message(
 #[tauri::command]
 pub fn load_chat_threads(
     project_id: String,
+    count: usize,
     data_service: State<'_, Mutex<DataService>>,
 ) -> Result<Vec<ChatThread>, String> {
     let service = data_service
@@ -54,7 +71,7 @@ pub fn load_chat_threads(
         .map_err(|error| format!("failed to lock data service: {error}"))?;
 
     service
-        .load_chat_threads_by_project(&project_id)
+        .load_chat_threads_by_project(&project_id, count)
         .map_err(|error| format!("failed to load chat threads: {error}"))
 }
 

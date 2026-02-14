@@ -8,15 +8,18 @@ import { IdGenerator } from '../models/id';
 import { EMPTY_PROJECT, Project } from '../models/project';
 import { ProjectExtensions } from '../models/project.extensions';
 import { CommandService } from './command.service';
+import { LocalService } from './local.service';
 import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
     static readonly AGENT_FOLDER = '.codex';
+    static readonly LOCAL_PROJECT = 'local_project';
 
     private readonly notificationService = inject(NotificationService);
     private readonly commandService = inject(CommandService);
+    private readonly localService = inject(LocalService);
 
     recentProjects = signal<Project[]>([]);
     currentProject: WritableSignal<Project> = signal<Project>(EMPTY_PROJECT);
@@ -25,8 +28,20 @@ export class ProjectService {
     private readonly savingSubject = new Subject<void>();
     readonly onSaving = this.savingSubject.asObservable();
 
-    constructor() {
-        void this.initializeProjectState();
+    constructor() { }
+
+    async initialize(): Promise<void> {
+        const savedProjectPath = this.projectPath().trim();
+
+        if (savedProjectPath) {
+            await this.loadOrCreateProjectByPath(savedProjectPath);
+        }
+        await this.loadRecentProjects();
+
+        const localProject = this.localService.getItem<Project>(ProjectService.LOCAL_PROJECT);
+        if (localProject) {
+            this.currentProject.set(localProject);
+        }
     }
 
     async openProject(path?: string): Promise<boolean> {
@@ -145,6 +160,8 @@ export class ProjectService {
                 return [project, ...deduplicatedProjects].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
             });
 
+            this.localService.setItem(ProjectService.LOCAL_PROJECT, project);
+
             return project;
         } catch {
             return null;
@@ -217,14 +234,7 @@ export class ProjectService {
 
     }
 
-    private async initializeProjectState(): Promise<void> {
-        const savedProjectPath = this.projectPath().trim();
 
-        if (savedProjectPath) {
-            await this.loadOrCreateProjectByPath(savedProjectPath);
-        }
-        await this.loadRecentProjects();
-    }
 
     private toSafeFileName(value: string): string {
         const sanitized = (value ?? '')

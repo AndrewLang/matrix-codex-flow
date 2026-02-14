@@ -18,6 +18,8 @@ pub struct ChatThread {
     pub id: String,
     pub project_id: String,
     pub title: String,
+    pub created_at: i64,
+    pub updated_at: i64,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
