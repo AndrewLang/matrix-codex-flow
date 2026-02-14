@@ -187,8 +187,6 @@ export class KaraProvider implements AgentProvider {
 
         const start = Date.now();
 
-        console.log('KaraProvider received request:', request);
-
         return {
             text: `Echo from Kara: ${request.prompt}`,
             raw: null,
@@ -206,7 +204,6 @@ export class KaraProvider implements AgentProvider {
                 durationMs: 1000,
             };
 
-            console.log('KaraProvider sending chunk:', chunk);
             onChunk(chunk);
         }
     }

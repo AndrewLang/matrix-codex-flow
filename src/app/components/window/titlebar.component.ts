@@ -37,7 +37,6 @@ export class TitleBarComponent implements OnInit {
     }
 
     toggleMaximize() {
-        console.log('Toggling maximize');
         this.appWindow.toggleMaximize().then(() => this.checkMaximizedState());
     }
 

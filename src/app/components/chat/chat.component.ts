@@ -39,14 +39,13 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     private readonly chatService = inject(ChatService);
     private readonly taskRuntimeService = inject(TaskExecuteService);
-    private readonly messageStoreService = inject(MessageStoreService);
+    private readonly messageService = inject(MessageStoreService);
 
-    readonly messages = computed(() => this.messageStoreService.messages());
+    readonly messages = computed(() => this.messageService.messages());
     readonly hasMessages = computed(() => this.messages().length > 0);
-    readonly isStreaming = computed(() => this.messageStoreService.isStreaming());
+    readonly isStreaming = computed(() => this.messageService.isStreaming());
 
     private readonly runningTaskSubscription = this.taskRuntimeService.onRunTask.subscribe(data => {
-        console.log('[Chat] Task started:', data);
         let isRunning = data.status === TaskStatus.InProgress;
         this.isRunningTask.set(isRunning);
     });
@@ -61,7 +60,9 @@ export class ChatComponent implements OnInit, OnDestroy {
         });
     }
 
-    ngOnInit() { }
+    ngOnInit() {
+        this.messageService.startThreadIfEmpty();
+    }
 
     ngOnDestroy() {
         this.runningTaskSubscription.unsubscribe();
@@ -212,10 +213,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         }
 
         textareaElement.style.height = '0px';
-
         const nextHeight = Math.min(textareaElement.scrollHeight, MAX_COMPOSER_HEIGHT_PIXELS);
         textareaElement.style.height = `${nextHeight}px`;
         textareaElement.style.overflowY = textareaElement.scrollHeight > MAX_COMPOSER_HEIGHT_PIXELS ? 'auto' : 'hidden';
     }
-
 }

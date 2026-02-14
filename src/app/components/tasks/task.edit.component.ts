@@ -27,11 +27,8 @@ export class TaskEditComponent implements OnDestroy {
     private readonly router = inject(Router);
 
     private savingSubscription = this.projectService.onSaving.subscribe(() => {
-        console.log('Project is saving, saving current task...');
         let project = this.projectService.currentProject;
-
         ProjectExtensions.updateTask(project, this.editableTask());
-        console.log('Update project with task', project());
     });
     private readonly taskId = toSignal(
         this.route.paramMap.pipe(map((params) => params.get('taskId') ?? '')),

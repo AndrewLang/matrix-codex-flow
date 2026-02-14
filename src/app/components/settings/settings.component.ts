@@ -43,7 +43,6 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   protected saveSettings(): void {
-    console.log('Saving settings', this.appSetting());
     this.settingService.save();
   }
 

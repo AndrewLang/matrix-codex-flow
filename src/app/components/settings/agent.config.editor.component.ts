@@ -44,7 +44,6 @@ export class AgentConfigEditorComponent implements OnInit {
     }
 
     private updateSetting() {
-        console.log('Updating agent configs', this.configuredAgents());
         let settingValue = JSON.stringify(this.configuredAgents());
         this.appSetting().updateSetting(SettingKeys.AGENT_CONFIGS_SETTING, settingValue);
     }

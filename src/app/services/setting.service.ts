@@ -18,7 +18,6 @@ export class SettingService {
 
   async save() {
     try {
-      console.log('Saving settings', this._appSetting());
       await invoke('save_settings', { settings: this._appSetting().settings });
     } catch (e) {
       console.error('Failed to save settings', e);

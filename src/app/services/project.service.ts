@@ -191,7 +191,6 @@ export class ProjectService {
         }
 
         const agentsMdPath = await join(projectPath, ProjectService.AGENT_FOLDER, 'AGENTS.md');
-        console.log('Checking for AGENTS.md at path:', agentsMdPath);
         return await invoke<boolean>('path_exists', { path: agentsMdPath });
     }
 

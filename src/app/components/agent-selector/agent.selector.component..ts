@@ -32,7 +32,6 @@ export class AgentSelectorComponent implements OnInit {
             defaultAgent.isSelected = true;
         }
         this.selectedAgent.set(defaultAgent);
-        console.log('Loaded agents in selector:', this.agents(), this.selectedAgent());
     }
 
     selectAgent(agent: AgentConfigViewModel): void {

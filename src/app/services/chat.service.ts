@@ -1,4 +1,4 @@
-import { inject, Injectable } from '@angular/core';
+import { computed, inject, Injectable } from '@angular/core';
 
 import { AgentConfig, AgentProvider, AgentResponse } from '../models/agent.provider';
 import { AgentProviderRegistry } from '../models/agents';
@@ -22,6 +22,8 @@ export class ChatService {
     private readonly settingService = inject(SettingService);
     private readonly projectService = inject(ProjectService);
     private readonly messageStoreService = inject(MessageStoreService);
+
+    currentThread = computed(() => this.messageStoreService.currentThread());
 
     async chat(content: string, agentConfig?: AgentConfig,
         messageSentHandler?: (message: ChatMessage) => void
@@ -57,13 +59,6 @@ export class ChatService {
     }
 
     async optimizePrompt(rawPrompt: string): Promise<string> {
-        // const prompt = `
-        // Improve and rewrite the following prompt to make it more accurate, effective, clearer, and more structured for an AI model:
-        // """${rawPrompt}"""
-        // Only provide the improved prompt text, short and clear, without any additional explanations or commentary.
-        // Be more specific about intent, include constraints, desired format, and clarify any ambiguous wording.
-        // Make it optimized for clarity and maximum performance.
-        // `;
         const prompt = `
         Rewrite the following prompt to be clearer, more precise, and better structured for an AI model:
 
@@ -88,12 +83,12 @@ export class ChatService {
         }
         let response = await provider.run(request);
 
-        this.messageStoreService.add(this.toMessage(response.text, AGENT_ROLE));
+        this.messageStoreService.add(this.toMessage(response.text, agentConfig.agentType, agentConfig.model, AGENT_ROLE));
     }
 
     private async agentStreaming(text: string, agentConfig: AgentConfig,
         messageSentHandler?: (message: ChatMessage) => void): Promise<void> {
-        const message = this.toMessage(text);
+        const message = this.toMessage(text, agentConfig.agentType, agentConfig.model);
         this.messageStoreService.add(message);
         if (messageSentHandler) {
             messageSentHandler(message);
@@ -109,9 +104,8 @@ export class ChatService {
         }
 
         const onChunk = (chunk: AgentResponse) => {
-            console.log('Received chunk from agent:', chunk);
             if (chunk.text !== undefined && chunk.text !== '') {
-                let agentMessage = this.toMessage(chunk.text, AGENT_ROLE);
+                let agentMessage = this.toMessage(chunk.text, agentConfig.agentType, agentConfig.model, AGENT_ROLE);
                 this.messageStoreService.add(agentMessage);
             }
         };
@@ -125,13 +119,16 @@ export class ChatService {
         return AgentProviderRegistry.create(agentConfig);
     }
 
-    private toMessage(content: string, role: ChatRole = USER_ROLE): ChatMessage {
+    private toMessage(content: string, agent: string,
+        model: string,
+        role: ChatRole = USER_ROLE): ChatMessage {
         return {
             id: this.createIdentifier(),
-            threadId: '',
+            threadId: this.currentThread().id,
             role,
             content,
-            model: 'gpt-5.3-codex',
+            agent,
+            model,
             createdAt: Date.now()
         };
     }

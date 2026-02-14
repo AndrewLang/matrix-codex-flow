@@ -3,6 +3,7 @@ export interface ChatMessage {
     threadId: string;
     role: ChatRole;
     content: string;
+    agent: string;
     model: string;
     createdAt: number;
 }

@@ -25,13 +25,10 @@ export class AgentSettingsComponent implements OnInit {
 
   async ngOnInit() {
     let agentConfigs = this.appSetting().getSettingValue<AgentConfig[]>(SettingKeys.AGENT_CONFIGS_SETTING);
-    console.log('Loaded agents', agentConfigs);
     this.configuredAgents.set(agentConfigs?.map(config => ({
       ...config,
       isExpanded: false,
     })) ?? []);
-
-    console.log('Loaded agents:', agentConfigs);
   }
 
   setSelectedAgentType(value: string): void {

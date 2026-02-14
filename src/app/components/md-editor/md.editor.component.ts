@@ -66,7 +66,6 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     }
 
     ngAfterViewInit(): void {
-        console.log('Placeholder:', this.placeholder());
         this.editorView = new EditorView({
             parent: this.editorRef.nativeElement,
             state: EditorState.create({

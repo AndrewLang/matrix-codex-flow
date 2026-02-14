@@ -57,7 +57,6 @@ export class StepCardComponent implements OnInit {
             description: 'Delete step',
             tag: 'bg-rose-700 hover:bg-rose-600',
             action: async () => {
-                console.log('Deleting step:', this.step());
                 await this.deleteStep();
             }
         },
@@ -109,7 +108,5 @@ export class StepCardComponent implements OnInit {
 
         TaskExtensions.deleteStep(this.editableTask, this.step());
         this.onDelete.emit(this.step());
-
-        console.log('Deleted step:', this.editableTask());
     }
 }
