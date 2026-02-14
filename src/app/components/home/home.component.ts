@@ -17,7 +17,7 @@ export class HomeComponent {
     readonly router = inject(Router);
 
     readonly title = computed(() => this.appService.splashName);
-    readonly recentProjectPaths = computed(() => this.projectService.recentProjectPaths());
+    readonly recentProjects = computed(() => this.projectService.recentProjects());
     readonly gitInstalled = computed(() => this.appService.isGitInstalled());
     readonly codexInstalled = computed(() => this.appService.isCodexInstalled());
     readonly gitVersion = computed(() => this.appService.gitInfo());
@@ -28,31 +28,21 @@ export class HomeComponent {
     }
 
     async newProject(): Promise<void> {
-        const selectedProjectPath = await this.projectService.chooseFolder();
-        if (!selectedProjectPath) {
-            return;
+        if (await this.projectService.newProject()) {
+            await this.goToWorkspace();
         }
-        await this.projectService.initProject(selectedProjectPath);
-        await this.goToWorkspace();
     }
 
     async openProject(): Promise<void> {
-        const selectedProjectPath = await this.projectService.chooseFolder();
-        if (!selectedProjectPath) {
-            return;
+        if (await this.projectService.openProject()) {
+            await this.goToWorkspace();
         }
-
-        await this.goToWorkspace();
     }
 
     async openRecentProject(path: string): Promise<void> {
-        const project = await this.projectService.loadOrCreateProjectByPath(path);
-
-        if (!project) {
-            return;
+        if (await this.projectService.openProject(path)) {
+            await this.goToWorkspace();
         }
-
-        await this.goToWorkspace();
     }
 
     async removeProject(path: string, event: Event): Promise<void> {

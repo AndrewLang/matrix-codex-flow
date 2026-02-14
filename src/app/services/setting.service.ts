@@ -1,10 +1,12 @@
-import { Injectable, signal } from '@angular/core';
+import { inject, Injectable, signal } from '@angular/core';
 import { invoke } from '@tauri-apps/api/core';
 import { AgentConfig } from '../models/agent.provider';
 import { AppSetting, SettingKeys, SettingModel } from '../models/setting.model';
+import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class SettingService {
+  private readonly notificationService = inject(NotificationService);
   private _appSetting = signal<AppSetting>(new AppSetting([]));
   isLoaded = signal(false);
 
@@ -19,7 +21,9 @@ export class SettingService {
   async save() {
     try {
       await invoke('save_settings', { settings: this._appSetting().settings });
+      this.notificationService.success('Settings saved successfully.');
     } catch (e) {
+      this.notificationService.error('Failed to save settings');
       console.error('Failed to save settings', e);
     }
   }

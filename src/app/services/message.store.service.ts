@@ -1,4 +1,5 @@
 import { inject, Injectable, signal } from '@angular/core';
+import { invoke } from '@tauri-apps/api/core';
 import { ChatMessage, ChatThread, EMPYT_THREAD } from '../models/chat.message';
 import { IdGenerator } from '../models/id';
 import { ProjectService } from './project.service';
@@ -17,9 +18,11 @@ export class MessageStoreService {
 
     constructor() { }
 
-    add(message: ChatMessage) {
+    async add(message: ChatMessage) {
         console.log('[MessageStore] Adding message:', message);
         this._messages.update(list => [...list, message]);
+
+        await invoke('save_chat_message', { message });
     }
 
     setThreadMessages(threadId: string, messages: ChatMessage[]) {
@@ -46,15 +49,21 @@ export class MessageStoreService {
             title: ''
         };
         this.currentThread.set(thread);
+        await invoke('save_chat_thread', { thread });
     }
 
-    async switchThread(thread: ChatThread) {
+    async switchToThread(thread: ChatThread) {
         this.currentThread.set(thread);
         let messages = await this.loadThreadMessages(thread.id);
         this.setThreadMessages(thread.id, messages);
     }
 
+    async loadThreads(): Promise<ChatThread[]> {
+        let projectId = this.projectService.currentProject()?.id;
+        return await invoke<ChatThread[]>('load_chat_threads', { projectId });
+    }
+
     private async loadThreadMessages(threadId: string): Promise<ChatMessage[]> {
-        return [];
+        return await invoke<ChatMessage[]>('load_chat_messages', { threadId });
     }
 }

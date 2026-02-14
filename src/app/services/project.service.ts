@@ -12,27 +12,15 @@ import { NotificationService } from './notification.service';
 
 @Injectable({ providedIn: 'root' })
 export class ProjectService {
-    static readonly PROJECT_PATH_KEY = 'projectPath';
-    static readonly RECENT_PROJECT_PATHS_KEY = 'recentProjectPaths';
-    static readonly LOADED_PROJECT_ID_KEY = 'loadedProjectId';
     static readonly MAX_RECENT_PROJECT_PATHS = 8;
     static readonly AGENT_FOLDER = '.codex';
 
     private readonly notificationService = inject(NotificationService);
     private readonly commandService = inject(CommandService);
 
-
-    projectPath = signal<string>(localStorage.getItem(ProjectService.PROJECT_PATH_KEY) || '');
-    recentProjectPaths = signal<string[]>(ProjectService.loadRecentProjectPaths());
     recentProjects = signal<Project[]>([]);
     currentProject: WritableSignal<Project> = signal<Project>(EMPTY_PROJECT);
-
-    project = computed(() => {
-        const project = this.currentProject();
-        if (!project)
-            throw new Error('Project not loaded');
-        return project;
-    });
+    projectPath = computed(() => this.currentProject()?.path ?? '');
 
     private readonly savingSubject = new Subject<void>();
     readonly onSaving = this.savingSubject.asObservable();
@@ -41,100 +29,30 @@ export class ProjectService {
         void this.initializeProjectState();
     }
 
-    async chooseFolder(): Promise<string> {
-        try {
-            const selected = await open({
-                directory: true,
-                multiple: false
-            });
-
-            if (selected && typeof selected === 'string') {
-                await this.loadOrCreateProjectByPath(selected);
-                return selected;
-            }
-
-            return '';
-        } catch (err) {
-            console.error('Failed to open folder dialog:', err);
-            return '';
+    async openProject(path?: string): Promise<boolean> {
+        const selectedProjectPath = path ?? await this.chooseFolder();
+        if (!selectedProjectPath) {
+            return false;
         }
+
+        await this.loadOrCreateProjectByPath(selectedProjectPath);
+        return true;
+    }
+
+    async newProject(): Promise<boolean> {
+        const selectedProjectPath = await this.chooseFolder();
+        if (!selectedProjectPath) {
+            return false;
+        }
+        await this.initProject(selectedProjectPath);
+        await this.loadOrCreateProjectByPath(selectedProjectPath);
+        return true;
     }
 
     getPathName(path: string): string {
         const normalizedPath = path.replaceAll('\\', '/');
         const segments = normalizedPath.split('/').filter((segment) => segment.length > 0);
         return segments[segments.length - 1] ?? path;
-    }
-
-    async initProject(path: string): Promise<void> {
-        await invoke('init_git_repository', { path });
-    }
-
-    setProjectPath(path: string): void {
-        this.projectPath.set(path);
-        localStorage.setItem(ProjectService.PROJECT_PATH_KEY, path);
-        this.addRecentProjectPath(path);
-    }
-
-    async loadOrCreateProjectByPath(projectPath: string): Promise<Project | null> {
-        try {
-            const project = await this.loadProjectFromPath(projectPath);
-            this.currentProject.set(project);
-            this.setProjectPath(project.path);
-            await this.syncAgentsMd();
-
-            this.recentProjects.update((projects) => {
-                const deduplicatedProjects = projects.filter((existingProject) => existingProject.id !== project.id);
-                return [project, ...deduplicatedProjects].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
-            });
-            this.recentProjectPaths.set(this.recentProjects().map((projectItem) => projectItem.path));
-            localStorage.setItem(ProjectService.LOADED_PROJECT_ID_KEY, project.id);
-            localStorage.setItem(
-                ProjectService.RECENT_PROJECT_PATHS_KEY,
-                JSON.stringify(this.recentProjectPaths())
-            );
-            return project;
-        } catch {
-            return null;
-        }
-    }
-
-    async loadRecentProjects(count: number = ProjectService.MAX_RECENT_PROJECT_PATHS): Promise<Project[]> {
-        try {
-            const projects = await invoke<Project[]>('load_recent_projects', { count });
-            this.recentProjects.set(projects);
-            this.recentProjectPaths.set(projects.map((project) => project.path));
-            localStorage.setItem(
-                ProjectService.RECENT_PROJECT_PATHS_KEY,
-                JSON.stringify(this.recentProjectPaths())
-            );
-            return projects;
-        } catch {
-            return [];
-        }
-    }
-
-    async loadLastProject(): Promise<Project | null> {
-        const lastProjectId = localStorage.getItem(ProjectService.LOADED_PROJECT_ID_KEY);
-        if (lastProjectId) {
-            return await this.loadProject(lastProjectId);
-        }
-        return null;
-    }
-
-    async loadProject(projectId: string): Promise<Project> {
-        try {
-            const project = await invoke<Project | null>('load_project', { projectId }) || EMPTY_PROJECT;
-
-            this.currentProject.set(project);
-            if (project) {
-                this.setProjectPath(project.path);
-                localStorage.setItem(ProjectService.LOADED_PROJECT_ID_KEY, project.id);
-            }
-            return project;
-        } catch {
-            return EMPTY_PROJECT;
-        }
     }
 
     async saveProject(): Promise<void> {
@@ -154,44 +72,13 @@ export class ProjectService {
         await invoke('delete_project', { projectId });
         const nextProjects = this.recentProjects().filter((project) => project.id !== projectId);
         this.recentProjects.set(nextProjects);
-        this.recentProjectPaths.set(nextProjects.map((project) => project.path));
-        localStorage.setItem(
-            ProjectService.RECENT_PROJECT_PATHS_KEY,
-            JSON.stringify(this.recentProjectPaths())
-        );
     }
 
     async revealProjectInFolder(): Promise<void> {
-        let projectPath = this.projectPath();
+        let projectPath = this.currentProject()?.path?.trim();
         if (projectPath) {
             await this.openFolder(projectPath);
         }
-    }
-
-    async openFolder(path: string): Promise<void> {
-        await invoke('open_folder', { path });
-    }
-
-    async fileExists(path: string): Promise<boolean> {
-        return await invoke<boolean>('path_exists', { path });
-    }
-
-    async readFile(path: string): Promise<string> {
-        return await invoke<string>('read_text_file', { path });
-    }
-
-    async writeFile(path: string, content: string): Promise<void> {
-        await invoke('write_text_file', { path, content });
-    }
-
-    async hasAgentsMd(): Promise<boolean> {
-        const projectPath = this.currentProject()?.path?.trim();
-        if (!projectPath) {
-            return false;
-        }
-
-        const agentsMdPath = await join(projectPath, ProjectService.AGENT_FOLDER, 'AGENTS.md');
-        return await invoke<boolean>('path_exists', { path: agentsMdPath });
     }
 
     async syncAgentsMd(): Promise<void> {
@@ -246,6 +133,73 @@ export class ProjectService {
         await this.commandService.runCommand('code', [project.path]);
     }
 
+    private async loadOrCreateProjectByPath(projectPath: string): Promise<Project | null> {
+        try {
+            const project = await this.loadProjectFromPath(projectPath);
+            this.currentProject.set(project);
+            this.addRecentProjectPath(project.path);
+            await this.syncAgentsMd();
+
+            this.recentProjects.update((projects) => {
+                const deduplicatedProjects = projects.filter((existingProject) => existingProject.id !== project.id);
+                return [project, ...deduplicatedProjects].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
+            });
+
+            return project;
+        } catch {
+            return null;
+        }
+    }
+
+    private async openFolder(path: string): Promise<void> {
+        await invoke('open_folder', { path });
+    }
+
+    private async fileExists(path: string): Promise<boolean> {
+        return await invoke<boolean>('path_exists', { path });
+    }
+
+    private async readFile(path: string): Promise<string> {
+        return await invoke<string>('read_text_file', { path });
+    }
+
+    private async writeFile(path: string, content: string): Promise<void> {
+        await invoke('write_text_file', { path, content });
+    }
+
+    private async loadRecentProjects(count: number = ProjectService.MAX_RECENT_PROJECT_PATHS): Promise<Project[]> {
+        try {
+            const projects = await invoke<Project[]>('load_recent_projects', { count });
+            this.recentProjects.set(projects);
+
+            return projects;
+        } catch {
+            return [];
+        }
+    }
+
+    private async initProject(path: string): Promise<void> {
+        await invoke('init_git_repository', { path });
+    }
+
+    private async chooseFolder(): Promise<string> {
+        try {
+            const selected = await open({
+                directory: true,
+                multiple: false
+            });
+
+            if (selected && typeof selected === 'string') {
+                return selected;
+            }
+
+            return '';
+        } catch (err) {
+            console.error('Failed to open folder dialog:', err);
+            return '';
+        }
+    }
+
     private async loadProjectFromPath(projectPath: string): Promise<Project> {
         return await invoke<Project>('load_or_create_project_by_path', { projectPath })
     }
@@ -257,33 +211,10 @@ export class ProjectService {
             return;
         }
 
-        const existingPaths = this.recentProjectPaths();
-        const deduplicatedPaths = existingPaths.filter((existingPath) => existingPath !== normalizedPath);
+        const existingPaths = this.recentProjects();
+        const deduplicatedPaths = existingPaths.filter((proj) => proj.path !== normalizedPath);
         const nextPaths = [normalizedPath, ...deduplicatedPaths].slice(0, ProjectService.MAX_RECENT_PROJECT_PATHS);
 
-        this.recentProjectPaths.set(nextPaths);
-        localStorage.setItem(ProjectService.RECENT_PROJECT_PATHS_KEY, JSON.stringify(nextPaths));
-    }
-
-    private static loadRecentProjectPaths(): string[] {
-        const serializedPaths = localStorage.getItem(ProjectService.RECENT_PROJECT_PATHS_KEY);
-
-        if (!serializedPaths) {
-            return [];
-        }
-
-        try {
-            const parsedValue: unknown = JSON.parse(serializedPaths);
-
-            if (!Array.isArray(parsedValue)) {
-                return [];
-            }
-
-            const parsedPaths = parsedValue.filter((value): value is string => typeof value === 'string');
-            return parsedPaths;
-        } catch {
-            return [];
-        }
     }
 
     private async initializeProjectState(): Promise<void> {
@@ -291,10 +222,7 @@ export class ProjectService {
 
         if (savedProjectPath) {
             await this.loadOrCreateProjectByPath(savedProjectPath);
-        } else {
-            await this.loadLastProject();
         }
-
         await this.loadRecentProjects();
     }
 
