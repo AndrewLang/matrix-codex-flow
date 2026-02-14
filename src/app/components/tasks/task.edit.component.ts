@@ -93,7 +93,7 @@ export class TaskEditComponent implements OnDestroy {
             id: 'go-back',
             title: '',
             icon: 'arrow-left',
-            action: () => { this.router.navigate(['/workspace/tasks']); }
+            action: () => { this.router.navigate(['/app/workspace/tasks']); }
         }];
     });
 
@@ -148,6 +148,16 @@ export class TaskEditComponent implements OnDestroy {
         let appSetting = this.settingService.appSetting();
         const template = appSetting.getSetting<string>(SettingKeys.PROMPT_TEMPLATE_SETTING) ?? '';
 
-        TaskExtensions.addStep(this.editableTask, this.editableTask().steps.length + 1, template, stepType);
+        let step = TaskExtensions.addStep(this.editableTask, this.editableTask().steps.length + 1, template, stepType);
+        if (step) {
+            let viewModels = [...this.preSteps(), ...this.mainSteps(), ...this.postSteps()];
+            let viewModel = viewModels.find(s => s.id === step.id);
+
+            if (viewModel) {
+                viewModel.isExpanded.set(true);
+                viewModel.isEditing.set(true);
+                console.log(viewModel.isExpanded(), viewModel.isEditing());
+            }
+        }
     }
 }

@@ -1,9 +1,9 @@
 import { CdkDrag, CdkDragDrop, CdkDragHandle, CdkDropList, moveItemInArray } from '@angular/cdk/drag-drop';
 import { DatePipe } from '@angular/common';
-import { Component, computed, effect, inject, input, signal } from '@angular/core';
+import { Component, effect, inject, input, model, signal } from '@angular/core';
 
 import { Router } from '@angular/router';
-import { EMPTY_TASK, StepViewModel, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
+import { EMPTY_TASK, StepViewModel, TaskExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { ChatService } from '../../services/chat.service';
 import { ProjectService } from '../../services/project.service';
 import { IconComponent } from '../icon/icon.component';
@@ -26,18 +26,7 @@ export class StepListComponent {
     readonly task = input.required<TaskViewModel>();
     readonly editableTask = signal<TaskViewModel>(EMPTY_TASK);
     readonly stepType = input<TaskStepType>('normal');
-    readonly steps = computed(() => {
-        let steps = [];
-        if (this.stepType() === 'pre') {
-            steps = this.editableTask().presteps;
-        } else if (this.stepType() === 'post') {
-            steps = this.editableTask().poststeps;
-        } else {
-            steps = this.editableTask().steps;
-        }
-
-        return TaskStepExtensions.toViewModels(steps);
-    });
+    readonly steps = model<StepViewModel[]>([]);
 
     readonly title = input<string>('Steps');
     readonly subtitle = input<string>('');

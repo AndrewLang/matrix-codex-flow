@@ -237,7 +237,8 @@ export class TaskExtensions {
         };
     }
 
-    static addStep(task: WritableSignal<TaskViewModel>, index: number, template: string, stepType: TaskStepType) {
+    static addStep(task: WritableSignal<TaskViewModel>, index: number,
+        template: string, stepType: TaskStepType) {
         const now = Date.now();
         const title = `${stepType === 'pre' ? 'Pre-Step' : stepType === 'post' ? 'Post-Step' : 'Step'} ${index}`;
         const newStep: TaskStep = {
@@ -265,6 +266,8 @@ export class TaskExtensions {
             ...t,
             updatedAt: now
         }));
+
+        return newStep;
     }
 
     static updateStep(task: WritableSignal<TaskViewModel>, updatedStep: TaskStep): void {

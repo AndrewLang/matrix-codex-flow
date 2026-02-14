@@ -44,7 +44,7 @@ export class TaskExecuteService {
     }
 
     private async prepareExecute(task: TaskViewModel) {
-        this.router.navigate(['/workspace/chat']);
+        this.router.navigate(['/app/workspace/chat']);
         await this.delay(1000);
 
         let runtimeTask = new RuntimeTaskViewModel(task);

@@ -27,14 +27,14 @@
         @if (editableTask()) {
         <div class="flex flex-col gap-3">
             <mtx-step-list title="Pre Steps" subtitle="Steps will be executed before each main step."
-                titleIcon="arrow-90deg-down" [stepType]="'pre'" [task]="editableTask()"
+                titleIcon="arrow-90deg-down" [stepType]="'pre'" [task]="editableTask()" [steps]="preSteps()"
                 [allowReorder]="enableReorder()"></mtx-step-list>
 
             <mtx-step-list title="Main Steps" subtitle="Main steps do your job" [task]="editableTask()"
-                [allowReorder]="enableReorder()"></mtx-step-list>
+                [steps]="mainSteps()" [allowReorder]="enableReorder()"></mtx-step-list>
 
             <mtx-step-list title="Post Steps" subtitle="Steps will be executed after each main step."
-                titleIcon="arrow-return-right" [stepType]="'post'" [task]="editableTask()"
+                titleIcon="arrow-return-right" [stepType]="'post'" [task]="editableTask()" [steps]="postSteps()"
                 [allowReorder]="enableReorder()"></mtx-step-list>
         </div>
         } @else {

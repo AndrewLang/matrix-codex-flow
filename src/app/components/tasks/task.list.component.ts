@@ -85,11 +85,11 @@ export class TaskListComponent implements OnDestroy {
     }
 
     onEditTask(taskId: string): void {
-        this.router.navigate(['/workspace/tasks/edit', taskId]);
+        this.router.navigate(['/app/workspace/tasks/edit', taskId]);
     }
 
     onViewTask(taskId: string): void {
-        this.router.navigate(['/workspace/tasks/view', taskId]);
+        this.router.navigate(['/app/workspace/tasks/view', taskId]);
     }
 
     onDeleteTask(taskId: string): void {

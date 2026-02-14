@@ -45,7 +45,7 @@ export class TaskViewComponent {
         id: 'go-back',
         title: '',
         icon: 'arrow-left',
-        action: () => { this.router.navigate(['/workspace/tasks']); }
+        action: () => { this.router.navigate(['/app/workspace/tasks']); }
     }]);
     readonly headerRightCommands = computed<CommandDescriptor[]>(() => {
         if (!this.task()) {
@@ -62,7 +62,7 @@ export class TaskViewComponent {
             id: 'edit-task',
             title: 'Edit',
             icon: 'pencil',
-            action: () => { this.router.navigate(['/workspace/tasks/edit', this.taskId()]); }
+            action: () => { this.router.navigate(['/app/workspace/tasks/edit', this.taskId()]); }
         }];
     });
     readonly timeline = computed(() => {
