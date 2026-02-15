@@ -1,4 +1,8 @@
-<div
-    class="mtx-prose max-w-none text-slate-200"
-    [innerHTML]="renderedHtml()">
+@defer (on viewport){
+<div class="mtx-prose max-w-none text-slate-200" [innerHTML]="renderedHtml()">
 </div>
+} @placeholder {
+<div class="text-slate-500 text-sm">
+    Rendering...
+</div>
+}

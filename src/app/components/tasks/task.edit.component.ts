@@ -9,6 +9,7 @@ import { SettingKeys } from '../../models/setting.model';
 import { EMPTY_TASK, TaskExtensions, TaskStepExtensions, TaskStepType, TaskViewModel } from '../../models/task';
 import { ProjectService } from '../../services/project.service';
 import { SettingService } from '../../services/setting.service';
+import { TaskExecuteService } from '../../services/task.execuer.service';
 import { TaskService } from '../../services/task.service';
 import { InputEditableComponent } from '../input-editable/input.editable.component';
 import { WorkspaceHeaderComponent } from '../workspace/workspace.header.component';
@@ -23,6 +24,7 @@ export class TaskEditComponent implements OnDestroy {
     private readonly projectService = inject(ProjectService);
     private readonly settingService = inject(SettingService);
     private readonly tasksService = inject(TaskService);
+    private readonly taskExecuteService = inject(TaskExecuteService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
 
@@ -69,7 +71,7 @@ export class TaskEditComponent implements OnDestroy {
                 icon: 'play',
                 tag: 'text-green-500',
                 description: 'Run this task',
-                action: () => this.export()
+                action: () => { this.taskExecuteService.execute(this.editableTask()); }
             },
             {
                 id: 'export-task',
