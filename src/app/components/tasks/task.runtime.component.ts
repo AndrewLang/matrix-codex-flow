@@ -30,6 +30,13 @@ interface TaskTimelineItem {
         .runtime-step-running {
             animation: runtime-step-running 1.1s ease-out infinite;
         }
+
+        :host {
+            display: flex;
+            flex: 1 1 0%;
+            min-height: 0;
+            flex-direction: column;
+        }
     `],
     imports: [CommonModule, IconComponent]
 })

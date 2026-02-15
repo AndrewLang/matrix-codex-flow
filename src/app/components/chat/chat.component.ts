@@ -58,11 +58,20 @@ export class ChatComponent implements OnInit, OnDestroy {
 
     private readonly transcriptContainer = viewChild<ElementRef<HTMLDivElement>>('transcriptContainer');
     private readonly composerTextarea = viewChild<ElementRef<HTMLTextAreaElement>>('composerTextarea');
+    private previousMessageCount = 0;
+    private previousThreadId: string | null = null;
 
     constructor() {
         effect(() => {
-            this.messages().length;
-            queueMicrotask(() => this.onMessagesUpdated());
+            const messageCount = this.messages().length;
+            const threadId = this.currentThread()?.id ?? null;
+            const hasNewMessage = messageCount > this.previousMessageCount;
+            const hasThreadChanged = threadId !== this.previousThreadId;
+
+            this.previousMessageCount = messageCount;
+            this.previousThreadId = threadId;
+
+            queueMicrotask(() => this.onMessagesUpdated(hasNewMessage || hasThreadChanged));
         });
     }
 
@@ -164,6 +173,7 @@ export class ChatComponent implements OnInit, OnDestroy {
             top: transcriptElement.scrollHeight,
             behavior: 'smooth'
         });
+        this.autoScrollEnabled.set(true);
         this.showScrollToBottom.set(false);
     }
 
@@ -175,8 +185,8 @@ export class ChatComponent implements OnInit, OnDestroy {
         this.showThreads.update(value => !value);
     }
 
-    private onMessagesUpdated(): void {
-        const shouldAutoScroll = this.autoScrollEnabled();
+    private onMessagesUpdated(forceScroll = false): void {
+        const shouldAutoScroll = forceScroll || this.autoScrollEnabled();
 
         requestAnimationFrame(() => {
             const transcriptElement = this.transcriptContainer()?.nativeElement;
@@ -186,6 +196,7 @@ export class ChatComponent implements OnInit, OnDestroy {
 
             if (shouldAutoScroll) {
                 this.scrollTranscriptToBottom();
+                this.autoScrollEnabled.set(true);
                 this.showScrollToBottom.set(false);
                 return;
             }

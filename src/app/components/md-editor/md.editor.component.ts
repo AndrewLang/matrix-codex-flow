@@ -9,12 +9,16 @@ import { EditorView, keymap, placeholder } from '@codemirror/view';
 @Component({
     selector: 'mtx-md-editor',
     templateUrl: 'md.editor.component.html',
+    host: {
+        'class': 'block'
+    }
 })
 export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
     readonly value = input<string>('');
     readonly placeholder = input<string>('Write markdown content');
     readonly background = input<string>('#0f172a');
     readonly enabled = input<boolean>(true);
+    readonly fillHeight = input<boolean>(false);
 
     readonly valueChange = output<string>();
     readonly ctrlEnter = output<void>();
@@ -106,16 +110,18 @@ export class MarkdownEditorComponent implements AfterViewInit, OnDestroy {
                         },
                         '.cm-editor': {
                             backgroundColor: this.background(),
+                            height: this.fillHeight() ? '100%' : 'auto',
                         },
                         '.cm-scroller': {
                             backgroundColor: this.background(),
                             borderRadius: '0.25rem',
-                            overflow: 'hidden',
+                            overflowY: this.fillHeight() ? 'auto' : 'hidden',
+                            height: this.fillHeight() ? '100%' : 'auto',
                         },
 
                         '.cm-content': {
                             fontFamily: 'ui-monospace, SFMono-Regular, monospace',
-                            minHeight: '112px',
+                            minHeight: this.fillHeight() ? '100%' : '112px',
                             padding: '12px',
                             backgroundColor: 'transparent',
                         },

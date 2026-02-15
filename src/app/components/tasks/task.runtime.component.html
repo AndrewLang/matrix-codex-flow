@@ -1,5 +1,5 @@
 <div class="flex h-full min-h-0 flex-col gap-4 overflow-hidden p-3 text-slate-200">
-    <header class="rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+    <header class="rounded-xl bg-slate-900/60 backdrop-blur-xl">
         <h2 class="truncate text-lg font-semibold text-slate-100">
             Running: {{ runtimeTask().title || 'No running task' }}
         </h2>
@@ -8,7 +8,7 @@
         }
     </header>
 
-    <section class="relative flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 p-4 backdrop-blur-xl">
+    <section class="relative flex-1 min-h-0 overflow-y-auto rounded-xl bg-slate-900/60 backdrop-blur-xl">
         @if (!runtimeTask().id) {
         <p class="rounded bg-slate-800/60 px-3 py-2 text-sm text-slate-400">
             No task is running.

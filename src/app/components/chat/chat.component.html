@@ -32,9 +32,7 @@
                         question or giving a command.</p>
                 </div>
                 }
-                @if (isStreaming()) {
-                <mtx-loader label="Thinking..."></mtx-loader>
-                }
+
             </div>
         </section>
         @if (showScrollToBottom()) {
@@ -50,8 +48,10 @@
         class="flex-none basis-[30%] max-h-[35%] flex flex-col min-h-0 rounded-xl border border-slate-800/80 bg-slate-900/60 p-3 backdrop-blur-xl shadow-xl">
 
         <div id="threads" class="flex flex-col" [class.flex-1]="showThreads()" [class.min-h-0]="showThreads()">
-            @if(hasThreads()) {
-            <div class="border-b border-slate-800/80 py-2 mb-2 flex flex-col min-h-0" [class.flex-1]="showThreads()">
+            @if (isStreaming()) {
+            <mtx-loader label="Thinking..." class="mb-1"></mtx-loader>
+            } @else if (hasThreads()) {
+            <div class="border-b border-slate-800/80 pb-2 mb-2 flex flex-col min-h-0" [class.flex-1]="showThreads()">
                 <div id="threads-header" class="flex items-center justify-between" [class.mb-2]="showThreads()">
                     <h3 class="text-xs font-semibold uppercase tracking-wide text-slate-400">Threads history</h3>
                     <button type="button"
@@ -88,8 +88,9 @@
             }
             @else {
             <div id="message-input" class="flex-1 overflow-auto min-h-0">
-                <mtx-md-editor [value]="composerText()" (valueChange)="composerText.set($event)" background="0f172a99"
-                    [enabled]="!isStreaming()" placeholder="Ask VibeFlow" (ctrlEnter)="sendMessage()">
+                <mtx-md-editor class="h-full" [value]="composerText()" (valueChange)="composerText.set($event)"
+                    background="0f172a99" [enabled]="!isStreaming()" placeholder="Ask VibeFlow"
+                    (ctrlEnter)="sendMessage()">
                 </mtx-md-editor>
             </div>
 
