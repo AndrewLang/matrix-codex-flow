@@ -39,14 +39,14 @@ export class AgentProviderRegistry {
             id: AgentProviderNames.ID_CODEX_CLI,
             name: AgentProviderNames.CODEX_CLI,
             type: 'codex-cli',
-            defaultModel: 'gpt-5-codex',
+            defaultModel: 'gpt-5.5',
             isDefault: true,
         },
         {
             id: AgentProviderNames.ID_OPENAI,
             name: AgentProviderNames.OPENAI,
             type: 'openai',
-            defaultModel: 'gpt-5-codex',
+            defaultModel: 'gpt-5.5',
             isDefault: false,
         },
         {

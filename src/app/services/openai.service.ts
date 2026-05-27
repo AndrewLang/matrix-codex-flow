@@ -7,7 +7,7 @@ import { SettingService } from './setting.service';
 export class OpenaiService {
     private readonly settingService = inject(SettingService);
     private readonly apiKey = computed(() => '');
-    private readonly model = computed(() => 'gpt-5-codex');
+    private readonly model = computed(() => 'gpt-5.5');
     private client: OpenAI | null = null;
     private clientApiKey = '';
 

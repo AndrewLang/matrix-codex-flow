@@ -241,7 +241,7 @@ impl AppService {
             id: Uuid::new_v4().to_string(),
             name: "Codex CLI Agent".to_string(),
             agent_type: "codex-cli".to_string(),
-            model: "gpt-5-codex".to_string(),
+            model: "gpt-5.5".to_string(),
             api_key: "".to_string(),
             base_url: "".to_string(),
             enabled: true,
